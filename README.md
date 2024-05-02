@@ -8,4 +8,5 @@ Our group is called ***UNDETERMINED*** and is comprised of **thepaqui**, **bbour
 
 ## Useful links
 
+- [Django back-end tutorial](https://www.w3schools.com/django/)
 - [WebGL Tutorial](https://webglfundamentals.org/webgl/lessons/fr/)
