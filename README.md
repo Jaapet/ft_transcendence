@@ -10,7 +10,7 @@ Our group is called ***UNDETERMINED*** and is comprised of **thepaqui**, **bbour
 
 As we are not required to complete all modules, here is our (temporary) selection:
 ### Major modules
-- Backend in Django
+- Back-end in Django
 - Standard user management, authentification and tournaments
 - Distant players (playing on 2 different computers)
 - Multiple players (more than 2 in one game)
@@ -18,11 +18,11 @@ As we are not required to complete all modules, here is our (temporary) selectio
 - AI-controlled player
 - Advanced 3D with WebGL
 ### Minor modules
-- PostgreSQL DB in backend
+- Bootstrap toolkit and a framework in front-end
+- PostgreSQL DB in back-end
 - Custom game options (power-ups, attacks, etc. Applies to both games)
 - Dashboards for users and game stats
 - Multiple browser support
-- Server-side rendering
 
 ## How to use
 
