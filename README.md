@@ -20,9 +20,8 @@ As we are not required to complete all modules, here is our (temporary) selectio
 ### Minor modules
 - Bootstrap toolkit and a framework in front-end
 - PostgreSQL DB in back-end
-- Custom game options (power-ups, attacks, etc. Applies to both games)
 - Dashboards for users and game stats
-- RGPD compliance (maybe we won't do that one)
+- RGPD compliance
 - Multiple browser support
 
 ## How to use
