@@ -40,3 +40,4 @@ As we are not required to complete all modules, here is our temporary selection:
 
 - [Django + PostgreSQL back-end tutorial](https://www.w3schools.com/django/)
 - [WebGL Tutorial](https://webglfundamentals.org/webgl/lessons/fr/)
+- [Django + Next.js Authentication via JWT](https://youtu.be/2pZmxh8Tf78?si=jPOXNSQpZQVSJl1u)
