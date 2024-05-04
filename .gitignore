@@ -2,3 +2,13 @@
 *.swp
 *.swo
 *.pdf
+.venv/bin
+.venv/include
+.venv/lib
+.venv/lib64
+.venv/share
+.venv/transcendence/db*
+.venv/transcendence/manage.py
+.venv/transcendence/transcendence/__pycache__
+.venv/transcendence/users/__pycache__
+.venv/transcendence/users/migrations
