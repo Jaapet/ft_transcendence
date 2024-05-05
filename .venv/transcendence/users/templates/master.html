@@ -1,12 +1,22 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
+
 <head>
+	<link rel="stylesheet" href="{% static 'master.css' %}">
 	<title>{% block title %}{% endblock %}</title>
 </head>
-<body style="background-color: antiquewhite;">
-	<p><a href="/">HOME</a></p>
-	<p>{% now "Y N jS, H:i:s (T)" %}</p>
+
+<body>
+	<div class="topnav">
+		<a href="/">HOME</a> |
+		<a href="/users">USERS</a>
+		{% now "Y N jS, H:i:s (T)" %}
+	</div>
+
 {% block content %}
 {% endblock %}
+
 </body>
+
 </html>

@@ -5,10 +5,20 @@ User info: {{ user.firstname }} {{ user.lastname }}
 {% endblock %}
 
 {% block content %}
+<div class="usercard">
 	<h1>{{ user.firstname }} {{ user.lastname }}</h1>
 
+	<p>Gender: 
+	{% if user.male == True %}
+	Male
+	{% elif user.male == False %}
+	Female
+	{% else %}
+	Other/Unknown
+	{% endif %}</p>
 	<p>Phone: {{ user.phone }}</p>
 	<p>Member since: {{ user.join_date }}</p>
+</div>
 
-	<p>Back to <a href="/users">User list</a></p>
+<p class="back">Back to <a href="/users">User list</a></p>
 {% endblock %}

@@ -15,7 +15,7 @@ def testing(request):
 	return HttpResponse(template.render(context, request))
 
 def users(request):
-	userlist = User.objects.all().values()
+	userlist = User.objects.all().order_by('firstname').values()
 	template = loader.get_template('user_list.html')
 	context = {
 		'userlist': userlist
