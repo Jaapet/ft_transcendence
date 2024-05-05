@@ -24,4 +24,5 @@ WORKDIR		/venv/backend
 
 EXPOSE		8000
 
+#TODO: make a script that can also make db migrations before running the server!
 ENTRYPOINT	["python", "manage.py", "runserver", "0.0.0.0:8000"]
