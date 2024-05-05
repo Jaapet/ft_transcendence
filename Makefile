@@ -10,25 +10,25 @@
 #                                                                              #
 # **************************************************************************** #
 
-# Includes ./srcs/.env like include in C/C++
+
 include ./srcs/.env
-# Exports all variables to current context's env
-# This includes what was included from ./srcs/.env
 export
 
 .PHONY: all clean fclean re
+
+# TODO: Need to launch this in rootless mode :(
 
 all:
 #	@echo "Adding thepaqui.42.fr to known domain names,"
 #	@echo "resolving it to local host (127.0.0.1)"
 #	Making our domain name resolve to localhost
 #	THIS NEXT LINE MIGHT BE USELESS
-#	@sudo chmod 666 /etc/hosts
-#	@sudo echo "127.0.0.1 $(FQDN)" >> /etc/hosts
-#	@sudo echo "127.0.0.1 www.$(FQDN)" >> /etc/hosts
+#	@chmod 666 /etc/hosts
+#	@echo "127.0.0.1 $(FQDN)" >> /etc/hosts
+#	@echo "127.0.0.1 www.$(FQDN)" >> /etc/hosts
 
 	@echo "Building the services and starting them"
-	@mkdir -p /home/thepaqui/data -m 777
+#	@mkdir -p /home/thepaqui/data -m 777
 #	docker compose build -> builds images (rebuilds if Dockerfile changed)
 #	docker compose up -d -> builds, creates, starts and attaches
 #	containers for services. Starts them in background thanks to -d
