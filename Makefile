@@ -10,11 +10,10 @@
 #                                                                              #
 # **************************************************************************** #
 
-
 include ./srcs/.env
 export
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re reset
 
 # TODO: Need to launch this in rootless mode :(
 
@@ -49,3 +48,5 @@ fclean:
 	@docker system prune --all
 
 re: fclean all
+
+reset: clean all
