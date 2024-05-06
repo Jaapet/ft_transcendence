@@ -10,24 +10,28 @@ Our group is called ***"Comment devenir millionaire" par Rachid*** and is compri
 
 As we are not required to complete all modules, here is our temporary selection:
 ### Major modules
+#### Validated
 - Back-end in Django
 - Standard user management, authentification and tournaments
+- Advanced 3D with WebGL
+- AI-controlled player
+#### Maybe
 - Remote authentification (OAuth 42)
 - Distant players (playing on 2 different computers)
 - Multiple players (more than 2 in one game)
 - A second game with user history and match-making
-- AI-controlled player
 - WAF or Mod Security + HashiCorp Vault
 - 2FA + JSON Web Tokens
 - Log management
-- Advanced 3D with WebGL
 ### Minor modules
-- Bootstrap toolkit and Next.js in front-end
+#### Validated
 - PostgreSQL DB in back-end
+- Bootstrap toolkit and Next.js in front-end
+#### Maybe
+- Multiple browser support
 - Dashboards for users and game stats
 - RGPD compliance
 - Monitoring system
-- Multiple browser support
 
 > 📝 Note that we will not do all of them.  
 > 📝 This is just the first selection, it will be trimmed down.  
@@ -41,3 +45,4 @@ As we are not required to complete all modules, here is our temporary selection:
 - [Django + PostgreSQL back-end tutorial](https://www.w3schools.com/django/)
 - [WebGL Tutorial](https://webglfundamentals.org/webgl/lessons/fr/)
 - [Django + Next.js Authentication via JWT](https://youtu.be/2pZmxh8Tf78?si=jPOXNSQpZQVSJl1u)
+- [Planning DB](https://app.diagrams.net/)
