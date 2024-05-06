@@ -10,17 +10,17 @@
 #                                                                              #
 # **************************************************************************** #
 
-FROM		python:3.8
+FROM		python:3.8-alpine
 
 LABEL		author="thepaqui@student.42nice.fr"
 
-COPY		conf/requirements.txt ./
+COPY		conf/ ./
 
-RUN			pip install --no-cache-dir -r requirements.txt
+RUN			apk add --no-cache build-base && \
+			pip install --upgrade pip && \
+			pip install --no-cache-dir -r ./requirements.txt
 
-COPY		conf/ /venv/
-
-WORKDIR		/venv/backend
+WORKDIR		./backend
 
 EXPOSE		8000
 
