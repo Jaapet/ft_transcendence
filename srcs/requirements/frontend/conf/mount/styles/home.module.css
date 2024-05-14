@@ -62,7 +62,6 @@
 .title{
 	position: absolute;
 	text-align: center;
-	font-size: 50px;
     z-index: 2; 
     top: 50%; 
     left: 50%; 
@@ -72,6 +71,7 @@
 	-webkit-background-clip: text;
 	color:transparent;
 	font-family: "title font", sans-serif;
+	font-size: 2em;
 }
 
 .buttons {
@@ -86,8 +86,9 @@
     text-decoration:none;
     margin-right: 32px;
 	position: relative; 
-	top: 2cm;
+	top: 4cm;
 	font-family: "buttons", sans-serif;
+	font-size: 2em;;
 	transition: background-color 0.3s ease;
 }
 
@@ -97,8 +98,19 @@
 }
 
 .header {
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
+    position: fixed;
+	width: 100%;
+	z-index: 1000;
+}
+
+.settingIcon {
+	position: relative;
+    width: 35px;
+    height: 35px;
+    margin-right: 5px;
+
+}
+
+.menuOpen{
+	filter: brightness(0.8);
 }
