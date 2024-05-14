@@ -45,7 +45,7 @@ export default function Home() {
   return (
     <div className={styles.container}>
       <Head>
-        <title>Transcendance</title>
+        <title>Transcendence</title>
       </Head>
 
       <style jsx global>{`
