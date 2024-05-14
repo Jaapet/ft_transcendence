@@ -5,6 +5,7 @@ import styles from '../styles/home.module.css';
 import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
 
 const Header = () => (
+	<div className={styles.header}>
     <Navbar bg="dark" variant="dark">
         <Navbar.Brand href="#home">Transcendence</Navbar.Brand>
         <Nav className="mr-auto">
@@ -20,6 +21,7 @@ const Header = () => (
         </NavDropdown>
 		<img src="images/rachid.jpg" style={{borderRadius: '50%', width: '40px', height: '40px', marginLeft: '35.5cm'}} />
     </Navbar>
+	</div>
 );
 const VideoBackground = () => (
   <div className={styles.videoBackground}>
