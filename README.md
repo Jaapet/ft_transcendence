@@ -13,13 +13,13 @@ As we are not required to complete all modules, here is our temporary selection:
 #### Validated
 - Back-end in Django
 - Standard user management, authentification and tournaments
-- Advanced 3D with WebGL
-- AI-controlled player
+- Advanced 3D with ThreeJS
+- A second game with user history and match-making
 #### Maybe
+- AI-controlled player
 - Remote authentification (OAuth 42)
 - Distant players (playing on 2 different computers)
 - Multiple players (more than 2 in one game)
-- A second game with user history and match-making
 - WAF or Mod Security + HashiCorp Vault
 - 2FA + JSON Web Tokens
 - Log management
@@ -28,9 +28,9 @@ As we are not required to complete all modules, here is our temporary selection:
 #### Validated
 - PostgreSQL DB in back-end
 - Bootstrap toolkit and Next.js in front-end
+- Dashboards for users and game stats
 #### Maybe
 - Multiple browser support
-- Dashboards for users and game stats
 - RGPD compliance
 - Monitoring system
 
