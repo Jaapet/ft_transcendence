@@ -23,6 +23,7 @@ As we are not required to complete all modules, here is our temporary selection:
 - WAF or Mod Security + HashiCorp Vault
 - 2FA + JSON Web Tokens
 - Log management
+---
 ### Minor modules
 #### Validated
 - PostgreSQL DB in back-end
@@ -38,7 +39,14 @@ As we are not required to complete all modules, here is our temporary selection:
 
 ## How to use
 
-
+- `make`: Builds and launches the project
+- `make f`: Build and launches the project with containers in foreground
+- `make clean`: Stops the project
+- `make fclean`: Stops the project and deletes volumes and images
+- `make re`: clean + all
+- `make fre`: clean + f
+- `make reset`: fclean + all
+- `make freset`: fclean + f
 
 ## Useful links
 

@@ -2,8 +2,7 @@
 *.swp
 *.swo
 *.pdf
-.venv/bin
-.venv/include
-.venv/lib
-.venv/lib64
-.venv/share
+.venv
+__pycache__
+.next
+node_modules

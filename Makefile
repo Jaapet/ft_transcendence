@@ -13,40 +13,31 @@
 include ./srcs/.env
 export
 
-.PHONY: all clean fclean re reset
+.PHONY: all f clean fclean re fre reset freset
 
 # TODO: Need to launch this in rootless mode :(
 
 all:
-#	@echo "Adding thepaqui.42.fr to known domain names,"
-#	@echo "resolving it to local host (127.0.0.1)"
-#	Making our domain name resolve to localhost
-#	THIS NEXT LINE MIGHT BE USELESS
-#	@chmod 666 /etc/hosts
-#	@echo "127.0.0.1 $(FQDN)" >> /etc/hosts
-#	@echo "127.0.0.1 www.$(FQDN)" >> /etc/hosts
-
-	@echo "Building the services and starting them"
-#	@mkdir -p /home/thepaqui/data -m 777
-#	docker compose build -> builds images (rebuilds if Dockerfile changed)
-#	docker compose up -d -> builds, creates, starts and attaches
-#	containers for services. Starts them in background thanks to -d
+	@echo "Building the services and starting them in background"
 	@cd srcs && docker compose build && docker compose up -d
-#	TODO: Might need to remove the -d?
+
+f:
+	@echo "Building the services and starting them in foreground"
+	@cd srcs && docker compose build && docker compose up
 
 clean:
-	@echo "Stopping services and their network, keeping volumes"
-#	docker compose down -> stops containers and removes containers, networks,
-#	volumes and images created by up but doesn't delete persistent data
+	@echo "Stopping services and their network, keeping volumes and images"
 	@cd srcs && docker compose down
 
 fclean:
-	@echo "Stopping services and their network, deleting volumes"
-#	docker compose down -> stops containers and removes containers, networks,
-#	volumes and images created by up and deletes persistent data
+	@echo "Stopping services and their network, deleting volumes and images"
 	@cd srcs && docker compose down -v
 	@docker system prune --all
 
-re: fclean all
+re: clean all
 
-reset: clean all
+fre: clean f
+
+reset: fclean all
+
+freset: fclean f

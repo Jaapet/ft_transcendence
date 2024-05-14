@@ -1,0 +1,223 @@
+
+
+.videoBackground {	/* to make full gif appear*/
+    position: relative;
+    width: 95vw;
+    height: 95vh ;
+    overflow: hidden;
+}
+
+.videoBackground iframe {	/*background gif*/
+	position: absolute;
+    width: 560px;
+    height: 600px;
+    top: 50%;
+    left: 50%;
+	transform: translate(-40%, -50%);
+	z-index: 0;
+	
+}
+
+.videoOverlay {		/*background black*/
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 1); 
+    z-index: -1; /*black is under the video*/
+}
+
+@keyframes glow {
+	0% { color: rgba(238, 179, 19, 0.7); }
+    50% { color: rgb(255, 238, 0); }
+    100% { color: rgba(238, 179, 19, 0.7); }
+}
+
+@font-face {
+    font-family: "title font";
+    src: url("../public/fonts/Static.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "buttons";
+    src: url("../public/fonts/xtrusion.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "nav bar";
+    src: url("../public/fonts/LittleLordFontleroyNF.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "tmplogo";
+    src: url("../public/fonts/ALBAS___.TTF") format("truetype");
+}
+
+@font-face {
+    font-family: "random little things";
+    src: url("../public/fonts/EuropeanTypewriter.ttf") format("truetype");
+}
+
+.title{
+	position: absolute;
+	text-align: center;
+	font-size: 50px;
+    z-index: 2; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%);
+    
+	background: linear-gradient(to right, #ff8a00, #e52e71);
+	-webkit-background-clip: text;
+	color:transparent;
+	font-family: "title font", sans-serif;
+}
+
+.buttons {
+	text-align:center;
+}
+
+.button {
+    display: inline;
+    background: linear-gradient(to right, #ad5df8, #beb89e);
+    -webkit-background-clip: text;
+	color:transparent;
+    text-decoration:none;
+    margin-right: 32px;
+	position: relative; 
+	top: 2cm;
+	font-family: "buttons", sans-serif;
+	transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    color: #eeb313;
+	animation: glow 1s infinite; 
+}
+
+
+/* nav bar */
+.navbarStyle {
+	position:fixed;
+     background-image: url('../public/images/bubbles.jpg');
+    padding:0;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 2cm;
+	z-index: 999; 
+}
+
+.logo h1 {
+    color: rgb(255, 255, 255);
+	font-family: "tmplogo";
+	font-size: 28px;
+    margin: 0;
+    padding: 0;
+}
+
+.menu {
+	text-align:center;
+    list-style-type: none;
+    position: relative;
+	bottom: 40px;
+}
+
+.menu li {
+    display:inline;
+    margin: 40px;
+}
+
+.menu li a {
+	text-decoration: none;
+    color: rgba(255, 255, 255, 0.705);
+    font-size: 30px;
+	font-family:'tmplogo';
+}
+
+.menu li a:hover {
+	color: #eeb313;
+	animation: glow 1.5s infinite;
+}
+
+
+.profileContainer {
+    position: relative;
+	z-index: 1000;
+}
+
+.dropdown {
+    position: fixed;
+	right: 2.0cm;
+	top: 0.7cm;
+}
+
+.dropbtn {
+    background-color: transparent;
+    font-size: 16px;
+    border:none;
+    cursor: pointer;
+    z-index: 1001;
+	width: 0.7cm;
+}
+
+
+.dropdownContent {
+	position: fixed;
+	right: 2cm;
+    display: none;
+    background-color: #917d8f;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1000;
+	border-radius: 5px;
+	border: 1px solid #420707;
+}
+
+.dropdownContent a {
+    color: rgb(0, 0, 0);
+    padding: 6px;
+    text-decoration: none;
+    display:block;
+	font-family: 'random little things';
+}
+
+
+.dropdownContent a:hover {
+    background-color: #420707;
+	color: #47cf97;
+	border: 1px solid #47cf97;
+
+}
+
+.dropdown:hover .dropdownContent {
+    display:block;
+}
+
+.dropdown:hover .dropbtn {
+	filter: hue-rotate(-300deg); /*change later*/
+}
+
+
+
+.profilePicture {
+    position: fixed;
+    top: 10px; 
+    right: 10px; 
+    z-index: 1000;
+
+	/*border*/
+    width: 50px; 
+    height: 50px; 
+    border-radius: 50%; 
+    border: 2px solid rgb(0, 0, 0);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    overflow: hidden; 
+}
+
+.profilePicture img { /*center image into border*/
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+}

@@ -14,15 +14,29 @@ FROM		python:3.8-alpine
 
 LABEL		author="thepaqui@student.42nice.fr"
 
-COPY		conf/ ./
+ENV			PIP_DISABLE_PIP_VERSION_CHECK 1
 
-RUN			apk add --no-cache build-base && \
-			pip install --upgrade pip && \
-			pip install --no-cache-dir -r ./requirements.txt
+ENV			PYTHONDONTWRITEBYTECODE 1
 
-WORKDIR		./backend
+ENV			PYTHONUNBUFFERED 1
+
+#COPY		conf/backend /usr/app
+
+WORKDIR		/usr/app
+
+RUN			apk add --no-cache \
+				build-base \
+				libpq-dev && \
+			pip install --upgrade \
+				pip && \
+			pip install --no-cache-dir \
+				django \
+				djangorestframework \
+				django-extensions \
+				django-cors-headers \
+				psycopg2 \
+				pillow
 
 EXPOSE		8000
 
-#TODO: make a script that can also make db migrations before running the server!
 ENTRYPOINT	["python", "manage.py", "runserver", "0.0.0.0:8000"]

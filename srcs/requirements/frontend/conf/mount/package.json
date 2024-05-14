@@ -1,0 +1,18 @@
+{
+  "name": "ft_transcendance",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "scripts": {
+    "dev": "next dev"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "next": "^12.3.4",
+    "react": "^18.0.0",
+    "react-bootstrap": "^2.10.2",
+    "react-dom": "^18.0.0"
+  },
+  "author": "uwu c'est moi uwu",
+  "license": "ISC"
+}

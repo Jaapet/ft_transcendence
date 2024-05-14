@@ -1,32 +1,27 @@
 services:
+  db:
+    container_name: db
+    image: postgres:14.11
+    env_file:
+      - .env
+    volumes:
+      - ./requirements/db:/var/lib/postgresql/data
+    restart: unless-stopped
 
   backend:
     build: ./requirements/backend
     container_name: backend
     image: backend
 #    Prefixe 50XPP   X est lié à vous X pour Theo = 2, PP Correspond au service web = 80
-#    ports:
-#      - "50280:8000"
+    ports:
+      - "50280:8000"
     env_file:
       - .env
-    #depends_on:
-      #- db
+    volumes:
+      - ./requirements/backend/conf:/usr/app
+    depends_on:
+      - db
     restart: unless-stopped
-
-#  db:
-#    container_name: db
-#    image: postgres:14.11
-#    env_file:
-#      - .env
-#    environment:
-#      - TZ=Europe/Paris
-#      - POSTGRES_PASSWORD=toto
-#      - POSTGRES_DB=transcendence
-#    volumes:
-#      - ./data/db:/var/lib/postgresql/data
-#    networks:
-#      - backend
-#    restart: unless-stopped
 
   frontend:
     build: ./requirements/frontend
@@ -34,9 +29,11 @@ services:
     image: frontend
 #    Prefixe 50XPP   X est lié à vous X pour Theo = 2, PP Correspond au service web = 80
     ports:
-      - "50280:3000"
+      - "50281:3000"
     env_file:
       - .env
+    volumes:
+      - ./requirements/frontend/conf/mount:/app/src
     depends_on:
       - backend
     restart: unless-stopped
