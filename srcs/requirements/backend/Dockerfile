@@ -26,17 +26,22 @@ WORKDIR		/usr/app
 
 RUN			apk add --no-cache \
 				build-base \
-				libpq-dev && \
+				libpq-dev \
+			&& \
 			pip install --upgrade \
-				pip && \
+				pip \
+			&& \
 			pip install --no-cache-dir \
 				django \
 				djangorestframework \
+				djangorestframework_simplejwt \
 				django-extensions \
 				django-cors-headers \
 				psycopg2 \
 				pillow
 
+COPY		conf/start.sh ../
+
 EXPOSE		8000
 
-ENTRYPOINT	["python", "manage.py", "runserver", "0.0.0.0:8000"]
+ENTRYPOINT	["sh", "../start.sh"]

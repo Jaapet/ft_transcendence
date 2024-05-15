@@ -1,13 +1,11 @@
 #!/bin/bash
 
-echo "salut"
+echo "Initializing Next.js"
 
 until [ -d /app/src ]
 do
 	sleep 2
 done
-
-echo "src exists"
 
 cd /app/src
 
@@ -16,12 +14,7 @@ do
 	sleep 2
 done
 
-echo "package.json exists"
-
+echo "Installing dependencies"
 npm install
-
-echo "installed deps"
-
-echo "launching"
 
 npm run dev
