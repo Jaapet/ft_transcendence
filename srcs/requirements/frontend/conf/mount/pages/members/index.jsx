@@ -56,7 +56,7 @@ const MemberTable = ({ members }) => {
 export default function Members({ members }) {
 	if (!members) {
 		return (
-			<div>
+			<div align="center">
 				<p>Something went wrong...</p>
 				<p>Please reload the page.</p>
 			</div>
@@ -83,9 +83,9 @@ Each member has the following data:
 - is_admin			(bool)
 */
 export async function getServerSideProps({ params }) {
-	const result = await fetch('http://backend:8000/members/');
+	const result = await fetch('http://backend:8000/api/members/');
 
-	if (result.status == 403) {
+	if (result.status != 200) {
 		return {
 			props: {
 				members: null

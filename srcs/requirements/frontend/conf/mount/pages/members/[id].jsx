@@ -63,9 +63,9 @@ Each member has the following data:
 */
 export async function getServerSideProps(context) {
 	const { id } = context.params;
-	const result = await fetch(`http://backend:8000/members/${id}`);
+	const result = await fetch(`http://backend:8000/api/members/${id}`);
 
-	if (result.status == 403) {
+	if (result.status != 200) {
 		return {
 			props: {
 				member: null

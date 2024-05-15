@@ -32,7 +32,7 @@ const Profile = ({ profile }) => {
 
 export async function getServerSideProps(context) {
   const { id } = context.query;
-  const res = await fetch(`http://backend:8000/members/${id}`);
+  const res = await fetch(`http://backend:8000/api/members/${id}`);
 
   if (!res.ok) {
     return {
