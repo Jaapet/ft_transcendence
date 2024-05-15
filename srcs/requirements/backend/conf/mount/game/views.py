@@ -3,25 +3,22 @@ from rest_framework import viewsets, permissions
 from .serializers import MemberSerializer, MatchSerializer
 
 # TEST
-from rest_framework.views import APIView
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 
-# TODO: protect these later!
-
 class MemberViewSet(viewsets.ModelViewSet):
-	queryset = Member.objects.all().order_by('username')
-	serializer_class = MemberSerializer
 	permission_classes = [permissions.IsAuthenticated]
+	serializer_class = MemberSerializer
+	queryset = Member.objects.all().order_by('username')
 
 class MatchViewSet(viewsets.ModelViewSet):
-	queryset = Match.objects.all().select_related("player1", "player2").order_by('end_datetime')
+	permission_classes = [permissions.IsAuthenticated]
 	serializer_class = MatchSerializer
-	permission_classes = [permissions.IsAuthenticated]
+	queryset = Match.objects.all().select_related("player1", "player2").order_by('end_datetime')
 
-# TEST
-class HelloView(APIView):
+class MemberAPIView(RetrieveAPIView):
 	permission_classes = [permissions.IsAuthenticated]
+	serializer_class = MemberSerializer
 
-	def get(self, request):
-		content = {'message', 'Hello World!'}
-		return Response(content)
+	def get_object(self):
+		return self.request.user
