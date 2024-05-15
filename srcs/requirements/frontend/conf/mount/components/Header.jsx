@@ -20,7 +20,6 @@ const ProfilePicture = () => {
             alt={"Your avatar"}
             width={40}
             height={40}
-            placeholder={"blur"}
             style={{
                 borderRadius: '50%',
                 marginLeft: '10px'
