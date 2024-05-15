@@ -15,7 +15,6 @@
     left: 50%;
 	transform: translate(-40%, -50%);
 	z-index: 0;
-	
 }
 
 .videoOverlay {		/*background black*/
@@ -42,16 +41,6 @@
 @font-face {
     font-family: "buttons";
     src: url("../public/fonts/xtrusion.ttf") format("truetype");
-}
-
-@font-face {
-    font-family: "nav bar";
-    src: url("../public/fonts/LittleLordFontleroyNF.ttf") format("truetype");
-}
-
-@font-face {
-    font-family: "tmplogo";
-    src: url("../public/fonts/ALBAS___.TTF") format("truetype");
 }
 
 @font-face {
@@ -97,20 +86,3 @@
 	animation: glow 1s infinite; 
 }
 
-.header {
-    position: fixed;
-	width: 100%;
-	z-index: 1000;
-}
-
-.settingIcon {
-	position: relative;
-    width: 35px;
-    height: 35px;
-    margin-right: 5px;
-
-}
-
-.menuOpen{
-	filter: brightness(0.8);
-}

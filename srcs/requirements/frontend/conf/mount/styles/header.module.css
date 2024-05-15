@@ -1,0 +1,39 @@
+@font-face {
+    font-family: "tmplogo";
+    src: url("../public/fonts/ALBAS___.TTF") format("truetype");
+}
+
+@keyframes glow {
+	0% { color: rgba(238, 179, 19, 0.7); }
+    50% { color: rgb(255, 238, 0); }
+    100% { color: rgba(238, 179, 19, 0.7); }
+}
+
+.logo {
+	font-size: 28px;
+	color: #ffffff; 
+	font-family: 'tmplogo';	
+}
+
+.logo:hover{
+	animation: glow 2s infinite;
+}
+
+
+.settingIcon {
+    width: 35px;
+    height: 35px;
+    margin-right: 5px;
+}
+
+.header {
+    position: fixed;
+	width: 100%;
+	z-index: 1000;
+}
+
+
+.menuOpen{
+	filter: brightness(0.8);
+}
+
