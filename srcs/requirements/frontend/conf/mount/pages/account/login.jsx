@@ -1,5 +1,6 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import AuthenticationContext from '../../context/AuthenticationContext';
 import Link from 'next/link';
 
 const LoginFormUsernameField = ({ username, setUsername }) => {
@@ -40,16 +41,15 @@ const LoginFormPasswordField = ({ password, setPassword }) => {
 	)
 }
 
-// Continue Video 10 from 21:42
-
 const LoginFormFields = () => {
 	const [username, setUsername] = useState('')
 	const [password, setPassword] = useState('')
 
+	const {login} = useContext(AuthenticationContext)
+
 	const submitHandler = async (event) => {
-		event.preventDefault();
-		console.log("username = " + username);
-		console.log("password = " + password);
+		event.preventDefault()
+		login({username, password})
 	}
 
 	return (
