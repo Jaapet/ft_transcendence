@@ -1,5 +1,6 @@
 import React from 'react';
 import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
+import Link from 'next/link';
 import styles from '../styles/home.module.css';
 
 const Header = () => {
@@ -12,15 +13,21 @@ const Header = () => {
                     <Nav.Link href="#how-to-play">How to play</Nav.Link>
                     <Nav.Link href="#credits">Credits</Nav.Link>
                 </Nav>
-                <Nav style={{ marginLeft: '36cm' }}>
-                    <NavDropdown title={<img src="/images/setting.png" alt="User Menu" className={styles.settingIcon} />} style={{position: 'relative'}}id="basic-nav-dropdown">
-                        <NavDropdown.Item href="#profile">My Profile</NavDropdown.Item>
-                        <NavDropdown.Item href="#logout">Log out</NavDropdown.Item>
+                <Nav className="ml-auto"> {/* Updated to align items to the right */}
+                    <NavDropdown title={<img src="/images/setting.png" alt="User Menu" className={styles.settingIcon} />} id="basic-nav-dropdown">
+                        <Link href="/profile" passHref>
+                            <NavDropdown.Item as="a">My Profile</NavDropdown.Item>
+                        </Link>
+                        <Link href="/logout" passHref>
+                            <NavDropdown.Item as="a">Log out</NavDropdown.Item>
+                        </Link>
                         <NavDropdown.Divider />
-                        <NavDropdown.Item href="#special-thanks">Special thanks</NavDropdown.Item>
+                        <Link href="/special-thanks" passHref>
+                            <NavDropdown.Item as="a">Special thanks</NavDropdown.Item>
+                        </Link>
                     </NavDropdown>
                     <Nav.Link>
-                        <img src="images/rachid.jpg" style={{ borderRadius: '50%', width: '40px', height: '40px', marginLeft: '10px' }} />
+                        <img src="/images/rachid.jpg" style={{ borderRadius: '50%', width: '40px', height: '40px', marginLeft: '10px' }} />
                     </Nav.Link>
                 </Nav>
             </Navbar>
@@ -29,3 +36,4 @@ const Header = () => {
 };
 
 export default Header;
+

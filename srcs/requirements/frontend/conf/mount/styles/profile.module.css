@@ -1,0 +1,23 @@
+.container {
+	padding: 20px;
+	background-color: #f4f4f4;
+	min-height: 100vh;
+  }
+  
+  .profileDetails {
+	display: flex;
+	align-items: center;
+	margin-top: 20px;
+  }
+  
+  .profilePicture {
+	border-radius: 50%;
+	width: 150px;
+	height: 150px;
+	margin-right: 20px;
+  }
+  
+  .info {
+	font-size: 1.2em;
+  }
+  
