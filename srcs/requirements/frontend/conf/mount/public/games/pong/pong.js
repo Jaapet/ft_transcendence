@@ -20,7 +20,8 @@ function main()
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x111111);
   const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-  camera.position.set(0, 150, 20);
+  /// possibiliter de tourner chaque user de son coter
+  camera.position.set(0, 50, 10);
   camera.position.z = 50;
 
 
@@ -108,6 +109,12 @@ function main()
 
   const objects = [];
   const raquettes = [];
+  const raquettesmove = [];
+  raquettesmove[0] = 0;
+  raquettesmove[1] = 0;
+
+  raquettesmove[2] = 0;
+  raquettesmove[3] = 0;
 
   addball(0, 2, 4, makeObj(ball, texture));
   addcube(-42, 2, 0, new THREE.Mesh(cube, cubeMaterial));
@@ -124,11 +131,27 @@ function main()
     switch (event.key) {
         case "w":
         case "W":
-            raquettes[0].position.z -= 1;
+            
+            raquettesmove[0] = -1.2;
             break;
         case "s":
         case "S":
-            raquettes[0].position.z += 1;
+            
+            raquettesmove[1] = 1.2;
+            break;
+    }
+  });
+
+  document.addEventListener('keyup', function(event) {
+    console.log(event.key);
+    switch (event.key) {
+        case "w":
+        case "W":
+            raquettesmove[0] = 0;
+            break;
+        case "s":
+        case "S":
+            raquettesmove[1] = 0;
             break;
     }
   });
@@ -219,6 +242,17 @@ function main()
     const canvas = renderer.domElement;
     camera.aspect = canvas.clientWidth / canvas.clientHeight;
     camera.updateProjectionMatrix();
+
+    if (raquettes[0].position.z > -16)
+    {
+      raquettes[0].position.z += raquettesmove[0];
+    }
+    if (raquettes[0].position.z < 16)
+    {
+      raquettes[0].position.z += raquettesmove[1];
+    }
+    raquettes[1].position.z += raquettesmove[2];
+    raquettes[1].position.z += raquettesmove[3];
 
     // GESTION ROTATION ET DEPLACEMENT DE LA BOULE
     
