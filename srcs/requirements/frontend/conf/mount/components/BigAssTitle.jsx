@@ -5,7 +5,7 @@ const BigTitle = () => (
   <div className={styles.title}>
     <h1 style={{ fontSize: '5em' }}>Transcendence</h1>
     <div className={styles.buttons}>
-      <Link href="/login" passHref>
+      <Link href="/account/login" passHref>
         <a className={styles.button}>Log In</a>
       </Link>
       <Link href="/gamePage" passHref>

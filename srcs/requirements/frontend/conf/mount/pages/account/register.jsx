@@ -18,7 +18,7 @@ const SignupFormUsernameField = ({ username, setUsername }) => {
 					required />
 			</div>
 		</div>
-	)
+	);
 }
 
 const SignupFormEmailField = ({ email, setEmail }) => {
@@ -37,7 +37,7 @@ const SignupFormEmailField = ({ email, setEmail }) => {
 					required />
 			</div>
 		</div>
-	)
+	);
 }
 
 const SignupFormPasswordField = ({ password, setPassword }) => {
@@ -56,7 +56,7 @@ const SignupFormPasswordField = ({ password, setPassword }) => {
 					required />
 			</div>
 		</div>
-	)
+	);
 }
 
 /*
@@ -76,14 +76,14 @@ const SignupFormPasswordRepeatField = ({ password, setPassword }) => {
 					required />
 			</div>
 		</div>
-	)
+	);
 }
 */
 
 const SignupFormFields = () => {
-	const [username, setUsername] = useState('')
-	const [email, setEmail] = useState('')
-	const [password, setPassword] = useState('')
+	const [username, setUsername] = useState('');
+	const [email, setEmail] = useState('');
+	const [password, setPassword] = useState('');
 
 	const submitHandler = async (event) => {
 		event.preventDefault();
@@ -105,7 +105,7 @@ const SignupFormFields = () => {
 			</div>
 
 		</form>
-	)
+	);
 }
 
 const SignupForm = () => {
@@ -136,7 +136,7 @@ const SignupForm = () => {
 				</div>
 			</div>
 		</section>
-	)
+	);
 }
 
 export default function SignupPage () {
@@ -144,5 +144,5 @@ export default function SignupPage () {
 		<div>
 			<SignupForm/>
 		</div>
-	)
+	);
 }

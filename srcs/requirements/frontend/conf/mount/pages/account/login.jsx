@@ -1,5 +1,6 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import AuthenticationContext from '../../context/AuthenticationContext';
 import Link from 'next/link';
 
 const LoginFormUsernameField = ({ username, setUsername }) => {
@@ -18,7 +19,7 @@ const LoginFormUsernameField = ({ username, setUsername }) => {
 					required />
 			</div>
 		</div>
-	)
+	);
 }
 
 const LoginFormPasswordField = ({ password, setPassword }) => {
@@ -37,19 +38,18 @@ const LoginFormPasswordField = ({ password, setPassword }) => {
 					required />
 			</div>
 		</div>
-	)
+	);
 }
 
-// Continue Video 10 from 21:42
-
 const LoginFormFields = () => {
-	const [username, setUsername] = useState('')
-	const [password, setPassword] = useState('')
+	const [username, setUsername] = useState('');
+	const [password, setPassword] = useState('');
+
+	const {login} = useContext(AuthenticationContext);
 
 	const submitHandler = async (event) => {
 		event.preventDefault();
-		console.log("username = " + username);
-		console.log("password = " + password);
+		login({username, password});
 	}
 
 	return (
@@ -63,7 +63,7 @@ const LoginFormFields = () => {
 			</div>
 
 		</form>
-	)
+	);
 }
 
 const LoginForm = () => {
@@ -94,7 +94,7 @@ const LoginForm = () => {
 				</div>
 			</div>
 		</section>
-	)
+	);
 }
 
 export default function LoginPage () {
@@ -102,5 +102,5 @@ export default function LoginPage () {
 		<div>
 			<LoginForm/>
 		</div>
-	)
+	);
 }
