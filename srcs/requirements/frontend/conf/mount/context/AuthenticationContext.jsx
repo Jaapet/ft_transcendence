@@ -43,7 +43,6 @@ export const AuthenticationProvider = ({ children }) => {
 		}
 	}
 
-	// TODO: Add avatar later
 	// Register and login new user
 	const register = async ({ username, email, password, avatar }) => {
 		try {
@@ -57,10 +56,6 @@ export const AuthenticationProvider = ({ children }) => {
 
 			const response = await fetch(`/api/register`, {
 				method: 'POST',
-//				headers: {
-//					'Accept': 'application/json',
-//					'Content-Type': 'multipart/form-data'
-//				},
 				body: formData
 			});
 

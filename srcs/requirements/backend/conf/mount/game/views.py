@@ -31,15 +31,14 @@ class RegisterMemberAPIView(APIView):
 	parser_classes = [MultiPartParser]
 
 	def post(self, request, *args, **kwargs):
-		# debug
-		print("Request Body:")
-		print(request.data)
-		# debug
-
 		serializer = self.serializer_class(data=request.data, context={'request': request})
 		if serializer.is_valid():
-			serializer.save()
+			avatar_data = request.data.get('avatar')
+			serializer.save(avatar=avatar_data)
 			return Response(serializer.data, status=status.HTTP_201_CREATED)
+		print("Invalid Serializer:")
+		print(serializer)
+		print(serializer.errors)
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # Queries all matches ordered by most recently finished

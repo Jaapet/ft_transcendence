@@ -1,4 +1,5 @@
 import { IncomingForm } from 'formidable';
+import fs from 'fs';
 
 export const config = {
 	api: {
@@ -35,8 +36,14 @@ export default async (req, res) => {
 		formData.append('email', fields.email);
 		formData.append('password', fields.password);
 		if (files.avatar) {
-			formData.append('avatar', files.avatar.filepath);
+			const file = files.avatar[0];
+//			console.log('avatar:', file);
+			const fileBuffer = fs.readFileSync(file.filepath);
+			const blob = new Blob([fileBuffer], { type: file.mimetype });
+			formData.append('avatar', blob, file.originalFilename);
 		}
+
+//		console.log(formData);
 
 		// Register new user
 		const response = await fetch(`http://backend:8000/api/register/`, {
@@ -45,10 +52,9 @@ export default async (req, res) => {
 		});
 
 		if (!response.ok) {
-			throw new Error('Registration failed');
+			const responseError = await response.json();
+			throw new Error(responseError.message || 'Registration failed');
 		}
-
-		console.log(formData);
 
 		return res.status(200).json({message: "Member has been created"});
 	} catch (error) {
