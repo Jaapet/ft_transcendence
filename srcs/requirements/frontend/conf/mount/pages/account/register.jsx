@@ -1,5 +1,6 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import AuthenticationContext from '../../context/AuthenticationContext';
 import Link from 'next/link';
 
 const SignupFormUsernameField = ({ username, setUsername }) => {
@@ -15,7 +16,8 @@ const SignupFormUsernameField = ({ username, setUsername }) => {
 					className="form-control"
 					onChange={e => setUsername(e.target.value)}
 					value={username}
-					required />
+					required
+				/>
 			</div>
 		</div>
 	);
@@ -34,7 +36,8 @@ const SignupFormEmailField = ({ email, setEmail }) => {
 					className="form-control"
 					onChange={e => setEmail(e.target.value)}
 					value={email}
-					required />
+					required
+				/>
 			</div>
 		</div>
 	);
@@ -53,43 +56,67 @@ const SignupFormPasswordField = ({ password, setPassword }) => {
 					className="form-control"
 					onChange={e => setPassword(e.target.value)}
 					value={password}
-					required />
+					required
+				/>
 			</div>
 		</div>
 	);
 }
 
-/*
 const SignupFormPasswordRepeatField = ({ password, setPassword }) => {
 	return (
 		<div className="d-flex flex-row align-items-center mb-4">
 			<i className="fas fa-key fa-lg me-3 fa-fw"></i>
 			<div data-mdb-input-init className="form-outline flex-fill mb-0">
-				<label className="form-label" htmlFor="new-password">Repeat password</label>
+				<label className="form-label" htmlFor="new-passwordR">Repeat password</label>
 				<input
 					type="password"
-					id="new-password"
+					id="new-passwordR"
 					autoComplete="new-password"
 					className="form-control"
 					onChange={e => setPassword(e.target.value)}
 					value={password}
-					required />
+					required
+				/>
 			</div>
 		</div>
 	);
 }
-*/
+
+const SignupFormAvatarField = ({ avatar, setAvatar }) => {
+	return (
+		<div className="d-flex flex-row align-items-center mb-4">
+			<i className="fas fa-image fa-lg me-3 fa-fw"></i>
+			<div data-mdb-input-init className="form-outline flex-fill mb-0">
+				<label className="form-label" htmlFor="avatar">Avatar</label>
+				<input
+					type="file"
+					id="avatar"
+					className="form-control"
+					onChange={e => setAvatar(e.target.files[0])}
+				/>
+				<p defaultValue={avatar}></p>
+			</div>
+		</div>
+	);
+}
 
 const SignupFormFields = () => {
 	const [username, setUsername] = useState('');
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
+	const [passwordR, setPasswordR] = useState('');
+	const [avatar, setAvatar] = useState(null);
+
+	const {register} = useContext(AuthenticationContext);
 
 	const submitHandler = async (event) => {
 		event.preventDefault();
-		console.log("username = " + username);
-		console.log("email = " + email);
-		console.log("password = " + password);
+		if (password !== passwordR) {
+			console.error("Passwords do not match");
+			return ;
+		}
+		register({ username, email, password, avatar });
 	}
 
 	return (
@@ -98,7 +125,8 @@ const SignupFormFields = () => {
 			<SignupFormUsernameField username={username} setUsername={setUsername} />
 			<SignupFormEmailField email={email} setEmail={setEmail} />
 			<SignupFormPasswordField password={password} setPassword={setPassword} />
-			{/*<SignupFormPasswordRepeatField/>*/}
+			<SignupFormPasswordRepeatField password={passwordR} setPassword={setPasswordR} />
+			<SignupFormAvatarField avatar={avatar} setAvatar={setAvatar} />
 
 			<div className="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
 				<button type="submit" data-mdb-button-init data-mdb-ripple-init className="btn btn-primary btn-lg">Register</button>

@@ -9,15 +9,20 @@ class MemberSerializer(serializers.HyperlinkedModelSerializer):
 		fields = ('url', 'id', 'username', 'password', 'email', 'avatar', 'join_date', 'is_superuser', 'is_admin')
 
 class RegisterMemberSerializer(serializers.HyperlinkedModelSerializer):
+	avatar = serializers.ImageField(required=False)
+	
 	def create(self, validated_data):
+		avatar_data = validated_data.pop('avatar', None)
 		member = Member.objects.create_user(
 			username=validated_data['username'],
 			email=validated_data['email'],
-			password=validated_data['password'],
-			avatar=validated_data['avatar']
+			password=validated_data['password']
 		)
+		if avatar_data:
+			member.avatar = avatar_data
+			member.save()
 		return member
-	
+
 	class Meta:
 		model = Member
 		fields = ('url', 'username', 'email', 'password', 'avatar')

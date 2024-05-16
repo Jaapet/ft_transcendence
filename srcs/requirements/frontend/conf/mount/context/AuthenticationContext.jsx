@@ -28,7 +28,6 @@ export const AuthenticationProvider = ({ children }) => {
 
 			const data = await response.json();
 
-			//console.log(data);
 			if (data) {
 				if (data.user) {
 					setUser(data.user);
@@ -44,8 +43,37 @@ export const AuthenticationProvider = ({ children }) => {
 		}
 	}
 
+	// TODO: Add avatar later
+	// Register and login new user
+	const register = async ({ username, email, password, avatar }) => {
+		try {
+			const formData = new FormData();
+			formData.append('username', username);
+			formData.append('email', email);
+			formData.append('password', password);
+			if (avatar) {
+				formData.append('avatar', avatar);
+			}
+
+			const response = await fetch(`/api/register`, {
+				method: 'POST',
+//				headers: {
+//					'Accept': 'application/json',
+//					'Content-Type': 'multipart/form-data'
+//				},
+				body: formData
+			});
+
+			if (response.ok) {
+				await login({ username, password });
+			}
+		} catch (error) {
+			setError(error.message);
+		}
+	}
+
 	return (
-		<AuthenticationContext.Provider value={{ user, accessToken, error, login }}>
+		<AuthenticationContext.Provider value={{ user, accessToken, error, login, register }}>
 			{children}
 		</AuthenticationContext.Provider>
 	);

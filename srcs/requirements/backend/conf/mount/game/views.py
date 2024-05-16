@@ -1,7 +1,11 @@
 from .models import Member, Match
-from rest_framework import viewsets, permissions
-from rest_framework.generics import RetrieveAPIView, CreateAPIView
+from rest_framework import viewsets, permissions, status
+from rest_framework.views import APIView
+from rest_framework.generics import RetrieveAPIView
+from rest_framework.parsers import MultiPartParser
+from rest_framework.response import Response
 from .serializers import MemberSerializer, RegisterMemberSerializer, MatchSerializer
+import json
 
 # Queries all members ordered by username
 # Requires authentication
@@ -21,9 +25,22 @@ class MemberAPIView(RetrieveAPIView):
 
 # Creates one member
 # Used for registration
-class RegisterMemberAPIView(CreateAPIView):
+class RegisterMemberAPIView(APIView):
 	permission_classes = [permissions.AllowAny]
 	serializer_class = RegisterMemberSerializer
+	parser_classes = [MultiPartParser]
+
+	def post(self, request, *args, **kwargs):
+		# debug
+		print("Request Body:")
+		print(request.data)
+		# debug
+
+		serializer = self.serializer_class(data=request.data, context={'request': request})
+		if serializer.is_valid():
+			serializer.save()
+			return Response(serializer.data, status=status.HTTP_201_CREATED)
+		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # Queries all matches ordered by most recently finished
 # Requires authentication
