@@ -8,6 +8,20 @@ class MemberSerializer(serializers.HyperlinkedModelSerializer):
 		model = Member
 		fields = ('url', 'id', 'username', 'password', 'email', 'avatar', 'join_date', 'is_superuser', 'is_admin')
 
+class RegisterMemberSerializer(serializers.HyperlinkedModelSerializer):
+	def create(self, validated_data):
+		member = Member.objects.create_user(
+			username=validated_data['username'],
+			email=validated_data['email'],
+			password=validated_data['password'],
+			avatar=validated_data['avatar']
+		)
+		return member
+	
+	class Meta:
+		model = Member
+		fields = ('url', 'username', 'email', 'password', 'avatar')
+
 # This one is fine
 class MatchSerializer(serializers.HyperlinkedModelSerializer):
 	class Meta:
