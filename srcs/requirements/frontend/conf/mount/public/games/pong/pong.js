@@ -101,10 +101,9 @@ function main()
 
   
   // BALL
-  const radius =  2;  
-  const detail = 5;  
+  const radius =  2;
+  const detail = 5;
   const ball = new THREE.IcosahedronGeometry( radius, detail );
-  
 
   const objects = [];
   const raquettes = [];
