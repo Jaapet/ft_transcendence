@@ -1,4 +1,4 @@
-import { createContext, useState } from 'react';
+import { createContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
 const AuthenticationContext = createContext();
@@ -9,6 +9,14 @@ export const AuthenticationProvider = ({ children }) => {
 	const [error, setError] = useState(null);
 
 	const router = useRouter();
+
+	// When page loads, will check if user is logged in
+	useEffect(() => {
+		const loginRefresh = async () => {
+			await isLoggedIn();
+		}
+		loginRefresh();
+	}, []);
 
 	// Login user
 	const login = async ({ username, password }) => {
@@ -28,16 +36,34 @@ export const AuthenticationProvider = ({ children }) => {
 
 			const data = await response.json();
 
-			if (data) {
-				if (data.user) {
-					setUser(data.user);
-				}
-				if (data.access) {
-					setAccessToken(data.access);
-				}
+			if (!data || !data.user || !data.access) {
+				throw new Error('Login failed');
 			}
 
-			 router.push('/');
+			setUser(data.user);
+			setAccessToken(data.access);
+
+			router.push('/');
+		} catch (error) {
+			setError(error.message);
+		}
+	}
+
+	// Logout user
+	const logout = async () => {
+		try {
+			const response = await fetch(`/api/logout`, {
+				method: 'POST'
+			});
+
+			if (!response.ok) {
+				throw new Error('Logout failed');
+			}
+
+			setUser(null);
+			setAccessToken(null);
+
+			router.push('/');
 		} catch (error) {
 			setError(error.message);
 		}
@@ -68,8 +94,33 @@ export const AuthenticationProvider = ({ children }) => {
 		}
 	}
 
+	// Login refresh => Check if refresh token is in cookies and
+	// refresh data fetches to backend if that's the case
+	const isLoggedIn = async () => {
+		try {
+			const response = await fetch(`/api/user`, {
+				method: 'POST'
+			});
+
+			if (!response.ok) {
+				throw new Error('Login refresh failed');
+			}
+
+			const data = await response.json();
+
+			if (!data || !data.user || !data.access) {
+				throw new Error('Login refresh failed');
+			}
+
+			setUser(data.user);
+			setAccessToken(data.access);
+		} catch (error) {
+			setError(error.message);
+		}
+	}
+
 	return (
-		<AuthenticationContext.Provider value={{ user, accessToken, error, login, register }}>
+		<AuthenticationContext.Provider value={{ user, accessToken, error, login, logout, register }}>
 			{children}
 		</AuthenticationContext.Provider>
 	);

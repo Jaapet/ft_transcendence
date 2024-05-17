@@ -23,7 +23,7 @@ export default async (req, res) => {
 	// Only POST allowed
 	if (req.method !== 'POST') {
 		res.setHeader('Allow', ['POST']);
-		return res.status(405).json({message: `Method ${req.method} is not allowed`});
+		return res.status(405).json({ message: 'Method ${req.method} is not allowed' });
 	}
 
 	let formData = null;
@@ -43,7 +43,7 @@ export default async (req, res) => {
 			formData.append('avatar', blob, file.originalFilename);
 		}
 
-		console.log(formData); ///
+//		console.log(formData);
 
 		// Register new user
 		const response = await fetch(`http://backend:8000/api/register/`, {
@@ -56,7 +56,7 @@ export default async (req, res) => {
 			throw new Error(responseError.message || 'Registration failed');
 		}
 
-		return res.status(200).json({message: "Member has been created"});
+		return res.status(200).json({ message: 'Member has been created' });
 	} catch (error) {
 		console.error('Error during registration:', error);
 		return res.status(500).json({ message: 'Registration failed' });
