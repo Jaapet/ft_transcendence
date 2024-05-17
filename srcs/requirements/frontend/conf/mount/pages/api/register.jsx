@@ -43,7 +43,7 @@ export default async (req, res) => {
 			formData.append('avatar', blob, file.originalFilename);
 		}
 
-//		console.log(formData);
+		console.log(formData); ///
 
 		// Register new user
 		const response = await fetch(`http://backend:8000/api/register/`, {
