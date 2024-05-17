@@ -30,12 +30,14 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 
+# Set my custom Member model as default user class for auth
 AUTH_USER_MODEL = 'game.Member'
 
+# Set where user uploads are stored
 MEDIA_ROOT = "/usr/app/backend/media"
-
 MEDIA_URL = "/media/"
 
+# Configuration of REST
 REST_FRAMEWORK = {
 	'DEFAULT_AUTHENTICATION_CLASSES': [
 		'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -46,7 +48,6 @@ REST_FRAMEWORK = {
 
 INSTALLED_APPS = [
     'rest_framework',
-    'django_extensions',
     'corsheaders',
     'game',
     'django.contrib.admin',
@@ -68,8 +69,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
-
+# CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
 	"http://frontend:3000", # Next.js
 ]
@@ -97,8 +97,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-
-# TODO: This does not fucking work
+# Establishing a link with Postgres
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -110,9 +109,9 @@ DATABASES = {
     }
 }
 
+# TODO: Check this out
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -128,18 +127,18 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
-
-USE_I18N = True
-
+TIME_ZONE = 'Europe/Paris'
 USE_TZ = True
 
+# No support for translation packs, only 1 language supported
+USE_I18N = False
+# Support for localization (change date format based on user locale for example)
+USE_L10N = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/

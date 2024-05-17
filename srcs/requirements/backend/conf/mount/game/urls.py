@@ -3,6 +3,9 @@ from rest_framework import routers
 from .views import MemberViewSet, MemberAPIView, RegisterMemberAPIView, MatchViewSet
 from rest_framework_simplejwt import views as jwt_views
 
+# Every route defined here will be prefixed with api/
+# Check ../backend/urls.py for more info
+
 router = routers.DefaultRouter()
 router.register(r'members', MemberViewSet)
 router.register(r'matches', MatchViewSet)

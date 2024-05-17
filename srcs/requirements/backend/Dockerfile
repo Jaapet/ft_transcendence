@@ -35,10 +35,12 @@ RUN			apk add --no-cache \
 				django \
 				djangorestframework \
 				djangorestframework_simplejwt \
-				django-extensions \
 				django-cors-headers \
 				psycopg2 \
 				pillow
+
+# psycopg2 if for postgres
+# pillow is required for ImageField to work
 
 COPY		conf/start.sh ../
 
