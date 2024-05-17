@@ -54,6 +54,7 @@ export const AuthenticationProvider = ({ children }) => {
 				formData.append('avatar', avatar);
 			}
 
+			console.log(username);
 			const response = await fetch(`/api/register`, {
 				method: 'POST',
 				body: formData
