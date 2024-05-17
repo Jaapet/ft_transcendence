@@ -46,4 +46,4 @@ class RegisterMemberAPIView(APIView):
 class MatchViewSet(viewsets.ModelViewSet):
 	permission_classes = [permissions.IsAuthenticated]
 	serializer_class = MatchSerializer
-	queryset = Match.objects.all().select_related("player1", "player2").order_by('-end_datetime')
+	queryset = Match.objects.all().select_related("winner", "loser").order_by('-end_datetime')

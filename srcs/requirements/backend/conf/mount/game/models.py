@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 
+# The create_user function will be called for each new Member
+# the create_superuser is called only for createsuperuser cmd in cli (python manage.py createsuperuser)
 class MemberManager(BaseUserManager):
 	use_in_migrations=True
 
@@ -23,11 +25,23 @@ class MemberManager(BaseUserManager):
 
 	def create_superuser(self, username, email, password=None, **extra_fields):
 		extra_fields.setdefault('is_superuser', True)
+		# This might be a useless check
 		if extra_fields.get('is_superuser') is not True:
 			raise ValueError('Superuser must have is_superuser=True.')
 		return self._create_user(username, email, True, password, **extra_fields)
 
-# TODO: Check out Field.validators
+# Member objects contain:
+# - username	(CharField)
+# - email		(EmailField)
+# - avatar		(ImageField)
+# - join_date	(DateField)
+# - is_admin	(booleanField)
+# - everything else is from AbstractBaseUser
+#
+# Indexed on:
+# - username
+# - join_date + username
+# - DESC join_date + username
 class Member(AbstractBaseUser, PermissionsMixin):
 	username = models.CharField(
 		max_length=25,
@@ -47,7 +61,6 @@ class Member(AbstractBaseUser, PermissionsMixin):
 		verbose_name="Email address"
 	)
 
-	#TODO: Check if this works
 	avatar = models.ImageField(
 		upload_to="%Y/%m/%d",
 		default="default.png",
@@ -69,7 +82,9 @@ class Member(AbstractBaseUser, PermissionsMixin):
 
 	objects = MemberManager()
 
+	# Required for extending AbstractBaseUser
 	USERNAME_FIELD = "username"
+	# Username is required by default so no need to repeat it
 	REQUIRED_FIELDS = ["email"]
 
 	class Meta:
@@ -77,7 +92,8 @@ class Member(AbstractBaseUser, PermissionsMixin):
 		verbose_name_plural = "members"
 		indexes = [
 			models.Index(fields=["username"], name="username_idx"),
-			models.Index(fields=["join_date", "username"], name="join_date_idx")
+			models.Index(fields=["join_date", "username"], name="join_date_idx"),
+			models.Index(fields=["-join_date", "username"], name="join_date_rev_idx")
 		]
 
 	def __str__(self):
@@ -87,45 +103,59 @@ class Member(AbstractBaseUser, PermissionsMixin):
 	def is_staff(self):
 		return self.is_admin
 
+# Match objects contain:
+# - winner			(Member Foreign Key)
+# - loser			(Member Foreign Key)
+# - winner_score	(IntegerField)
+# - loser_score		(IntegerField)
+# - start_datetime	(DateTimeField)
+# - end_datetime	(DateTimeField)
+#
+# Indexed on:
+# - winner
+# - loser
+# - end_datetime
+# TODO: Index on players in either winner or loser
+# TODO: Index on end_datetime + players in either winner or loser
 class Match(models.Model):
-	player1 = models.ForeignKey(
+	winner = models.ForeignKey(
 		Member,
 		null=True,
 		on_delete=models.SET_NULL,
-		related_name='matches_as_p1',
-		db_comment="First player in a match",
-		verbose_name="Player 1"
+		related_name='matches_won',
+		db_comment="Winner of the match",
+		verbose_name="Winner"
 	)
 
-	player2 = models.ForeignKey(
+	loser = models.ForeignKey(
 		Member,
 		null=True,
 		on_delete=models.SET_NULL,
-		related_name='matches_as_p2',
-		db_comment="Second player in a match",
-		verbose_name="Player 2"
+		related_name='matches_lost',
+		db_comment="Loser of the match",
+		verbose_name="Loser"
 	)
 
-	score1 = models.IntegerField(
+	winner_score = models.IntegerField(
 		default=0,
-		db_comment="First player's score in a match",
-		verbose_name="Player 1's score"
+		db_comment="Winner's score in the match",
+		verbose_name="Winner's score"
 	)
 
-	score2 = models.IntegerField(
+	loser_score = models.IntegerField(
 		default=0,
-		db_comment="Second player's score in a match",
-		verbose_name="Player 2's score"
+		db_comment="Loser's score in the match",
+		verbose_name="Loser's score"
 	)
 
 	start_datetime = models.DateTimeField(
 		auto_now_add=True,
-		db_comment="Date and time of start of the match",
+		db_comment="Date and time of the start of the match",
 		verbose_name="Start of match"
 	)
 
 	end_datetime = models.DateTimeField(
-		db_comment="Date and time of end of the match",
+		db_comment="Date and time of the end of the match",
 		verbose_name="End of match"
 	)
 
@@ -133,9 +163,16 @@ class Match(models.Model):
 		verbose_name = "match"
 		verbose_name_plural = "matches"
 		indexes = [
-			models.Index(fields=["player1", "player2"], name="players_idx"),
+			models.Index(fields=["winner"], name="winner_idx"),
+			models.Index(fields=["loser"], name="loser_idx"),
 			models.Index(fields=["end_datetime"], name="date_idx")
 		]
 
 	def __str__(self):
-		return f"{self.player1.username} vs {self.player2.username} ({self.id})"
+		winner_name = "Deleted member"
+		loser_name = "Deleted member"
+		if (self.winner):
+			winner_name = self.winner.username
+		if (self.loser):
+			loser_name = self.loser.username
+		return f"{winner_name} vs {loser_name} ({self.winner_score}-{self.loser_score})"

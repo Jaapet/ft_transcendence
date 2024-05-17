@@ -5,6 +5,9 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
 from .models import Member, Match
 
+# The content of this file is only used on Django Admin
+# You can ignore it for correction
+
 # New member form
 class MemberCreationForm(forms.ModelForm):
 	password1 = forms.CharField(label="Password", widget=forms.PasswordInput)
@@ -65,5 +68,5 @@ class MemberAdmin(BaseUserAdmin):
 admin.site.register(Member, MemberAdmin)
 
 class MatchAdmin(admin.ModelAdmin):
-	list_display = ("player1", "player2", "start_datetime", "end_datetime")
+	list_display = ("winner", "loser", "start_datetime", "end_datetime")
 admin.site.register(Match, MatchAdmin)
