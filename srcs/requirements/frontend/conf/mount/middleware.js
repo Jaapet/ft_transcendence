@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+// TODO: Stop logged in user from accessing login and register pages!
+
 export function middleware(req) {
 	const isLoginPage = req.url.includes('/login') || req.url.includes('/register');
 	const isLoggedIn = req.cookies.get('refresh');
