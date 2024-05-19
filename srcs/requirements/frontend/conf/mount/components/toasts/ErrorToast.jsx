@@ -1,15 +1,18 @@
 import Toast from 'react-bootstrap/Toast';
 
-const ErrorToast = ({ show, setShow, message }) => {
-	const toggle = () => setShow(!show);
+const ErrorToast = ({ name, show, setShow, error, setError }) => {
+	const toggle = () => {
+		setShow(!show);
+		setError(null);
+	}
 
 	return (
 		<Toast show={show} onClose={toggle} bg="danger">
 			<Toast.Header>
-				<strong className="me-auto">Error</strong>
+				<strong className="me-auto">{name}</strong>
 			</Toast.Header>
 			<Toast.Body className="text-white">
-				{message}
+				{error}
 			</Toast.Body>
 		</Toast>
 	);
