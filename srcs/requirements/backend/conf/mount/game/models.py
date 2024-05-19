@@ -36,6 +36,7 @@ class MemberManager(BaseUserManager):
 # - avatar		(ImageField)
 # - join_date	(DateField)
 # - is_admin	(booleanField)
+# - TODO: Friend list
 # - everything else is from AbstractBaseUser
 #
 # Indexed on:
