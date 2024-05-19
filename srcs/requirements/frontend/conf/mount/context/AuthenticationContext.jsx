@@ -136,8 +136,12 @@ export const AuthenticationProvider = ({ children }) => {
 		}
 	}
 
+	const clearError = () => {
+		setError(null);
+	}
+
 	return (
-		<AuthenticationContext.Provider value={{ user, accessToken, error, setError, login, logout, register }}>
+		<AuthenticationContext.Provider value={{ user, accessToken, error, setError, clearError, login, logout, register }}>
 			{children}
 		</AuthenticationContext.Provider>
 	);

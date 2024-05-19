@@ -85,7 +85,21 @@ const SignupFormPasswordRepeatField = ({ password, setPassword }) => {
 	);
 }
 
-const SignupFormAvatarField = ({ avatar, setAvatar }) => {
+const SignupFormAvatarField = ({ avatar, setAvatar, setError }) => {
+	const megabytes = 10; // 10MB
+	const maxFileSize = megabytes * 1024 * 1024;
+
+	const handleFileUpload = (e) => {
+		const file = e.target.files[0];
+		if (file && file.size > maxFileSize) {
+			setError(`File size must be under ${megabytes} MB`);
+			e.target.value = null;
+			setAvatar(null);
+		} else {
+			setAvatar(file);
+		}
+	}
+
 	return (
 		<div className="d-flex flex-row align-items-center mb-4">
 			<i className="fas fa-image fa-lg me-3 fa-fw"></i>
@@ -95,7 +109,7 @@ const SignupFormAvatarField = ({ avatar, setAvatar }) => {
 					type="file"
 					id="avatar"
 					className="form-control"
-					onChange={e => setAvatar(e.target.files[0])}
+					onChange={handleFileUpload}
 				/>
 				<p defaultValue={avatar}></p>
 			</div>
@@ -109,7 +123,8 @@ const SignupFormFields = ({
 	password, setPassword,
 	passwordR, setPasswordR,
 	avatar, setAvatar,
-	submitHandler
+	submitHandler,
+	setError
 }) => {
 	return (
 		<form className="mx-1 mx-md-4" onSubmit={submitHandler}>
@@ -118,7 +133,7 @@ const SignupFormFields = ({
 			<SignupFormEmailField email={email} setEmail={setEmail} />
 			<SignupFormPasswordField password={password} setPassword={setPassword} />
 			<SignupFormPasswordRepeatField password={passwordR} setPassword={setPasswordR} />
-			<SignupFormAvatarField avatar={avatar} setAvatar={setAvatar} />
+			<SignupFormAvatarField avatar={avatar} setAvatar={setAvatar} setError={setError} />
 
 			<div className="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
 				<button type="submit" data-mdb-button-init data-mdb-ripple-init className="btn btn-primary btn-lg">Register</button>
@@ -128,10 +143,10 @@ const SignupFormFields = ({
 	);
 }
 
-const SignupToasts = ({ showError, setShowError, error, setError }) => {
+const SignupToasts = ({ showError, setShowError, errorMessage }) => {
 	return (
 		<ToastList>
-			<ErrorToast name="Registration failed" show={showError} setShow={setShowError} error={error} setError={setError} />
+			<ErrorToast name="Registration failed" show={showError} setShow={setShowError} errorMessage={errorMessage} />
 		</ToastList>
 	);
 }
@@ -143,13 +158,16 @@ const SignupForm = () => {
 	const [passwordR, setPasswordR] = useState('');
 	const [avatar, setAvatar] = useState(null);
 	const [showError, setShowError] = useState(false);
+	const [errorMessage, setErrorMessage] = useState('');
 
-	const { register, error, setError } = useContext(AuthenticationContext);
+	const { register, error, setError, clearError } = useContext(AuthenticationContext);
 
 	useEffect(() => {
 		if (error) {
 			console.error(error);
+			setErrorMessage(error);
 			setShowError(true);
+			clearError();
 		}
 	}, [error]);
 
@@ -157,7 +175,6 @@ const SignupForm = () => {
 		event.preventDefault();
 		if (password !== passwordR) {
 			setError("Passwords do not match");
-			console.error(error);
 			return ;
 		}
 		register({ username, email, password, avatar });
@@ -165,7 +182,7 @@ const SignupForm = () => {
 
 	return (
 		<section className="vh-100" style={{backgroundColor: '#eee'}}>
-			<SignupToasts showError={showError} setShowError={setShowError} error={error} setError={setError} />
+			<SignupToasts showError={showError} setShowError={setShowError} errorMessage={errorMessage} />
 			<div className="container h-100">
 				<div className="row d-flex justify-content-center align-items-center h-100">
 					<div className="col-lg-12 col-xl-11">
@@ -182,6 +199,7 @@ const SignupForm = () => {
 											passwordR={passwordR} setPasswordR={setPasswordR}
 											avatar={avatar} setAvatar={setAvatar}
 											submitHandler={submitHandler}
+											setError={setError}
 										/>
 										<p className="text-center text-muted mt-5 mb-0">
 											Already have an account?&nbsp;

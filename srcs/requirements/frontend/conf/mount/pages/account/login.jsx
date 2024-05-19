@@ -62,10 +62,10 @@ const LoginFormFields = ({
 	);
 }
 
-const LoginToasts = ({ showError, setShowError, error, setError }) => {
+const LoginToasts = ({ showError, setShowError, errorMessage }) => {
 	return (
 		<ToastList>
-			<ErrorToast name="Login failed" show={showError} setShow={setShowError} error={error} setError={setError} />
+			<ErrorToast name="Login failed" show={showError} setShow={setShowError} errorMessage={errorMessage} />
 		</ToastList>
 	);
 }
@@ -74,13 +74,16 @@ const LoginForm = () => {
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
 	const [showError, setShowError] = useState(false);
+	const [errorMessage, setErrorMessage] = useState('');
 
-	const { login, error, setError } = useContext(AuthenticationContext);
+	const { login, error, clearError } = useContext(AuthenticationContext);
 
 	useEffect(() => {
 		if (error) {
 			console.error(error);
+			setErrorMessage(error);
 			setShowError(true);
+			clearError();
 			setUsername('');
 			setPassword('');
 		}
@@ -93,7 +96,7 @@ const LoginForm = () => {
 
 	return (
 		<section className="vh-100" style={{backgroundColor: '#eee'}}>
-			<LoginToasts showError={showError} setShowError={setShowError} error={error} setError={setError} />
+			<LoginToasts showError={showError} setShowError={setShowError} errorMessage={errorMessage} />
 			<div className="container h-100">
 				<div className="row d-flex justify-content-center align-items-center h-100">
 					<div className="col-lg-12 col-xl-11">

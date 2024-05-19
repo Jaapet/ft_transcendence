@@ -1,9 +1,8 @@
 import Toast from 'react-bootstrap/Toast';
 
-const ErrorToast = ({ name, show, setShow, error, setError }) => {
+const ErrorToast = ({ name, show, setShow, errorMessage }) => {
 	const toggle = () => {
 		setShow(!show);
-		setError(null);
 	}
 
 	return (
@@ -12,7 +11,7 @@ const ErrorToast = ({ name, show, setShow, error, setError }) => {
 				<strong className="me-auto">{name}</strong>
 			</Toast.Header>
 			<Toast.Body className="text-white">
-				{error}
+				{errorMessage}
 			</Toast.Body>
 		</Toast>
 	);
