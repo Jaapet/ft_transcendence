@@ -14,6 +14,9 @@ export default async (req, res) => {
 	try {
 		// Get refresh token
 		const { refresh } = cookie.parse(req.headers.cookie);
+		if (!refresh) {
+			throw new Error('Could not fetch refresh token');
+		}
 
 		// Fetch access token
 		const tokRes = await fetch(`http://backend:8000/api/token/refresh/`, {
@@ -24,13 +27,16 @@ export default async (req, res) => {
 			},
 			body: JSON.stringify({ refresh })
 		});
-		if (!tokRes.ok) {
+		if (!tokRes) {
 			throw new Error('Could not fetch access token');
 		}
 
 		const tokData = await tokRes.json();
-		if (!tokData || !tokData.access) {
-			return res.status(500).json({ message: 'Something went wrong' });
+		if (!tokData) {
+			throw new Error('Could not fetch access token');
+		}
+		if (!tokRes.ok) {
+			throw new Error(tokData.detail || 'Could not fetch access token');
 		}
 		const accessToken = tokData.access;
 
@@ -40,15 +46,19 @@ export default async (req, res) => {
 				'Authorization': 'Bearer ' + accessToken
 			}
 		});
-		if (!userRes.ok) {
+		if (!userRes) {
 			throw new Error('Could not fetch user data');
 		}
 
 		const userData = await userRes.json();
+		if (!userData)
+			throw new Error('Could not fetch user data');
+		if (!userRes.ok)
+			throw new Error(userData.detail || 'Could not fetch user data');
 
 		return res.status(200).json({ user: userData, access: accessToken });
 	} catch (error) {
-		console.error('Error during login refresh:', error);
-		return res.status(401).json({ message: 'Login refresh failed' });
+		console.error('API USER:', error);
+		return res.status(401).json({ message: error.message });
 	}
 }

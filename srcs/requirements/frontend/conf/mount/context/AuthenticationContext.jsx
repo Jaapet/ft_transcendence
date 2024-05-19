@@ -29,15 +29,16 @@ export const AuthenticationProvider = ({ children }) => {
 				},
 				body: JSON.stringify({ username, password })
 			});
-
-			if (!response.ok) {
+			if (!response) {
 				throw new Error('Login failed');
 			}
 
 			const data = await response.json();
-
-			if (!data || !data.user || !data.access) {
+			if (!data) {
 				throw new Error('Login failed');
+			}
+			if (!response.ok) {
+				throw new Error(data.message, 'Login failed');
 			}
 
 			setUser(data.user);
@@ -45,6 +46,7 @@ export const AuthenticationProvider = ({ children }) => {
 
 			router.push('/');
 		} catch (error) {
+			console.error('CONTEXT LOGIN:', error);
 			setError(error.message);
 		}
 	}
@@ -55,16 +57,24 @@ export const AuthenticationProvider = ({ children }) => {
 			const response = await fetch(`/api/logout`, {
 				method: 'POST'
 			});
-
-			if (!response.ok) {
+			if (!response) {
 				throw new Error('Logout failed');
 			}
 
-			setUser(null);
-			setAccessToken(null);
+			const data = await response.json();
+			if (!data) {
+				throw new Error('Logout failed');
+			}
+			if (!response.ok) {
+				throw new Error(data.message, 'Logout failed');
+			}
 
-			router.push('/');
+			await router.push('/');
+
+			setAccessToken(null);
+			setUser(null);
 		} catch (error) {
+			console.error('CONTEXT LOGOUT:', error);
 			setError(error.message);
 		}
 	}
@@ -80,16 +90,23 @@ export const AuthenticationProvider = ({ children }) => {
 				formData.append('avatar', avatar);
 			}
 
-			console.log(username);
 			const response = await fetch(`/api/register`, {
 				method: 'POST',
 				body: formData
 			});
-
-			if (response.ok) {
-				await login({ username, password });
+			if (!response) {
+				throw new Error('Registration failed');
 			}
+
+			const data = await response.json();
+			if (!data)
+				throw new Error('Registration failed');
+			if (!response.ok)
+				throw new Error(data.message || 'Registration failed');
+
+			await login({ username, password });
 		} catch (error) {
+			console.error('CONTEXT REGISTER:', error);
 			setError(error.message);
 		}
 	}
@@ -101,26 +118,26 @@ export const AuthenticationProvider = ({ children }) => {
 			const response = await fetch(`/api/user`, {
 				method: 'POST'
 			});
-
-			if (!response.ok) {
+			if (!response) {
 				throw new Error('Login refresh failed');
 			}
 
 			const data = await response.json();
-
-			if (!data || !data.user || !data.access) {
+			if (!data)
 				throw new Error('Login refresh failed');
-			}
+			if (!response.ok)
+				throw new Error(data.message || 'Login refresh failed');
 
 			setUser(data.user);
 			setAccessToken(data.access);
 		} catch (error) {
-			setError(error.message);
+			console.error('CONTEXT LOGIN REFRESH:', error);
+			// We don't set user error here cause it's fine if you're not logged in
 		}
 	}
 
 	return (
-		<AuthenticationContext.Provider value={{ user, accessToken, error, login, logout, register }}>
+		<AuthenticationContext.Provider value={{ user, accessToken, error, setError, login, logout, register }}>
 			{children}
 		</AuthenticationContext.Provider>
 	);

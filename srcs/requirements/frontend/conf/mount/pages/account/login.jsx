@@ -1,7 +1,9 @@
 import React from 'react';
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import AuthenticationContext from '../../context/AuthenticationContext';
 import Link from 'next/link';
+import ToastList from '../../components/toasts/ToastList';
+import ErrorToast from '../../components/toasts/ErrorToast';
 
 const LoginFormUsernameField = ({ username, setUsername }) => {
 	return (
@@ -41,17 +43,11 @@ const LoginFormPasswordField = ({ password, setPassword }) => {
 	);
 }
 
-const LoginFormFields = () => {
-	const [username, setUsername] = useState('');
-	const [password, setPassword] = useState('');
-
-	const {login} = useContext(AuthenticationContext);
-
-	const submitHandler = async (event) => {
-		event.preventDefault();
-		login({username, password});
-	}
-
+const LoginFormFields = ({
+	username, setUsername,
+	password, setPassword,
+	submitHandler
+}) => {
 	return (
 		<form className="mx-1 mx-md-4" onSubmit={submitHandler}>
 
@@ -66,9 +62,38 @@ const LoginFormFields = () => {
 	);
 }
 
+const LoginToasts = ({ showError, setShowError, error, setError }) => {
+	return (
+		<ToastList>
+			<ErrorToast name="Login failed" show={showError} setShow={setShowError} error={error} setError={setError} />
+		</ToastList>
+	);
+}
+
 const LoginForm = () => {
+	const [username, setUsername] = useState('');
+	const [password, setPassword] = useState('');
+	const [showError, setShowError] = useState(false);
+
+	const { login, error, setError } = useContext(AuthenticationContext);
+
+	useEffect(() => {
+		if (error) {
+			console.error(error);
+			setShowError(true);
+			setUsername('');
+			setPassword('');
+		}
+	}, [error]);
+
+	const submitHandler = async (event) => {
+		event.preventDefault();
+		login({username, password});
+	}
+
 	return (
 		<section className="vh-100" style={{backgroundColor: '#eee'}}>
+			<LoginToasts showError={showError} setShowError={setShowError} error={error} setError={setError} />
 			<div className="container h-100">
 				<div className="row d-flex justify-content-center align-items-center h-100">
 					<div className="col-lg-12 col-xl-11">
@@ -78,7 +103,11 @@ const LoginForm = () => {
 									<div className="col-md-10 col-lg-6 col-xl-5 order-2 order-lg-1">
 
 										<p className="text-center h1 fw-bold mb-5 mx-1 mx-md-4 mt-4">Login</p>
-										<LoginFormFields />
+										<LoginFormFields
+											username={username} setUsername={setUsername}
+											password={password} setPassword={setPassword}
+											submitHandler={submitHandler}
+										/>
 										<p className="text-center text-muted mt-5 mb-0">
 											Don't have an account?&nbsp;
 											<Link href="/account/register">

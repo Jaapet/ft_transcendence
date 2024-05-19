@@ -37,28 +37,31 @@ export default async (req, res) => {
 		formData.append('password', fields.password);
 		if (files.avatar) {
 			const file = files.avatar[0];
-//			console.log('avatar:', file);
 			const fileBuffer = fs.readFileSync(file.filepath);
 			const blob = new Blob([fileBuffer], { type: file.mimetype });
 			formData.append('avatar', blob, file.originalFilename);
 		}
-
-//		console.log(formData);
 
 		// Register new user
 		const response = await fetch(`http://backend:8000/api/register/`, {
 			method: 'POST',
 			body: formData
 		});
+		if (!response) {
+			throw new Error('Registration failed');
+		}
 
+		const data = await response.json();
+		if (!data) {
+			throw new Error('Registration failed');
+		}
 		if (!response.ok) {
-			const responseError = await response.json();
-			throw new Error(responseError.message || 'Registration failed');
+			throw new Error(data.username || data.email || data.password || data.avatar || 'Registration failed');
 		}
 
 		return res.status(200).json({ message: 'Member has been created' });
 	} catch (error) {
-		console.error('Error during registration:', error);
-		return res.status(500).json({ message: 'Registration failed' });
+		console.error('API REGISTER:', error);
+		return res.status(500).json({ message: error.message });
 	}
 }
