@@ -1,14 +1,19 @@
 import { NextResponse } from 'next/server';
 
-// TODO: Stop logged in user from accessing login and register pages!
+//done
 
 export function middleware(req) {
+	const { nextUrl, cookies } = req;
 	const isLoginPage = req.url.includes('/login') || req.url.includes('/register');
-	const isLoggedIn = req.cookies.get('refresh');
+	const isLoggedIn = cookies.get('refresh');
+
+	if (isLoggedIn && (isLoginPage)) {
+        const homeUrl = new URL('/', nextUrl.origin);
+        return NextResponse.redirect(homeUrl.href);
+    }
 
 	if (!isLoginPage && !isLoggedIn) {
-		// TODO: Change this later
-		const loginUrl = new URL('/account/login', `http://transcendence.gmcg.fr:50281`);
+		const loginUrl = new URL('/account/login', nextUrl.origin);
 		return NextResponse.redirect(loginUrl.href);
 	}
 
