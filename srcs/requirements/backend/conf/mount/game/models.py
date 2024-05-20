@@ -39,6 +39,10 @@ class MemberManager(BaseUserManager):
 # - TODO: Friend list
 # - everything else is from AbstractBaseUser
 #
+# From Match objects:
+# - matches_lost
+# - matches_won
+#
 # Indexed on:
 # - username
 # - join_date + username
