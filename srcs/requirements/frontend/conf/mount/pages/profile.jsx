@@ -1,51 +1,49 @@
 import React, { useContext } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
-import styles from '../styles/profile.module.css';
-import {useRouter} from 'next/router'
+import styles from '../styles/base.module.css'
 import AuthenticationContext from '../context/AuthenticationContext';
+import Header from '../components/Header';
 
+const Profile = () => {
+    const { user } = useContext(AuthenticationContext);
 
-const Profile = ({ profile }) => {
-	const router = useRouter();
+    if (!user) {
+        return <p>Loading...</p>;
+    }
 
-	if (!profile) {
-		router.push('/errorNotFound');
-		return null;
-	  }
-  return (
-    <div className={styles.container}>
-      <Head>
-        <title>Profile - Transcendence</title>
-      </Head>
-      <h1>My Profile</h1>
-      <div className={styles.profileDetails}>
-        <Image src={profile.avatar} alt="Profile Picture" width={150} height={150} className={styles.profilePicture} />
-        <div className={styles.info}>
-          <p>Name: {profile.username}</p>
-          <p>Email: {profile.email}</p>
-          <p>Bio: {profile.bio}</p>
-          <p>Joined on: {profile.join_date}</p>
+    return (
+		<div>
+			<Header></Header>
+		<div className={styles.container}>
+            <Head>
+                <title>Profile Page</title>
+            </Head>
+            <h1 className={`mt-3 ${styles.background_title}`}>My Profile</h1>
+            <div className="row">
+                <div className="col-md-4">
+					<div className={`card ${styles.customCard}`}>
+                        <Image src={user.avatar} alt="Profile Picture" width={150} height={150} className="card-img-top" />
+                        <div className="card-body">
+                            <h5 className="card-title">{user.username}</h5>
+                            <p className="card-text">{user.bio}</p>
+                            <p className="card-text"><small className="text-muted">Joined on: {user.join_date}</small></p>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-md-8">
+				<div className={`card ${styles.customCard}`}>
+                        <div className="card-body">
+                            <h5 className="card-title">Contact Information</h5>
+                            <p className="card-text">Email: {user.email}</p>
+                        </div>
+					
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+		</div>
+    );
 };
-
-export async function getServerSideProps() {
-	const {user} = useContext(AuthenticationContext);
-
-  if (!user) {
-    return {
-      props: { profile: null },
-    };
-  }
-
-  const profile = await res.json();
-
-  return {
-    props: { profile },
-  };
-}
 
 export default Profile;

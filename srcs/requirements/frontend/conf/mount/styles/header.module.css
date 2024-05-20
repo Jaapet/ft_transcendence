@@ -4,9 +4,9 @@
 }
 
 @keyframes glow {
-	0% { color: rgba(238, 179, 19, 0.7); }
-    50% { color: rgb(255, 238, 0); }
-    100% { color: rgba(238, 179, 19, 0.7); }
+	0% { color: rgba(255, 255, 255, 0.7); }
+    50% { color: rgb(0, 0, 0); }
+    100% { color: rgba(255, 255, 255, 0.7); }
 }
 
 .logo {
@@ -16,7 +16,7 @@
 }
 
 .logo:hover{
-	animation: glow 2s infinite;
+	animation: glow 10s infinite;
 }
 
 
@@ -28,6 +28,7 @@
 
 .header {
     position: fixed;
+	top: 0pt;
 	width: 100%;
 	z-index: 1000;
 }
