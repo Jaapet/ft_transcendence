@@ -23,4 +23,11 @@
     background-color: #e0e7bf;
 	font-size: 28px;
 	font-family:'random little things';
+	border: 2px solid rgb(101, 147, 158);
+}
+
+.customCard {
+	position:relative;
+    padding: 10px; 
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.1);
 }

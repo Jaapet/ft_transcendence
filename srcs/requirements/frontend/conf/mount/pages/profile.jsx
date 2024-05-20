@@ -22,7 +22,7 @@ const Profile = () => {
             <h1 className={`mt-3 ${styles.background_title}`}>My Profile</h1>
             <div className="row">
                 <div className="col-md-4">
-                    <div className="card">
+					<div className={`card ${styles.customCard}`}>
                         <Image src={user.avatar} alt="Profile Picture" width={150} height={150} className="card-img-top" />
                         <div className="card-body">
                             <h5 className="card-title">{user.username}</h5>
@@ -32,11 +32,12 @@ const Profile = () => {
                     </div>
                 </div>
                 <div className="col-md-8">
-                    <div className="card">
+				<div className={`card ${styles.customCard}`}>
                         <div className="card-body">
                             <h5 className="card-title">Contact Information</h5>
                             <p className="card-text">Email: {user.email}</p>
                         </div>
+					
                     </div>
                 </div>
             </div>
