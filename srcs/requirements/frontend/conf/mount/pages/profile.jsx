@@ -1,22 +1,25 @@
 import React, { useContext } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
-import '../styles/base.css'
+import styles from '../styles/base.module.css'
 import AuthenticationContext from '../context/AuthenticationContext';
+import Header from '../components/Header';
 
 const Profile = () => {
     const { user } = useContext(AuthenticationContext);
 
     if (!user) {
-        return <p>Veuillez vous connecter pour accéder à votre profil.</p>;
+        return <p>Loading...</p>;
     }
 
     return (
-        <div className="container mt-5">
+		<div>
+			<Header/>
+		<div className={styles.container}>
             <Head>
-                <title>Profile - Transcendence</title>
+                <title>Profile Page</title>
             </Head>
-            <h1 className="mb-4">My Profile</h1>
+            <h1 className={`mt-3 ${styles.background_title}`}>My Profile</h1>
             <div className="row">
                 <div className="col-md-4">
                     <div className="card">
@@ -38,6 +41,7 @@ const Profile = () => {
                 </div>
             </div>
         </div>
+		</div>
     );
 };
 

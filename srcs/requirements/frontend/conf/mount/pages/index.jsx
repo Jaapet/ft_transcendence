@@ -1,5 +1,3 @@
-// pages/index.js
-
 import Head from 'next/head';
 import styles from '../styles/home.module.css';
 import Header from '../components/Header';

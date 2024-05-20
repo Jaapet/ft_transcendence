@@ -43,10 +43,7 @@
     src: url("../public/fonts/xtrusion.ttf") format("truetype");
 }
 
-@font-face {
-    font-family: "random little things";
-    src: url("../public/fonts/EuropeanTypewriter.ttf") format("truetype");
-}
+
 
 .title{
 	position: absolute;
