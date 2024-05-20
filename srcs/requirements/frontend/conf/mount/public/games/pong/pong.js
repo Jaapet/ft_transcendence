@@ -21,8 +21,8 @@ function main()
   scene.background = new THREE.Color(0x111111);
   const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
   /// possibiliter de tourner chaque user de son coter
-  camera.position.set(0, 50, 10);
-  camera.position.z = 50;
+  camera.position.set(0, 100, 10);
+  camera.position.z = 10;
 
 
 
@@ -131,12 +131,19 @@ function main()
         case "w":
         case "W":
             
-            raquettesmove[0] = -1.2;
+            raquettesmove[0] = -0.7;
             break;
         case "s":
         case "S":
             
-            raquettesmove[1] = 1.2;
+            raquettesmove[1] = 0.7;
+            break;
+
+        case "ArrowUp":
+            raquettesmove[2] = -0.7;
+            break;
+        case "ArrowDown":
+            raquettesmove[3] = 0.7;
             break;
     }
   });
@@ -151,6 +158,12 @@ function main()
         case "s":
         case "S":
             raquettesmove[1] = 0;
+            break;
+        case "ArrowUp":
+            raquettesmove[2] = 0;
+            break;
+        case "ArrowDown":
+            raquettesmove[3] = 0;
             break;
     }
   });
@@ -243,15 +256,14 @@ function main()
     camera.updateProjectionMatrix();
 
     if (raquettes[0].position.z > -16)
-    {
       raquettes[0].position.z += raquettesmove[0];
-    }
     if (raquettes[0].position.z < 16)
-    {
       raquettes[0].position.z += raquettesmove[1];
-    }
-    raquettes[1].position.z += raquettesmove[2];
-    raquettes[1].position.z += raquettesmove[3];
+
+    if (raquettes[1].position.z > -16)
+      raquettes[1].position.z += raquettesmove[2];
+    if (raquettes[1].position.z < 16)
+      raquettes[1].position.z += raquettesmove[3];
 
     // GESTION ROTATION ET DEPLACEMENT DE LA BOULE
     
