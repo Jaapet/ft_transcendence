@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import styles from '../styles/profile.module.css';
 import {useRouter} from 'next/router'
+import AuthenticationContext from '../context/AuthenticationContext';
+
 
 const Profile = ({ profile }) => {
 	const router = useRouter();
@@ -30,11 +32,10 @@ const Profile = ({ profile }) => {
   );
 };
 
-export async function getServerSideProps(context) {
-  const { id } = context.query;
-  const res = await fetch(`http://backend:8000/api/members/${id}`);
+export async function getServerSideProps() {
+	const {user} = useContext(AuthenticationContext);
 
-  if (!res.ok) {
+  if (!user) {
     return {
       props: { profile: null },
     };
