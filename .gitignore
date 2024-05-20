@@ -8,3 +8,5 @@ __pycache__
 node_modules
 srcs/requirements/db
 docker-compose.yml
+Makefile
+.env
