@@ -8,10 +8,10 @@ const GamePage = () => {
 
   return (
     <div>
-      <canvas id="pong-canvas" width="1000" height="800"></canvas>
+      <canvas id="royal-canvas" width="1000" height="800"></canvas>
       <Script
 	  	type='module'
-        src="/games/pong/pong.js"
+        src="/games/royal/royal.js"
         strategy="afterInteractive"
         onLoad={() => {
           // Initialize your game here if needed
