@@ -7,3 +7,6 @@ __pycache__
 .next
 node_modules
 srcs/requirements/db
+Makefile
+.env
+docker-compose.yml
