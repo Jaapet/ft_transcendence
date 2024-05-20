@@ -2,6 +2,23 @@ import { createContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
 const AuthenticationContext = createContext();
+/*
+Member objects contain:
+- username	(CharField)
+- email		(EmailField)
+- avatar	(ImageField)
+- join_date	(DateField)
+- is_admin	(booleanField)
+
+From Match objects:
+- matches_lost
+- matches_won
+
+Indexed on:
+- username
+- join_date + username
+- DESC join_date + username
+*/
 
 export const AuthenticationProvider = ({ children }) => {
 	const [user, setUser] = useState(null);
