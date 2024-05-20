@@ -14,7 +14,7 @@ const Profile = () => {
 
     return (
 		<div>
-			<Header/>
+			<Header></Header>
 		<div className={styles.container}>
             <Head>
                 <title>Profile Page</title>

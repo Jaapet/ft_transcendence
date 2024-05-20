@@ -1,3 +1,4 @@
+
 @font-face {
     font-family: "random little things";
     src: url("../public/fonts/EuropeanTypewriter.ttf") format("truetype");
@@ -12,8 +13,8 @@
 	background-color: rgb(211, 180, 133);
 	background-size: cover;
 	font-size: 2em;
-	height: calc(100vh - 80px);
-	margin-top: 80px;
+	min-height: calc(100vh - 78px);
+	margin-top: 78px;
 	font-family: 'random little things';
 }
 
