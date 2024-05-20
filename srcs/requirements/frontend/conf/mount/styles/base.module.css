@@ -1,0 +1,70 @@
+/* profile.css */
+
+/* Styling for the container */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Styling for the profile picture */
+.card-img-top {
+    border-radius: 50%;
+}
+
+/* Styling for the card title */
+.card-title {
+    color: #333;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Styling for the card text */
+.card-text {
+    color: #666;
+    font-size: 1rem;
+}
+
+/* Styling for the joined date */
+.text-muted {
+    font-size: 0.9rem;
+}
+
+/* Styling for the card body */
+.card-body {
+    padding: 2rem;
+    text-align: center;
+}
+
+/* Styling for the contact information card */
+.contact-card {
+    margin-top: 2rem;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    padding: 1.5rem;
+}
+
+/* Styling for the contact card title */
+.contact-card-title {
+    color: #333;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+/* Styling for the contact card text */
+.contact-card-text {
+    color: #666;
+    font-size: 1rem;
+}
+
+/* Styling for the link */
+.link {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.link:hover {
+    text-decoration: underline;
+    color: #0056b3;
+}
