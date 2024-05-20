@@ -33,8 +33,9 @@ const Profile = ({ profile }) => {
 };
 
 export async function getServerSideProps() {
-	const {user} = useContext(AuthenticationContext);
+	const user = AuthenticationContext.user;
 
+	console.log(user);
   if (!user) {
     return {
       props: { profile: null },
