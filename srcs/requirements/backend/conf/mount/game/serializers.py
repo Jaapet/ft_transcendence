@@ -42,8 +42,33 @@ class RegisterMemberSerializer(serializers.HyperlinkedModelSerializer):
 		model = Member
 		fields = ('url', 'username', 'email', 'password', 'avatar')
 
-# We can just take all fields as Match does not extend any other model
 class MatchSerializer(serializers.HyperlinkedModelSerializer):
+	winner_username = serializers.SerializerMethodField()
+	loser_username = serializers.SerializerMethodField()
+	start_date = serializers.DateTimeField(source='start_datetime', format='%B %d %Y')
+	end_date = serializers.DateTimeField(source='end_datetime', format='%B %d %Y')
+	start_time = serializers.DateTimeField(source='start_datetime', format='%H:%M')
+	end_time = serializers.DateTimeField(source='end_datetime', format='%H:%M')
+
 	class Meta:
 		model = Match
-		fields = '__all__'
+		fields = [
+			'url',
+			'id',
+			'winner',
+			'loser',
+			'winner_score',
+			'loser_score',
+			'start_date',
+			'end_date',
+			'start_time',
+			'end_time',
+			'winner_username',
+			'loser_username'
+		]
+	
+	def get_winner_username(self, obj):
+		return obj.winner.username if obj.winner else 'Deleted user'
+	
+	def get_loser_username(self, obj):
+		return obj.loser.username if obj.loser else 'Deleted user'

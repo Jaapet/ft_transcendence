@@ -73,14 +73,14 @@ export default function Members({ members }) {
 
 /*
 Each member has the following data:
-- id						(big int, unique)
-- username			(string, unique)
-- password			(string, hashed)
-- email					(string, unique)
-- avatar				(string, link to image hosted on backend)
-- join_date			(string I think?)
+- id			(big int, unique)
+- username		(string, unique)
+- password		(string, hashed)
+- email			(string, unique)
+- avatar		(string, link to image hosted on backend)
+- join_date	(string)
 - is_superuser	(bool)
-- is_admin			(bool)
+- is_admin		(bool)
 */
 export async function getServerSideProps({ params }) {
 	const result = await fetch('http://backend:8000/api/members/');

@@ -4,11 +4,11 @@ import { useRouter } from 'next/router';
 const AuthenticationContext = createContext();
 /*
 Member objects contain:
-- username	(CharField)
-- email		(EmailField)
-- avatar	(ImageField)
+- username		(CharField)
+- email			(EmailField)
+- avatar		(ImageField)
 - join_date	(DateField)
-- is_admin	(booleanField)
+- is_admin		(booleanField)
 
 From Match objects:
 - matches_lost
