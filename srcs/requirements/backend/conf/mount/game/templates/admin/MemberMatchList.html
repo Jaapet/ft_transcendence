@@ -1,0 +1,29 @@
+{% extends "admin/change_form.html" %}
+
+{% block content %}
+{{ block.super }}
+
+<h2>Matches</h2>
+<table>
+	<thead>
+		<tr>
+			<th>Winner</th>
+			<th>Score</th>
+			<th>Loser</th>
+			<th>Start Date</th>
+			<th>End Date</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for match in matches %}
+			<tr>
+				<td>{{ match.winner }}</td>
+				<td>{{ match.winner_score }}-{{ match.loser_score }}</td>
+				<td>{{ match.loser }}</td>
+				<td>{{ match.start_datetime }}</td>
+				<td>{{ match.end_datetime }}</td>
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
+{% endblock %}

@@ -9,6 +9,7 @@ from django.urls import include, path
 urlpatterns = [
 	path('admin/', admin.site.urls),
 	path('api/', include('game.urls')),
+	path('api-auth/', include('rest_framework.urls')),
 ]
 
 # Allows Django to serve static files and user uploads
