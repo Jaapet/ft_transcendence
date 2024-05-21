@@ -125,9 +125,12 @@ export default function Profile({ status, user, last_matches }) {
 		// redirect here
 	}
 	*/
+
 	if (status === 401 || status === 404) {
 		return (<p>Something went wrong...</p>);
 	}
+
+	// TODO: if (user === currently logged in user) then allow editing profile
 
 	return (
 		<div>
