@@ -19,19 +19,19 @@ export
 
 all:
 	@echo "Building the services and starting them in background"
-	@cd srcs && docker compose build && docker compose -p main up -d
+	@cd srcs && docker compose build && docker compose -p mmidon up -d
 
 f:
 	@echo "Building the services and starting them in foreground"
-	@cd srcs && docker compose build && docker compose -p main up
+	@cd srcs && docker compose build && docker compose -p mmidon up
 
 clean:
 	@echo "Stopping services and their network, keeping volumes and images"
-	@cd srcs && docker compose -p main down
+	@cd srcs && docker compose -p mmidon down
 
 fclean:
 	@echo "Stopping services and their network, deleting volumes and images"
-	@cd srcs && docker compose -p main down -v
+	@cd srcs && docker compose -p mmidon down -v
 	@docker system prune --all
 
 re: clean all
