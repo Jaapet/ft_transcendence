@@ -4,7 +4,7 @@ export default async (req, res) => {
 	// Only POST allowed
 	if (req.method !== 'POST') {
 		res.setHeader('Allow', ['POST']);
-		return res.status(405).json({ message: 'Method ${req.method} is not allowed' });
+		return res.status(405).json({ message: `Method ${req.method} is not allowed` });
 	}
 
 	const { username, password } = req.body;
@@ -36,13 +36,22 @@ export default async (req, res) => {
 		// TODO: change to https later
 		// TODO: Check if using cookie lib is really necessary
 		// Store refresh token in a cookie
-		res.setHeader('Set-Cookie', cookie.serialize('refresh', tokData.refresh, {
-			httpOnly: true,
-			secure: false,
-			sameSite: 'strict',
-			maxAge: 60 * 60 * 24,
-			path: '/'
-		}));
+		res.setHeader('Set-Cookie', [
+			cookie.serialize('refresh', tokData.refresh, {
+				httpOnly: true,
+				secure: false,
+				sameSite: 'strict',
+				maxAge: 60 * 60 * 24,
+				path: '/'
+			}),
+			cookie.serialize('access', tokData.access, {
+				httpOnly: true,
+				secure: false,
+				sameSite: 'strict',
+				maxAge: 60 * 5,
+				path: '/'
+			})
+		]);
 
 		// Fetch user data
 		const userRes = await fetch(`http://backend:8000/api/user/`, {

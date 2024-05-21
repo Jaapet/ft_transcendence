@@ -1,13 +1,12 @@
 import React from 'react';
-import { useContext } from 'react';
 import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
-import AuthenticationContext from '../context/AuthenticationContext';
+import { useAuth } from '../context/AuthenticationContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import styles from '../styles/header.module.css';
 
 const ProfileNavPicture = () => {
-	const {user} = useContext(AuthenticationContext);
+	const { user } = useAuth();
 	let avatar = "/images/rachid.jpg";
 
 	if (user && user.avatar) {
@@ -29,7 +28,7 @@ const ProfileNavPicture = () => {
 }
 
 const ProfileNavLog = () => {
-	const {user, logout} = useContext(AuthenticationContext);
+	const { user, logout } = useAuth();
 
 	// Logged in version
 	if (user) {

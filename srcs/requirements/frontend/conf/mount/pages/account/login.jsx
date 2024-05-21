@@ -1,6 +1,6 @@
 import React from 'react';
-import { useState, useContext, useEffect } from 'react';
-import AuthenticationContext from '../../context/AuthenticationContext';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthenticationContext';
 import Link from 'next/link';
 import ToastList from '../../components/toasts/ToastList';
 import ErrorToast from '../../components/toasts/ErrorToast';
@@ -76,7 +76,7 @@ const LoginForm = () => {
 	const [showError, setShowError] = useState(false);
 	const [errorMessage, setErrorMessage] = useState('');
 
-	const { login, error, clearError } = useContext(AuthenticationContext);
+	const { login, error, clearError } = useAuth();
 
 	useEffect(() => {
 		if (error) {
