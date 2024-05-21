@@ -45,6 +45,8 @@ class RegisterMemberSerializer(serializers.HyperlinkedModelSerializer):
 class MatchSerializer(serializers.HyperlinkedModelSerializer):
 	winner_username = serializers.SerializerMethodField()
 	loser_username = serializers.SerializerMethodField()
+	winner_id = serializers.SerializerMethodField()
+	loser_id = serializers.SerializerMethodField()
 	start_date = serializers.DateTimeField(source='start_datetime', format='%B %d %Y')
 	end_date = serializers.DateTimeField(source='end_datetime', format='%B %d %Y')
 	start_time = serializers.DateTimeField(source='start_datetime', format='%H:%M')
@@ -64,7 +66,9 @@ class MatchSerializer(serializers.HyperlinkedModelSerializer):
 			'start_time',
 			'end_time',
 			'winner_username',
-			'loser_username'
+			'loser_username',
+			'winner_id',
+			'loser_id'
 		]
 	
 	def get_winner_username(self, obj):
@@ -72,3 +76,9 @@ class MatchSerializer(serializers.HyperlinkedModelSerializer):
 	
 	def get_loser_username(self, obj):
 		return obj.loser.username if obj.loser else 'Deleted user'
+	
+	def get_winner_id(self, obj):
+		return obj.winner.id if obj.winner else None
+	
+	def get_loser_id(self, obj):
+		return obj.loser.id if obj.loser else None

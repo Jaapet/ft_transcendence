@@ -39,15 +39,15 @@ export default async (req, res) => {
 			throw new Error(`Could not fetch data for user ${id}`);
 		}
 		if (userRes.status === 404) {
-			console.error('API PROFILE:', userData.detail);
+			console.error('API USER MATCH HISTORY:', userData.detail);
 			return res.status(404).json({ message: userData.detail });
 		}
 		if (!userRes.ok) {
 			throw new Error(userData.detail || `Could not fetch data for user ${id}`);
 		}
 
-		// Fetch user's last 3 matches
-		const matchRes = await fetch(`http://backend:8000/api/matches/last_player_matches/?player_id=${id}`, {
+		// Fetch user's match history
+		const matchRes = await fetch(`http://backend:8000/api/matches/player_matches/?player_id=${id}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -55,24 +55,24 @@ export default async (req, res) => {
 			}
 		});
 		if (!matchRes) {
-			throw new Error(`Could not fetch last matches for user ${id}`);
+			throw new Error(`Could not fetch match history for user ${id}`);
 		}
 		
 		const matchData = await matchRes.json();
 		if (!matchData) {
-			throw new Error(`Could not fetch last matches for user ${id}`);
+			throw new Error(`Could not fetch match history for user ${id}`);
 		}
 		if (matchRes.status === 404) {
-			console.error('API PROFILE:', matchData.detail);
-			return res.status(200).json({ user: userData, last_matches: null });
+			console.error('API USER MATCH HISTORY:', matchData.detail);
+			return res.status(200).json({ user: userData, matches: null });
 		}
 		if (!matchRes.ok) {
-			throw new Error(matchData.detail || `Could not fetch last matches for user ${id}`);
+			throw new Error(matchData.detail || `Could not fetch match history for user ${id}`);
 		}
 
-		return res.status(200).json({ user: userData, last_matches: matchData });
+		return res.status(200).json({ user: userData, matches: matchData });
 	} catch (error) {
-		console.error('API PROFILE:', error);
+		console.error('API USER MATCH HISTORY:', error);
 		return res.status(401).json({ message: error.message });
 	}
 }

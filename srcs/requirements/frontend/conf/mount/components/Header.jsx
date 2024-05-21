@@ -39,7 +39,7 @@ const ProfileNavLog = () => {
 
 		return (
 			<>
-				<Link href="/account/profile" passHref>
+				<Link href={`/members/${user.id}`} passHref>
 					<NavDropdown.Item as="a">My Profile</NavDropdown.Item>
 				</Link>
 				<NavDropdown.Item as="button" onClick={handleLogout}>Log out</NavDropdown.Item>

@@ -1,8 +1,8 @@
 import React from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
-import styles from '../../styles/base.module.css';
-import Header from '../../components/Header';
+import styles from '../../../styles/base.module.css';
+import Header from '../../../components/Header';
 
 const ProfileMemberCard = ({ user }) => {
 	return (
@@ -11,10 +11,46 @@ const ProfileMemberCard = ({ user }) => {
 			<div className="card-body">
 				<h5 className="card-title">{user.username}</h5>
 				{/* TODO: Add ELO here */}
-				<p className="card-text"><small className="text-muted">Joined on: {user.join_date}</small></p>
+				<p className="card-text"><small className="text-muted">Joined on:<br/>{user.join_date}</small></p>
 			</div>
 		</div>
 	);
+}
+
+const ProfileMatchPlayerLink = ({ id, username }) => {
+	if (id === null) {
+		return (<span>{username}</span>);
+	}
+
+	return (
+		<a href={`/members/${id}`} className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+			{username}
+		</a>
+	);
+}
+
+const ProfileMatchPlayers = ({ user, match }) => {
+	if (match.winner_id === user.id) {
+		return (
+			<p className="fs-2 mb-0">
+				<strong style={{color: '#00B300'}}>
+					{match.winner_username}
+				</strong>
+				&nbsp;vs&nbsp;
+				<ProfileMatchPlayerLink id={match.loser_id} username={match.loser_username} />
+			</p>
+		);
+	} else if (match.loser_id === user.id) {
+		return (
+			<p className="fs-2 mb-0">
+				<ProfileMatchPlayerLink id={match.winner_id} username={match.winner_username} />
+				&nbsp;vs&nbsp;
+				<strong style={{color: '#B30086'}}>
+					{match.loser_username}
+				</strong>
+			</p>
+		);
+	}
 }
 
 const ProfileMatchList = ({ user, last_matches }) => {
@@ -32,13 +68,13 @@ const ProfileMatchList = ({ user, last_matches }) => {
 	- end_time				(string 'HH:MM')
 	- winner_username	(string)
 	- loser_username	(string)
+	- winner_id				(number)
+	- loser_id				(number)
 	Indexed on:
 	- winner
 	- loser
 	- end_datetime
 	*/
-
-	console.log('last matches', last_matches); // debug
 
 	if (!last_matches || last_matches.length < 1) {
 		return (
@@ -57,18 +93,15 @@ const ProfileMatchList = ({ user, last_matches }) => {
 				<ul className="list-group list-group">
 					{last_matches.map(match => (
 						<li key={match.id} className="list-group-item">
-							{match.winner_username === user.username &&
-								<p className="fs-2 mb-0"><strong style={{color: '#00B300'}}>{match.winner_username}</strong> vs {match.loser_username}</p>
-							}
-							{match.loser_username === user.username &&
-								<p className="fs-2 mb-0">{match.winner_username} vs <strong style={{color: '#B30086'}}>{match.loser_username}</strong></p>
-							}
+							<ProfileMatchPlayers user={user} match={match} />
 							<p className="fs-3 mb-0">{match.winner_score}-{match.loser_score}</p>
 							<p className="fs-4 mb-0">{match.end_date}</p>
 						</li>
 					))}
 				</ul>
-				<p><a href="/account/match-history" className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">See full match history</a></p>
+				<p><a href={`/members/${user.id}/match_history`} className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+					See {user.username}'s full match history
+				</a></p>
 			</div>
 		</div>
 	);
@@ -159,7 +192,7 @@ export async function getServerSideProps(context) {
 			}
 		}
 	} catch (error) {
-		console.error('PROFILE:', error);
+		console.error('USER PROFILE:', error);
 		return {
 			props: {
 				status: 401,
