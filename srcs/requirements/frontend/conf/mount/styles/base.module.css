@@ -3,31 +3,92 @@
     font-family: "random little things";
     src: url("../public/fonts/EuropeanTypewriter.ttf") format("truetype");
 }
+@font-face {
+    font-family: "block";
+    src: url("../public/fonts/ToyBlocks.ttf") format("truetype");
+}
 
 
 .container {
 	display: flex;
-	flex-direction: column;
+	flex-direction:column;
 	align-items: center;
 	text-align: center;
-	background-color: rgb(211, 180, 133);
-	background-size: cover;
+	background-color: rgb(54, 34, 54);
+	background-image: url('../public/images/doodlebackground.jpg'); 
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-blend-mode: overlay; 
+    opacity: 0.95; 
 	font-size: 2em;
 	min-height: calc(100vh - 78px);
 	margin-top: 78px;
 	font-family: 'random little things';
 }
 
+
 .background_title {
-	border-radius: 20%;
-    background-color: #e0e7bf;
-	font-size: 28px;
-	font-family:'random little things';
-	border: 2px solid rgb(101, 147, 158);
+    border-radius: 100px;
+    font-size: 1.5cm;
+    padding: 10px 20px;
+    color:#ffffff;
+    font-family: 'block';
+/*     box-shadow: 0 15px 15px rgba(46, 46, 45, 0.267);
+ */    text-align: center;
+
+	/*depth*/
+/*     background: radial-gradient(circle, #ffffff91, #77777773);
+    border: 2px solid rgba(88, 102, 8, 0.2); */
 }
 
 .customCard {
 	position:relative;
-    padding: 10px; 
-    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 15px 15px rgba(0, 0, 0, 0.267);
+	background-color: #868ac5be;
+	color: rgb(255, 255, 255);
+	font-family: 'random little things';
+	margin-left: 2cm;
+	margin-right: 2cm;
+}
+
+.buttonContainer {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+	margin-top: 4cm;
+}
+
+.button {
+    display: inline-block;
+	font-size: 100px;
+    color: #fff;
+    background: linear-gradient(45deg, #ff6b6b, #f06595, #cc5de8, #845ef7, #5c7cfa, #339af0, #22b8cf, #20c997, #51cf66, #94d82d, #fcc419, #ff922b);
+    background-size: 400% 400%;
+    animation: gradientAnimation 5s ease infinite;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 50px;
+    text-decoration: none;
+    margin: 10px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.button:hover {
+	transform: scale(1.05);
+
+    box-shadow: 0 20px 20px rgba(217, 248, 38, 0.4);
+}
+
+@keyframes gradientAnimation {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
 }
