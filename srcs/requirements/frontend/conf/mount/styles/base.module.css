@@ -7,7 +7,7 @@
 
 .container {
 	display: flex;
-	flex-direction: column;
+	flex-direction:column;
 	align-items: center;
 	text-align: center;
 	background-color: rgb(54, 34, 54);
@@ -20,14 +20,61 @@
 
 .background_title {
 	border-radius: 20%;
-    background-color: #000000;
-	font-size: 28px;
-	font-family:'random little things';
-	border: 2px solid rgb(255, 255, 255);
+    background-color: #37283b;
+	font-size: 32px;
+	padding: 5px;
+	color:rgb(255, 255, 255);
+	font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+	border: 0.01px solid rgb(255, 255, 255);
+	box-shadow: 0 15px 15px rgba(46, 46, 45, 0.267);
 }
 
 .customCard {
 	position:relative;
     padding: 10px; 
-    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 15px 15px rgba(0, 0, 0, 0.267);
+	background-color: #868ac5;
+	color: rgb(255, 255, 255);
+	font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+	margin-left: 2cm;
+	margin-right: 2cm;
+}
+
+.buttonContainer {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+	margin-top: 4cm;
+}
+
+.button {
+    display: inline-block;
+	font-size: 100px;
+    color: #fff;
+    background: linear-gradient(45deg, #ff6b6b, #f06595, #cc5de8, #845ef7, #5c7cfa, #339af0, #22b8cf, #20c997, #51cf66, #94d82d, #fcc419, #ff922b);
+    background-size: 400% 400%;
+    animation: gradientAnimation 5s ease infinite;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 50px;
+    text-decoration: none;
+    margin: 10px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.button:hover {
+    box-shadow: 0 6px 20px rgba(217, 248, 38, 0.4);
+}
+
+@keyframes gradientAnimation {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
 }
