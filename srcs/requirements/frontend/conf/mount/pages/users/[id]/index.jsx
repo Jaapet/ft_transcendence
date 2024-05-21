@@ -23,7 +23,7 @@ const ProfileMatchPlayerLink = ({ id, username }) => {
 	}
 
 	return (
-		<a href={`/members/${id}`} className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+		<a href={`/users/${id}`} className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
 			{username}
 		</a>
 	);
@@ -99,7 +99,7 @@ const ProfileMatchList = ({ user, last_matches }) => {
 						</li>
 					))}
 				</ul>
-				<p><a href={`/members/${user.id}/match_history`} className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+				<p><a href={`/users/${user.id}/match_history`} className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
 					See {user.username}'s full match history
 				</a></p>
 			</div>

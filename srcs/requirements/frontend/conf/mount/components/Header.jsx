@@ -39,7 +39,7 @@ const ProfileNavLog = () => {
 
 		return (
 			<>
-				<Link href={`/members/${user.id}`} passHref>
+				<Link href={`/users/${user.id}`} passHref>
 					<NavDropdown.Item as="a">My Profile</NavDropdown.Item>
 				</Link>
 				<NavDropdown.Item as="button" onClick={handleLogout}>Log out</NavDropdown.Item>
@@ -87,6 +87,7 @@ const Header = () => {
 			</Navbar.Brand>
 				<Nav className="mr-auto">
 					<Nav.Link href="#leaderboard">Leaderboard</Nav.Link>
+					<Nav.Link href="/users">Users</Nav.Link>
 					<Nav.Link href="#how-to-play">How to play</Nav.Link>
 					<Nav.Link href="#credits">Credits</Nav.Link>
 				</Nav>

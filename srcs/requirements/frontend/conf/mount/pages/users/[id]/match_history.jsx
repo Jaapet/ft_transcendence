@@ -9,7 +9,7 @@ const UserMatchHistoryMatchPlayerLink = ({ id, username }) => {
 	}
 
 	return (
-		<a href={`/members/${id}`} className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+		<a href={`/users/${id}`} className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
 			{username}
 		</a>
 	);
@@ -67,7 +67,7 @@ const UserMatchHistoryList = ({ user, matches }) => {
 			<div className={`card ${styles.customCard}`}>
 				<div className="card-body">
 					<h5 className="card-title mb-0">No matches to display :/</h5>
-					<p><a href={`/members/${user.id}`} className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+					<p><a href={`/users/${user.id}`} className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
 						Back to {user.username}'s profile
 					</a></p>
 				</div>
@@ -88,7 +88,7 @@ const UserMatchHistoryList = ({ user, matches }) => {
 					</li>
 					))}
 				</ul>
-				<p><a href={`/members/${user.id}`} className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+				<p><a href={`/users/${user.id}`} className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
 					Back to {user.username}'s profile
 				</a></p>
 			</div>

@@ -1,0 +1,49 @@
+import cookie from 'cookie';
+
+export default async (req, res) => {
+	// Only POST allowed
+	if (req.method !== 'POST') {
+		res.setHeader('Allow', ['POST']);
+		return res.status(405).json({ message: `Method ${req.method} is not allowed` });
+	}
+
+	try {
+		if (!req.headers.cookie) {
+			throw new Error('Unauthorized');
+		}
+		const { access } = cookie.parse(req.headers.cookie);
+		if (!access) {
+			// TODO: make a refresh function
+			throw new Error('Could not fetch access token');
+		}
+
+		// Fetch user list
+		const userRes = await fetch(`http://backend:8000/api/members`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${access}`
+			}
+		});
+		if (!userRes) {
+			throw new Error(`Could not fetch user list`);
+		}
+		
+		const userData = await userRes.json();
+		if (!userData) {
+			throw new Error(`Could not fetch user list`);
+		}
+		if (userRes.status === 404) {
+			console.error('API USER LIST:', userData.detail);
+			return res.status(404).json({ message: userData.detail });
+		}
+		if (!userRes.ok) {
+			throw new Error(userData.detail || `Could not fetch user list`);
+		}
+
+		return res.status(200).json({ users: userData.results });
+	} catch (error) {
+		console.error('API USER LIST:', error);
+		return res.status(401).json({ message: error.message });
+	}
+}
