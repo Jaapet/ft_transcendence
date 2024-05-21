@@ -1,0 +1,33 @@
+
+@font-face {
+    font-family: "random little things";
+    src: url("../public/fonts/EuropeanTypewriter.ttf") format("truetype");
+}
+
+
+.container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	background-color: rgb(211, 180, 133);
+	background-size: cover;
+	font-size: 2em;
+	min-height: calc(100vh - 78px);
+	margin-top: 78px;
+	font-family: 'random little things';
+}
+
+.background_title {
+	border-radius: 20%;
+    background-color: #e0e7bf;
+	font-size: 28px;
+	font-family:'random little things';
+	border: 2px solid rgb(101, 147, 158);
+}
+
+.customCard {
+	position:relative;
+    padding: 10px; 
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.1);
+}
