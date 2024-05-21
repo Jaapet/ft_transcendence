@@ -1,13 +1,15 @@
 import React from 'react';
 import Pong from '../components/game';
+import Header from '../components/Header';
 
 const GamePage = () => {
   return (
-    <div>
-      <h1>Game Page</h1>
-	  
-      <Pong/>
-    </div>
+	<div>
+		<Header></Header>
+		<div>
+			<Pong/>
+		</div>
+	</div>
   );
 };
 

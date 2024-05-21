@@ -8,7 +8,7 @@ const BigTitle = () => (
       <Link href="/account/login" passHref>
         <a className={styles.button}>Log In</a>
       </Link>
-      <Link href="/gamePage" passHref>
+      <Link href="/chooseGame" passHref>
         <a className={styles.button}>Game</a>
       </Link>
       <Link href="/settings" passHref>

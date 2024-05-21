@@ -10,7 +10,7 @@
 	flex-direction: column;
 	align-items: center;
 	text-align: center;
-	background-color: rgb(211, 180, 133);
+	background-color: rgb(54, 34, 54);
 	background-size: cover;
 	font-size: 2em;
 	min-height: calc(100vh - 78px);
@@ -20,10 +20,10 @@
 
 .background_title {
 	border-radius: 20%;
-    background-color: #e0e7bf;
+    background-color: #000000;
 	font-size: 28px;
 	font-family:'random little things';
-	border: 2px solid rgb(101, 147, 158);
+	border: 2px solid rgb(255, 255, 255);
 }
 
 .customCard {
