@@ -1,13 +1,12 @@
 import React from 'react';
-import { useContext } from 'react';
 import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
-import AuthenticationContext from '../context/AuthenticationContext';
+import { useAuth } from '../context/AuthenticationContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import styles from '../styles/header.module.css';
 
 const ProfileNavPicture = () => {
-	const {user} = useContext(AuthenticationContext);
+	const { user } = useAuth();
 	let avatar = "/images/rachid.jpg";
 
 	if (user && user.avatar) {
@@ -29,7 +28,7 @@ const ProfileNavPicture = () => {
 }
 
 const ProfileNavLog = () => {
-	const {user, logout} = useContext(AuthenticationContext);
+	const { user, logout } = useAuth();
 
 	// Logged in version
 	if (user) {
@@ -40,7 +39,7 @@ const ProfileNavLog = () => {
 
 		return (
 			<>
-				<Link href="/account/profile" passHref>
+				<Link href={`/users/${user.id}`} passHref>
 					<NavDropdown.Item as="a">My Profile</NavDropdown.Item>
 				</Link>
 				<NavDropdown.Item as="button" onClick={handleLogout}>Log out</NavDropdown.Item>
@@ -88,6 +87,7 @@ const Header = () => {
 			</Navbar.Brand>
 				<Nav className="mr-auto">
 					<Nav.Link href="#leaderboard">Leaderboard</Nav.Link>
+					<Nav.Link href="/users">Users</Nav.Link>
 					<Nav.Link href="#how-to-play">How to play</Nav.Link>
 					<Nav.Link href="#credits">Credits</Nav.Link>
 				</Nav>

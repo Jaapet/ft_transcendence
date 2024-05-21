@@ -1,14 +1,14 @@
-import cookie from 'cookie'
+import cookie from 'cookie';
 
 export default async (req, res) => {
 	// Only POST allowed
 	if (req.method !== 'POST') {
 		res.setHeader('Allow', ['POST']);
-		return res.status(405).json({ message: 'Method ${req.method} is not allowed' });
+		return res.status(405).json({ message: `Method ${req.method} is not allowed` });
 	}
 
 	if (!req.headers.cookie) {
-		return res.status(401).json({ message: 'Unauthorized' });
+		throw new Error('Unauthorized');
 	}
 
 	try {
@@ -39,6 +39,17 @@ export default async (req, res) => {
 			throw new Error(tokData.detail || 'Could not fetch access token');
 		}
 		const accessToken = tokData.access;
+
+		// TODO: change to https later
+		// TODO: Check if using cookie lib is really necessary
+		// Update access token cookie
+		res.setHeader('Set-Cookie', cookie.serialize('access', tokData.access, {
+			httpOnly: true,
+			secure: false,
+			sameSite: 'strict',
+			maxAge: 60 * 5,
+			path: '/'
+		}));
 
 		// Fetch user data
 		const userRes = await fetch(`http://backend:8000/api/user/`, {

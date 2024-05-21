@@ -1,14 +1,14 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
 const AuthenticationContext = createContext();
 /*
 Member objects contain:
-- username	(CharField)
-- email		(EmailField)
-- avatar	(ImageField)
+- username		(CharField)
+- email			(EmailField)
+- avatar		(ImageField)
 - join_date	(DateField)
-- is_admin	(booleanField)
+- is_admin		(booleanField)
 
 From Match objects:
 - matches_lost
@@ -149,7 +149,7 @@ export const AuthenticationProvider = ({ children }) => {
 			setAccessToken(data.access);
 		} catch (error) {
 			console.error('CONTEXT LOGIN REFRESH:', error);
-			// We don't set user error here cause it's fine if you're not logged in
+			// We don't set user error here cause not being logged in is not an error
 		}
 	}
 
@@ -164,4 +164,4 @@ export const AuthenticationProvider = ({ children }) => {
 	);
 }
 
-export default AuthenticationContext;
+export const useAuth = () => useContext(AuthenticationContext);

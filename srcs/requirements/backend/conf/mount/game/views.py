@@ -58,3 +58,12 @@ class MatchViewSet(viewsets.ModelViewSet):
 		player_matches = Match.objects.filter(Q(winner_id=player_id) | Q(loser_id=player_id)).select_related("winner", "loser").order_by('-end_datetime')
 		serializer = self.get_serializer(player_matches, many=True)
 		return Response(serializer.data)
+
+	@action(detail=False, methods=['get'])
+	def last_player_matches(self, request, pk=None):
+		player_id = request.query_params.get('player_id', None)
+		if (player_id is None):
+			return Response({'error': 'Player ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+		player_matches = Match.objects.filter(Q(winner_id=player_id) | Q(loser_id=player_id)).select_related("winner", "loser").order_by('-end_datetime')[:3]
+		serializer = self.get_serializer(player_matches, many=True)
+		return Response(serializer.data)

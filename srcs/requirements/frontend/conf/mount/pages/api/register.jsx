@@ -23,7 +23,7 @@ export default async (req, res) => {
 	// Only POST allowed
 	if (req.method !== 'POST') {
 		res.setHeader('Allow', ['POST']);
-		return res.status(405).json({ message: 'Method ${req.method} is not allowed' });
+		return res.status(405).json({ message: `Method ${req.method} is not allowed` });
 	}
 
 	let formData = null;
