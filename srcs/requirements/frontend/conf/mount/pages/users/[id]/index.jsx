@@ -4,18 +4,31 @@ import Image from 'next/image';
 import styles from '../../../styles/base.module.css';
 import Header from '../../../components/Header';
 
+{/* <div className={`card ${styles.customCard}`}></div> */}
+
 const ProfileMemberCard = ({ user }) => {
 	return (
-		<div className={`card ${styles.customCard}`}>
-			<Image src={user.avatar} alt="Profile Picture" width={150} height={150} className="card-img-top" />
-			<div className="card-body">
-				<h5 className="card-title">{user.username}</h5>
-				{/* TODO: Add ELO here */}
-				<p className="card-text"><small className="text-muted">Joined on:<br/>{user.join_date}</small></p>
+		<div>
+			{/* pp + join date */}
+			<div className={`card ${styles.customCard}`}>
+			<Image src={user.avatar} alt="Profile Picture" width={400} height={200} className="card-img-top" />
+				<div className="card-body">
+					<h5 className="card-title">{user.username}</h5>
+					<p className="card-text"><small className="text-muted">Joined on:<br/>{user.join_date}</small></p>
+				</div>
+			</div>
+
+			{/* elo */}
+			<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '20px' }}>
+				<div className="card-body">
+					<p className="card-text"> future elo here</p>
+				</div>
 			</div>
 		</div>
 	);
 }
+
+
 
 const ProfileMatchPlayerLink = ({ id, username }) => {
 	if (id === null) {
@@ -112,8 +125,7 @@ const ProfileSideInfo = ({ user, last_matches }) => {
 		<div className={`card ${styles.customCard}`}>
 			<ProfileMatchList user={user} last_matches={last_matches} />
 			<div className="card-body">
-				<h5 className="card-title">Contact Information</h5>
-				<p className="card-text">Email: {user.email}</p>
+				<h5 className="card-text">Email: {user.email}</h5>
 			</div>
 		</div>
 	);
