@@ -85,6 +85,12 @@ class Member(AbstractBaseUser, PermissionsMixin):
 		verbose_name="Admin status"
 	)
 
+	friends = models.ManyToManyField(
+		"Member",
+		blank=True,
+		verbose_name="Friends list"
+	)
+
 	objects = MemberManager()
 
 	# Required for extending AbstractBaseUser
@@ -96,9 +102,9 @@ class Member(AbstractBaseUser, PermissionsMixin):
 		verbose_name = "member"
 		verbose_name_plural = "members"
 		indexes = [
-			models.Index(fields=["username"], name="username_idx"),
-			models.Index(fields=["join_date", "username"], name="join_date_idx"),
-			models.Index(fields=["-join_date", "username"], name="join_date_rev_idx")
+			models.Index(fields=["username"], name="member_username_idx"),
+			models.Index(fields=["join_date", "username"], name="member_join_date_idx"),
+			models.Index(fields=["-join_date", "username"], name="member_join_date_rev_idx")
 		]
 
 	def __str__(self):
@@ -107,6 +113,75 @@ class Member(AbstractBaseUser, PermissionsMixin):
 	@property
 	def is_staff(self):
 		return self.is_admin
+
+	def send_friend_request(self, target):
+		# TODO: Also check if target is already your friend
+		if (self == target):
+			raise ValueError("You can't add yourself as a friend.")
+		if (FriendRequest.objects.filter(sender=self, recipient=target).exists()):
+			raise ValueError("You already sent a friend request to this user.")
+		if (FriendRequest.objects.filter(sender=target, recipient=self).exists()):
+			# TODO: Accept the other friend request
+			raise ValueError("This user already sent you a friend request.")
+		friend_request = FriendRequest(sender=self, recipient=target)
+		friend_request.save()
+		return friend_request
+
+	def accept_friend_request(self, friend_request):
+		if (friend_request.recipient != self):
+			raise ValueError("This friend request is not for you!")
+		self.friends.add(friend_request.sender)
+		friend_request.sender.friends.add(self)
+		friend_request.delete()
+
+	def decline_friend_request(self, friend_request):
+		if (friend_request.recipient != self):
+			raise ValueError("This friend request is not for you!")
+		friend_request.delete()
+
+# FriendRequest objects contain:
+# - sender		(Member Foreign Key)
+# - recipient	(Member Foreign Key)
+# - datetime	(DateTimeField)
+#
+# Indexed on:
+# - datetime
+class FriendRequest(models.Model):
+	sender = models.ForeignKey(
+		Member,
+		null=False,
+		blank=False,
+		related_name="sender",
+		on_delete=models.CASCADE,
+		db_comment="Sender",
+		verbose_name="Friend request sender"
+	)
+
+	recipient = models.ForeignKey(
+		Member,
+		null=False,
+		blank=False,
+		related_name="recipient",
+		on_delete=models.CASCADE,
+		db_comment="Recipient",
+		verbose_name="Friend request recipient"
+	)
+
+	datetime = models.DateTimeField(
+		auto_now_add=True,
+		db_comment="Date and time of the creation of the friend request",
+		verbose_name="Date and time of friend request"
+	)
+
+	class Meta:
+		verbose_name = "friend request"
+		verbose_name_plural = "friend requests"
+		indexes = [
+			models.Index(fields=["datetime"], name="friend_request_date_idx")
+		]
+
+	def __str__(self):
+		return f"{self.sender.username} invited {self.recipient.username} ({self.datetime})"
 
 # Match objects contain:
 # - winner			(Member Foreign Key)
@@ -168,9 +243,9 @@ class Match(models.Model):
 		verbose_name = "match"
 		verbose_name_plural = "matches"
 		indexes = [
-			models.Index(fields=["winner"], name="winner_idx"),
-			models.Index(fields=["loser"], name="loser_idx"),
-			models.Index(fields=["end_datetime"], name="date_idx")
+			models.Index(fields=["winner"], name="match_winner_idx"),
+			models.Index(fields=["loser"], name="match_loser_idx"),
+			models.Index(fields=["end_datetime"], name="match_date_idx")
 		]
 
 	def __str__(self):

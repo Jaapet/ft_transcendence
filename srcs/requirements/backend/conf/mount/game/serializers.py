@@ -1,4 +1,4 @@
-from game.views import Member, Match
+from .models import Member, FriendRequest, Match
 from rest_framework import serializers
 
 # Limiting sizes of file uploads
@@ -14,7 +14,18 @@ def validate_file_size(file):
 class MemberSerializer(serializers.HyperlinkedModelSerializer):
 	class Meta:
 		model = Member
-		fields = ('url', 'id', 'username', 'password', 'email', 'avatar', 'join_date', 'is_superuser', 'is_admin')
+		fields = [
+			'url',
+			'id',
+			'username',
+			'password',
+			'email',
+			'avatar',
+			'join_date',
+			'friends',
+			'is_superuser',
+			'is_admin'
+		]
 
 # Serializes sent data for Member registration
 # Checks if avatar is under size limit defined in validate_file_size
@@ -40,7 +51,69 @@ class RegisterMemberSerializer(serializers.HyperlinkedModelSerializer):
 
 	class Meta:
 		model = Member
-		fields = ('url', 'username', 'email', 'password', 'avatar')
+		fields = [
+			'url',
+			'username',
+			'email',
+			'password',
+			'avatar'
+		]
+
+class SendFriendRequestSerializer(serializers.Serializer):
+	target_id = serializers.CharField()
+
+	def validate_target_id(self, value):
+		try:
+			target = Member.objects.get(id=value)
+		except Member.DoesNotExist:
+			raise serializers.ValidationError("Recipient does not exist.")
+		return target
+
+class ReceiveFriendRequestSerializer(serializers.Serializer):
+	request_id = serializers.IntegerField()
+
+	def validate_request_id(self, value):
+		try:
+			friend_request = FriendRequest.objects.get(id=value)
+		except FriendRequest.DoesNotExist:
+			raise serializers.ValidationError("Friend request does not exist.")
+		return friend_request
+
+class FriendRequestSerializer(serializers.HyperlinkedModelSerializer):
+	sender_username = serializers.SerializerMethodField()
+	recipient_username = serializers.SerializerMethodField()
+	sender_id = serializers.SerializerMethodField()
+	recipient_id = serializers.SerializerMethodField()
+	date = serializers.DateTimeField(source='datetime', format='%B %d %Y')
+	time = serializers.DateTimeField(source='datetime', format='%H:%M')
+
+	class Meta:
+		model = FriendRequest
+		fields = [
+			'url',
+			'id',
+			'sender',
+			'recipient',
+			'datetime',
+			'sender_username',
+			'recipient_username',
+			'sender_id',
+			'recipient_id',
+			'date',
+			'time'
+		]
+
+	def get_sender_username(self, obj):
+		return obj.sender.username if obj.sender else 'Deleted user'
+
+	def get_recipient_username(self, obj):
+		return obj.recipient.username if obj.recipient else 'Deleted user'
+
+	def get_sender_id(self, obj):
+		return obj.sender.id if obj.sender else None
+
+	def get_recipient_id(self, obj):
+		return obj.recipient.id if obj.recipient else None
 
 class MatchSerializer(serializers.HyperlinkedModelSerializer):
 	winner_username = serializers.SerializerMethodField()
@@ -73,12 +146,12 @@ class MatchSerializer(serializers.HyperlinkedModelSerializer):
 	
 	def get_winner_username(self, obj):
 		return obj.winner.username if obj.winner else 'Deleted user'
-	
+
 	def get_loser_username(self, obj):
 		return obj.loser.username if obj.loser else 'Deleted user'
-	
+
 	def get_winner_id(self, obj):
 		return obj.winner.id if obj.winner else None
-	
+
 	def get_loser_id(self, obj):
 		return obj.loser.id if obj.loser else None

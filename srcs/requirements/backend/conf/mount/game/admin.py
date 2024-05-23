@@ -5,7 +5,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
 from django.template.response import TemplateResponse
-from .models import Member, Match
+from .models import Member, FriendRequest, Match
 
 # The content of this file is only used on Django Admin
 # You can ignore it for correction
@@ -55,7 +55,7 @@ class MemberAdmin(BaseUserAdmin):
 	list_filter = ["is_admin"]
 	fieldsets = [
 		(None, {"fields": ["username", "email", "password"]}),
-		("Other info", {"fields": ["avatar"]}),
+		("Other info", {"fields": ["avatar", "friends"]}),
 		("Permissions", {"fields": ["is_superuser", "is_admin"]})
 	]
 	# add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
@@ -118,6 +118,10 @@ class MemberAdmin(BaseUserAdmin):
 		})
 		return TemplateResponse(request, "admin/MemberMatchList.html", extra_context)
 admin.site.register(Member, MemberAdmin)
+
+class FriendRequestAdmin(admin.ModelAdmin):
+	list_display = ("id", "sender", "recipient", "datetime")
+admin.site.register(FriendRequest, FriendRequestAdmin)
 
 class MatchAdmin(admin.ModelAdmin):
 	list_display = ("winner", "loser", "start_datetime", "end_datetime")

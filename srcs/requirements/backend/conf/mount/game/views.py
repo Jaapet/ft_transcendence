@@ -6,8 +6,13 @@ from rest_framework.generics import RetrieveAPIView
 from rest_framework.parsers import MultiPartParser
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .serializers import MemberSerializer, RegisterMemberSerializer, MatchSerializer
-import json
+from .serializers import (
+	MemberSerializer,
+	RegisterMemberSerializer,
+	SendFriendRequestSerializer,
+	ReceiveFriendRequestSerializer,
+	MatchSerializer
+)
 
 # Queries all members ordered by username
 # Requires authentication
@@ -42,6 +47,45 @@ class RegisterMemberAPIView(APIView):
 		print(serializer)
 		print(serializer.errors)
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class SendFriendRequestAPIView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def post(self, request, *args, **kwargs):
+		serializer = SendFriendRequestSerializer(data=request.data)
+		serializer.is_valid(raise_exception=True)
+		target = serializer.validated_data['target_id']
+		try:
+			request.user.send_friend_request(target)
+			return Response({"detail": "Friend request sent."}, status=status.HTTP_201_CREATED)
+		except ValueError as err:
+			return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
+class AcceptFriendRequestAPIView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def post(self, request, *args, **kwargs):
+		serializer = ReceiveFriendRequestSerializer(data=request.data)
+		serializer.is_valid(raise_exception=True)
+		friend_request = serializer.validated_data['request_id']
+		try:
+			request.user.accept_friend_request(friend_request)
+			return Response({"detail": "Friend request accepted."}, status=status.HTTP_200_OK)
+		except ValueError as err:
+			return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
+class DeclineFriendRequestAPIView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def post(self, request, *args, **kwargs):
+		serializer = ReceiveFriendRequestSerializer(data=request.data)
+		serializer.is_valid(raise_exception=True)
+		friend_request = serializer.validated_data['request_id']
+		try:
+			request.user.decline_friend_request(friend_request)
+			return Response({"detail": "Friend request declined."}, status=status.HTTP_200_OK)
+		except ValueError as err:
+			return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
 # Queries all matches ordered by most recently finished
 # Requires authentication
