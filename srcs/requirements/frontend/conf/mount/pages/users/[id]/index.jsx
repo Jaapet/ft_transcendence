@@ -121,7 +121,7 @@ const ProfileMatchList = ({ user, last_matches }) => {
 
 const ProfileSideInfo = ({ user, last_matches }) => {
 	return (
-		<div className={`card ${styles.customCard}`}>
+		<div className={`card ${styles.backCard}`}>
 			<div className={`card-body ${styles.cardInfo}`}>
 				<h5 className="card-text">Last Matches</h5>
 				<ProfileMatchList user={user} last_matches={last_matches} />

@@ -46,7 +46,17 @@
 .customCard {
 	position:relative;
     box-shadow: 0 15px 15px rgba(0, 0, 0, 0.267);
-	background-color: #bb86c5be;
+	background-color:#ff8a00;
+	color: rgb(255, 255, 255);
+	font-family: 'random little things';
+	margin-left: 2cm;
+	margin-right: 2cm;
+}
+
+.backCard {
+	position:relative;
+    box-shadow: 0 15px 15px rgba(0, 0, 0, 0.267);
+	background-color: #000000c2;
 	color: rgb(255, 255, 255);
 	font-family: 'random little things';
 	margin-left: 2cm;
