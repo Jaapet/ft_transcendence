@@ -1,6 +1,5 @@
 import React from 'react';
 import Image from 'next/image';
-import Header from '../../components/Header';
 
 const UserTableHead = () => {
 	return (
@@ -58,7 +57,6 @@ export default function Users({ users }) {
 	if (!users) {
 		return (
 			<div align="center">
-				<Header />
 				<p>Something went wrong...</p>
 				<p>Please reload the page.</p>
 			</div>
@@ -67,7 +65,6 @@ export default function Users({ users }) {
 
 	return (
 		<div>
-			<Header />
 			<h1 class="text-center mt-4 w-25 mx-auto">{ `User list` }</h1>
 			<UserTable users={users} />
 		</div>

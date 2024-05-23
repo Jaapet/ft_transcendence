@@ -1,13 +1,10 @@
 import Link from "next/link";
 import React from "react";
 import Head from "next/head";
-import Header from "../components/Header";
 import styles from '../styles/base.module.css';
 
 const ChooseGame = () => {
     return (
-        <div>
-            <Header />
             <div className={styles.container}>
                 <Head>
                     <title>Choose Game</title>
@@ -22,7 +19,6 @@ const ChooseGame = () => {
                     </Link>
                 </div>
             </div>
-        </div>
     );
 };
 

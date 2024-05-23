@@ -1,6 +1,5 @@
 import Head from 'next/head';
 import styles from '../styles/home.module.css';
-import Header from '../components/Header';
 import BigTitle from '../components/BigAssTitle';
 
 const VideoBackground = () => (
@@ -23,7 +22,6 @@ export default function Home() {
         }
       `}</style>
 
-		<Header/>
     	<VideoBackground />
     	<BigTitle />
     </div>

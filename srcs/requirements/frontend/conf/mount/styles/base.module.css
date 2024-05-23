@@ -15,9 +15,9 @@
 	align-items: center;
 	text-align: center;
 	background-color: rgb(54, 34, 54);
-	background-image: url('../public/images/doodlebackground.jpg'); 
-    background-size: cover;
-    background-repeat: no-repeat;
+	background-image: url('../public/images/doodleBack.jpg'); 
+    background-size: 20%;
+    background-repeat:repeat;
     background-position: center;
     background-blend-mode: overlay; 
     opacity: 0.95; 
