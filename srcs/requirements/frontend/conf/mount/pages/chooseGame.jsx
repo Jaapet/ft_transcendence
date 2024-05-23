@@ -11,10 +11,10 @@ const ChooseGame = () => {
                 </Head>
                 <h1 className={`mt-5 ${styles.background_title}`}>Choose Your Game</h1>
                 <div className={styles.buttonContainer}>
-                    <Link href="/gamePage" passHref>
+                    <Link href="/PongPage" passHref>
                         <a className={styles.button}>Classic Pong</a>
                     </Link>
-                    <Link href="/gamePage" passHref>
+                    <Link href="/RoyalPage" passHref>
                         <a className={styles.button}>Royal Pong</a>
                     </Link>
                 </div>

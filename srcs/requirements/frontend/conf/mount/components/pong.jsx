@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import Script from 'next/script';
 
-const GamePage = () => {
+const Pong = () => {
   useEffect(() => {
     //Script.async = true;
   }, []);
@@ -21,5 +21,5 @@ const GamePage = () => {
   );
 };
 
-export default GamePage;
+export default Pong;
 

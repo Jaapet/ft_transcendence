@@ -34,7 +34,7 @@ function main()
   const texture2 = loader2.load('games/royal/texture/dollar.jpg');
   texture2.colorSpace = THREE.SRGBColorSpace;
 
-  const planeGeo = new THREE.PlaneGeometry(planeSize + 3, planeSize + 3);
+  const planeGeo = new THREE.PlaneGeometry(planeSize, planeSize);
   const planeMat = new THREE.MeshPhongMaterial({
     map: texture2,
     side: THREE.DoubleSide
@@ -43,6 +43,26 @@ function main()
   const mesh = new THREE.Mesh(planeGeo, planeMat);
   mesh.rotation.x = Math.PI * -.5;
   scene.add(mesh);
+
+
+    /// FLOOR 2
+
+    const floorSize = 400;
+ 
+    const loader3 = new THREE.TextureLoader();
+    const texture3 = loader3.load('games/royal/texture/dollar.jpg');
+    texture3.colorSpace = THREE.SRGBColorSpace;
+  
+    const floorGeo = new THREE.PlaneGeometry(floorSize, floorSize);
+    const floorMat = new THREE.MeshPhongMaterial({
+      map: texture3,
+      side: THREE.DoubleSide
+  
+    });
+    const mesh2 = new THREE.Mesh(floorGeo, floorMat);
+    mesh2.rotation.x = Math.PI * -.5;
+    mesh2.position.y = -150;
+    scene.add(mesh2);
 
 
   /// ORBITAL CONTROLS
@@ -56,24 +76,37 @@ function main()
   /// LIGHTS
 
   const skyColor = 0xB1E1FF;  // bleu clair
-  const groundColor = 0xB97A20;  // orange brunâtre
-  const intensity2 = 0.1;
+  const groundColor = 0xFFFFFF;  // orange brunâtre
+  const intensity2 = 0.2;
   const light2 = new THREE.HemisphereLight(skyColor, groundColor, intensity2);
   scene.add(light2);
 
-  const color = 0xFFFFFF;
-  const intensity = 1;
+  const color = 0xEEEEFF;
+  const intensity = 0.8;
   const light = new THREE.DirectionalLight(color, intensity);
-  light.position.set(0, 10, 0);
-  light.target.position.set(-5, 0, 0);
+  light.position.set(-5, 10, -5);
+  light.target.position.set(5, 0, 5);
   scene.add(light);
   scene.add(light.target);
     
+
+  const light3 = new THREE.DirectionalLight(color, intensity);
+  light3.position.set(5, 10, 5);
+  light3.target.position.set(-5, 0, -5);
+  scene.add(light3);
+  scene.add(light3.target);
+
+  const light4 = new THREE.DirectionalLight(color, 0.2);
+  light4.position.set(0, 10, 0);
+  light4.target.position.set(0, 0, 0);
+  scene.add(light4);
+  scene.add(light4.target);
 
 
   /// OBJECTS
 
   const renderer = new THREE.WebGLRenderer({antialias: true, canvas});
+  
   
 
   
@@ -81,6 +114,8 @@ function main()
   const radius =  2;  
   const detail = 5;  
   const ball = new THREE.IcosahedronGeometry( radius, detail );
+  const wall = new THREE.BoxGeometry(50, 150, 50);
+
   
 
   var objects = [];
@@ -98,15 +133,11 @@ function main()
   addball(0, 2, 4, makeObj(ball, texture));
   addball(10, 2, 4, makeObj(ball, texture));
   addball(-10, 2, 4, makeObj(ball, texture));
+  addwall(0, -75.1, 0, makeObj(wall, texture));
 
 
-    // GESTION DES RAQUETTES
-
-  // GESTION DE LA RAQUETTE 1
-  // si la touche fleche haut est enfoncée et que la raquette n'est pas au bord
-  
+    
   document.addEventListener('keydown', function(event) {
-    console.log(event.key);
     switch (event.key) {
         case "w":
         case "W":
@@ -132,7 +163,6 @@ function main()
   });
 
   document.addEventListener('keyup', function(event) {
-    console.log(event.key);
     switch (event.key) {
         case "w":
         case "W":
@@ -162,9 +192,9 @@ function main()
 
   /// FUNCTIONS
 
-  function makeObj(geometry, color)
+  function makeObj(geometry, map)
   {
-    const material = new THREE.MeshPhongMaterial(color);
+    const material = new THREE.MeshPhongMaterial({map: map});
    
     const obj = new THREE.Mesh(geometry, material);
    
@@ -178,10 +208,19 @@ function main()
     obj.position.y = y;
     obj.position.z = z;
 
-    var objtab = [obj, 0, 0]
+    var objtab = [obj, 0, 0, 0]
    
     scene.add(obj);
     objects.push(objtab);
+  }
+
+  function addwall(x, y, z, obj)
+  {
+    obj.position.x = x;
+    obj.position.y = y;
+    obj.position.z = z;
+
+    scene.add(obj);
   }
 
 
@@ -212,7 +251,7 @@ function main()
     const canvas = renderer.domElement;
     camera.aspect = canvas.clientWidth / canvas.clientHeight;
     camera.updateProjectionMatrix();
-    
+  
     
     
     // GESTION ROTATION ET DEPLACEMENT DE LA BOULE
@@ -220,13 +259,22 @@ function main()
     objects.forEach(objtab => {
       // ce deplace dans une direction et s'arrete au bord et repart dans l'autre sens
       const obj = objtab[0];
+
       
       ballspeed[0] = objtab[1];
       ballspeed[1] = objtab[2];
-     
+      
+      if (objtab[3] == 1)
+      {
+        if (obj.position.y > -148)
+          obj.position.y = obj.position.y - 1.2;
+      }
+      else
+      {
       ballspeed[0] += ballmove[0]/3;
       ballspeed[1] += ballmove[1]/3;
-  
+      }
+      
       ballspeed[0] *= 0.96;
       ballspeed[1] *= 0.96;
 
@@ -241,41 +289,41 @@ function main()
       let directionX = ballspeed[1];
       let speed = 0.8;
       
-      if (obj.position.x < 25 && directionX > 0) {
+      if (directionX > 0) {
         obj.position.x += speed * (directionX);
 
       }
-      else if (obj.position.x > -25 && directionX < 0) {
+      else if (directionX < 0) {
         obj.position.x -= speed * (Math.abs(directionX));
       }
-      else
+      else if (directionX != 0)
       {
-        ballspeed[1] = -ballspeed[1];
+        objtab[3] = 1;
       }
 
 
-      if (obj.position.z < 25 && directionZ > 0) {
+      if (directionZ > 0) {
         obj.position.z += speed * (Math.abs(directionZ));
       }
-      else if (obj.position.z > -25 && directionZ < 0) {
+      else if (directionZ < 0) {
         obj.position.z -= speed * (Math.abs(directionZ));
       }
-      else
+      else if (directionZ != 0)
       {
-        ballspeed[0] = -ballspeed[0];
+        
       }
 
-      if (obj.position.z < -25)
-        obj.position.z = -25;
+      if (obj.position.z < -26)
+        objtab[3] = 1;
       
-      if (obj.position.z > 25)
-        obj.position.z = 25;
+      if (obj.position.z > 26)
+        objtab[3] = 1;
 
-      if (obj.position.x < -25)
-        obj.position.x = -25;
+      if (obj.position.x < -26)
+        objtab[3] = 1;
 
-      if (obj.position.x > 25)
-        obj.position.x = 25;
+      if (obj.position.x > 26)
+        objtab[3] = 1;
 
 
 
@@ -288,10 +336,11 @@ function main()
       if (hit[0] != 0 || hit[1] != 0)
       {
         
-        ballspeed[0] = hit[0]/2;
-        ballspeed[1] = hit[1]/2;
+        ballspeed[0] = hit[0]/4;
+        ballspeed[1] = hit[1]/4;
 
       }
+
       
       objtab[1] = ballspeed[0];
       objtab[2] = ballspeed[1];

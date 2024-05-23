@@ -55,50 +55,77 @@ function main()
 
   /// LIGHTS
 
-  const skyColor = 0xB1E1FF;  // bleu clair
-  const groundColor = 0xB97A20;  // orange brunâtre
-  const intensity2 = 0.1;
+  // gris
+  const skyColor = 0xEEEEEE;  
+  // brown
+  const groundColor =  0xAA5656;
+  const intensity2 = 0.4;
   const light2 = new THREE.HemisphereLight(skyColor, groundColor, intensity2);
   scene.add(light2);
 
   const color = 0xFFFFFF;
-  const intensity = 1;
+  const intensity = 1.5;
   const light = new THREE.DirectionalLight(color, intensity);
-  light.position.set(0, 10, 0);
-  light.target.position.set(-5, 0, 0);
+  light.position.set(10, 2, 0);
+  light.target.position.set(0, 0, 0);
   scene.add(light);
   scene.add(light.target);
     
 
+  const light3 = new THREE.DirectionalLight(color, intensity);
+  light3.position.set(-10, 2, 0);
+  light3.target.position.set(0, 0, 0);
+  scene.add(light3);
+  scene.add(light3.target);
+    
 
   /// OBJECTS
 
   const renderer = new THREE.WebGLRenderer({antialias: true, canvas});
   
+  const texture3 = loader2.load('games/pong/texture/dollarrachid.jpg');;
+  texture3.wrapS = THREE.RepeatWrapping;
+  texture3.wrapT = THREE.RepeatWrapping;
+  texture3.magFilter = THREE.NearestFilter;
+  texture3.colorSpace = THREE.SRGBColorSpace;
+  const repeats = 2;
+  texture3.repeat.set(repeats*8, repeats);
 
   // Créer un matériau avec votre texture pour les côtés du cube
-  const sideMaterial = new THREE.MeshBasicMaterial({ map: texture2 });
+  const wallsideMaterial = new THREE.MeshBasicMaterial({ map: texture3 });
+
 
   // Créer des matériaux pour les autres faces du cube (haut et bas)
   const topBottomMaterial = new THREE.MeshBasicMaterial({ color: 0x003322 });
 
   // Créer un tableau de matériaux pour chaque face du cube
-  const materials = [
-      sideMaterial,       // Matériau pour la face droite
-      sideMaterial,       // Matériau pour la face gauche
+  const wallmaterials = [
+      wallsideMaterial,       // Matériau pour la face droite
+      wallsideMaterial,       // Matériau pour la face gauche
       topBottomMaterial,  // Matériau pour la face supérieure
       topBottomMaterial,  // Matériau pour la face inférieure
-      sideMaterial,       // Matériau pour la face avant
-      sideMaterial        // Matériau pour la face arriere
+      wallsideMaterial,       // Matériau pour la face avant
+      wallsideMaterial        // Matériau pour la face arriere
   ];
 
-  // Créer un matériau combiné en utilisant le tableau de matériaux
-  const cubeMaterial = new THREE.MeshFaceMaterial(materials);
+   // Créer un matériau avec votre texture pour les côtés du cube
+   const sideMaterial = new THREE.MeshBasicMaterial({ map: texture2 });
+
+
+   // Créer un tableau de matériaux pour chaque face du cube
+   const raquettematerials = [
+       sideMaterial,       // Matériau pour la face droite
+       sideMaterial,       // Matériau pour la face gauche
+       topBottomMaterial,  // Matériau pour la face supérieure
+       topBottomMaterial,  // Matériau pour la face inférieure
+       sideMaterial,       // Matériau pour la face avant
+       sideMaterial        // Matériau pour la face arriere
+   ];
 
 
   const cube = new THREE.BoxGeometry(4, 4, 10);
+  const wall = new THREE.BoxGeometry(90, 4, 2);
 
-  // suprimer la face du dessus
 
   
   // BALL
@@ -116,11 +143,15 @@ function main()
   raquettesmove[3] = 0;
 
   addball(0, 2, 4, makeObj(ball, texture));
-  addcube(-42, 2, 0, new THREE.Mesh(cube, cubeMaterial));
-  addcube(42, 2, 0, new THREE.Mesh(cube, cubeMaterial));
+  addraquette(-43, 2, 0, new THREE.Mesh(cube, raquettematerials));
+  addraquette(43, 2, 0, new THREE.Mesh(cube, raquettematerials));
+  addwall(0, 2, 22, new THREE.Mesh(wall, wallmaterials));
+  addwall(0, 2, -22, new THREE.Mesh(wall, wallmaterials));
 
 
-    // GESTION DES RAQUETTES
+  var frame = 0;
+
+  // GESTION DES RAQUETTES
 
   // GESTION DE LA RAQUETTE 1
   // si la touche fleche haut est enfoncée et que la raquette n'est pas au bord
@@ -131,19 +162,19 @@ function main()
         case "w":
         case "W":
             
-            raquettesmove[0] = -0.7;
+            raquettesmove[0] = -1.2;
             break;
         case "s":
         case "S":
             
-            raquettesmove[1] = 0.7;
+            raquettesmove[1] = 1.2;
             break;
 
         case "ArrowUp":
-            raquettesmove[2] = -0.7;
+            raquettesmove[2] = -1.2;
             break;
         case "ArrowDown":
-            raquettesmove[3] = 0.7;
+            raquettesmove[3] = 1.2;
             break;
     }
   });
@@ -197,17 +228,23 @@ function main()
     objects.push(objtab);
   }
 
-  function addcube(x, y, z, obj)
+  function addraquette(x, y, z, obj)
   {
     obj.position.x = x;
     obj.position.y = y;
     obj.position.z = z;
 
-
-
-   
     scene.add(obj);
     raquettes.push(obj);
+  }
+
+  function addwall(x, y, z, obj)
+  {
+    obj.position.x = x;
+    obj.position.y = y;
+    obj.position.z = z;
+
+    scene.add(obj);
   }
 
 
@@ -244,6 +281,7 @@ function main()
   function render(time)
   {
     time *= 0.001;  // convertit le temps en secondes
+    frame += 0.005; // croissance de la vitessse de la balle
 
     /*if (resizeRendererToDisplaySize(renderer)) {
       const canvas = renderer.domElement;
@@ -272,7 +310,7 @@ function main()
       const obj = objtab[0];
       let directionX = objtab[1];
       let directionZ = objtab[2];
-      let speed = 0.8 + time * 0.05;
+      let speed = 1 + frame * 0.05; // vitesse de la balle
   
       
       if (obj.position.x < 40 && directionX > 0) {
@@ -289,9 +327,8 @@ function main()
         // si la balle touche une raquette
         if (hit !== 0.0)
         {
-          if (Math.abs(hit) < 2)
-            hit = 0;
-          let decalage = hit * 0.18;
+          
+          let decalage = hit * 0.1;
           
           directionX = -directionX;
           
@@ -342,6 +379,19 @@ function main()
       // Appliquer la rotation
       obj.rotateZ(-rotationX);
       obj.rotateX(rotationZ);
+
+    if (directionZ > 0.6)
+      directionZ = 0.6;
+    if (directionZ < -0.6)
+      directionZ = -0.6;
+
+    const absSum = Math.abs(directionX) + Math.abs(directionZ);
+
+    if (absSum !== 1) {
+        const ratio = 1 / absSum;
+        directionX *= ratio;
+        directionZ *= ratio;
+    }
 
       objtab[1] = directionX;
       objtab[2] = directionZ;
