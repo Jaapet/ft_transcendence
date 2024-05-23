@@ -11,7 +11,7 @@ const ProfileMemberCard = ({ user }) => {
 		<div>
 			{/* pp + join date */}
 			<div className={`card ${styles.customCard}`}>
-			<Image src={user.avatar} alt="Profile Picture" width={400} height={200} className="card-img-top" />
+			<Image src={user.avatar} alt="Profile Picture" width={720} height={360} className="card-img-top" />
 				<div className="card-body">
 					<h5 className="card-title">{user.username}</h5>
 					<p className="card-text"><small className="text-muted">Joined on:<br/>{user.join_date}</small></p>
@@ -102,7 +102,7 @@ const ProfileMatchList = ({ user, last_matches }) => {
 	return (
 		<div className={`card ${styles.customCard}`}>
 			<div className="card-body">
-				<h5 className="card-title">Last Matches</h5>
+				
 				<ul className="list-group list-group">
 					{last_matches.map(match => (
 						<li key={match.id} className="list-group-item">
@@ -123,12 +123,14 @@ const ProfileMatchList = ({ user, last_matches }) => {
 const ProfileSideInfo = ({ user, last_matches }) => {
 	return (
 		<div className={`card ${styles.customCard}`}>
-			<ProfileMatchList user={user} last_matches={last_matches} />
-			<div className="card-body">
+			<div className={`card-body ${styles.cardInfo}`}>
+				<h5 className="card-text">Last Matches</h5>
+				<ProfileMatchList user={user} last_matches={last_matches} />
 				<h5 className="card-text">Email: {user.email}</h5>
 			</div>
 		</div>
 	);
+	
 }
 
 export default function Profile({ status, user, last_matches }) {
