@@ -46,7 +46,7 @@
 .customCard {
 	position:relative;
     box-shadow: 0 15px 15px rgba(0, 0, 0, 0.267);
-	background-color: #868ac5be;
+	background-color: #bb86c5be;
 	color: rgb(255, 255, 255);
 	font-family: 'random little things';
 	margin-left: 2cm;
@@ -59,6 +59,16 @@
 	font-family:'info';
 }
 
+.customList {
+    color: rgb(255, 255, 255);
+    background-color: rgba(0, 0, 0, 0.733);
+    background-image: url('../public/images/champion.png'), url('../public/images/champion.png');
+    background-size: 5%, 5%;
+    background-repeat: repeat-y, repeat-y;
+    background-position: left, right;
+    background-blend-mode: overlay;
+    opacity: 0.80;
+}
 
 .buttonContainer {
     display: flex;

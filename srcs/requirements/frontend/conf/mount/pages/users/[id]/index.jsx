@@ -105,8 +105,7 @@ const ProfileMatchList = ({ user, last_matches }) => {
 				
 				<ul className="list-group list-group">
 					{last_matches.map(match => (
-						<li key={match.id} className="list-group-item">
-							<ProfileMatchPlayers user={user} match={match} />
+ 						<li key={match.id} className={`list-group-item ${styles.customList}`}>							<ProfileMatchPlayers user={user} match={match} />
 							<p className="fs-3 mb-0">{match.winner_score}-{match.loser_score}</p>
 							<p className="fs-4 mb-0">{match.end_date}</p>
 						</li>
