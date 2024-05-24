@@ -1,4 +1,4 @@
-from .models import Member, Match
+from .models import Member, FriendRequest, Match
 from django.db.models import Q
 from rest_framework import viewsets, permissions, status
 from rest_framework.views import APIView
@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from .serializers import (
 	MemberSerializer,
 	RegisterMemberSerializer,
+	FriendRequestSerializer,
 	SendFriendRequestSerializer,
 	ReceiveFriendRequestSerializer,
 	MatchSerializer
@@ -47,6 +48,33 @@ class RegisterMemberAPIView(APIView):
 		print(serializer)
 		print(serializer.errors)
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# Queries all friend requests ordered by most recent
+# Requires authentication
+class FriendRequestViewSet(viewsets.ModelViewSet):
+	permission_classes = [permissions.IsAuthenticated]
+	serializer_class = FriendRequestSerializer
+	queryset = FriendRequest.objects.all().select_related("sender", "recipient").order_by('-datetime')
+
+	# Get all friend requests sent by 1 user
+	@action(detail=False, methods=['get'])
+	def requests_sent(self, request, pk=None):
+		user_id = request.query_params.get('user_id', None)
+		if (user_id is None):
+			return Response({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+		user_requests = FriendRequest.objects.filter(Q(sender_id=user_id)).select_related("sender", "recipient").order_by('-datetime')
+		serializer = self.get_serializer(user_requests, many=True)
+		return Response(serializer.data)
+
+	# Get all friend requests received by 1 user
+	@action(detail=False, methods=['get'])
+	def requests_received(self, request, pk=None):
+		user_id = request.query_params.get('user_id', None)
+		if (user_id is None):
+			return Response({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+		user_requests = FriendRequest.objects.filter(Q(recipient_id=user_id)).select_related("sender", "recipient").order_by('-datetime')
+		serializer = self.get_serializer(user_requests, many=True)
+		return Response(serializer.data)
 
 class SendFriendRequestAPIView(APIView):
 	permission_classes = [permissions.IsAuthenticated]
@@ -94,6 +122,7 @@ class MatchViewSet(viewsets.ModelViewSet):
 	serializer_class = MatchSerializer
 	queryset = Match.objects.all().select_related("winner", "loser").order_by('-end_datetime')
 
+	# Get all matches involving 1 player
 	@action(detail=False, methods=['get'])
 	def player_matches(self, request, pk=None):
 		player_id = request.query_params.get('player_id', None)
@@ -103,6 +132,7 @@ class MatchViewSet(viewsets.ModelViewSet):
 		serializer = self.get_serializer(player_matches, many=True)
 		return Response(serializer.data)
 
+	# Get a player's last 3 matches
 	@action(detail=False, methods=['get'])
 	def last_player_matches(self, request, pk=None):
 		player_id = request.query_params.get('player_id', None)

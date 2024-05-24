@@ -3,6 +3,7 @@ from rest_framework import routers
 from .views import (
 	MemberViewSet,
 	MemberAPIView,
+	FriendRequestViewSet,
 	RegisterMemberAPIView,
 	SendFriendRequestAPIView,
 	AcceptFriendRequestAPIView,
@@ -16,6 +17,7 @@ from rest_framework_simplejwt import views as jwt_views
 
 router = routers.DefaultRouter()
 router.register(r'members', MemberViewSet)
+router.register(r'friend_requests', FriendRequestViewSet)
 router.register(r'matches', MatchViewSet)
 
 urlpatterns = [
