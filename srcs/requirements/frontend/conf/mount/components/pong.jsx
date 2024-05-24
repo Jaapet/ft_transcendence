@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import styles from '../styles/game.module.css';
+
 
 const Pong = () => {
   useEffect(() => {
@@ -411,7 +413,9 @@ const Pong = () => {
 
   return (
     <div>
-      <canvas id="pong-canvas" width="1000" height="800"></canvas>
+		<div className={styles.canvasWrapper}>
+      <canvas id="pong-canvas"  className={styles.canvas} width="1000" height="700"></canvas>
+    </div>
     </div>
   );
 };
