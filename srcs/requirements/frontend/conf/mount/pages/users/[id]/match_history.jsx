@@ -2,18 +2,21 @@ import React from 'react';
 import Head from 'next/head';
 import styles from '../../../styles/base.module.css';
 import Header from '../../../components/Header';
+import Link from 'next/link';
 
 const UserMatchHistoryMatchPlayerLink = ({ id, username }) => {
 	if (id === null) {
-		return (<span>{username}</span>);
+	  return (<span>{username}</span>);
 	}
-
+  
 	return (
-		<a href={`/users/${id}`} className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-			{username}
+	  <Link href={`/users/${id}`} passHref>
+		<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+		  {username}
 		</a>
+	  </Link>
 	);
-}
+  }
 
 const UserMatchHistoryMatchPlayers = ({ user, match }) => {
 	if (match.winner_id === user.id) {
@@ -39,14 +42,13 @@ const UserMatchHistoryMatchPlayers = ({ user, match }) => {
 	}
 }
 
-const UserMatchHistoryList = ({ user, matches }) => {
-	/*
-	Match objects contain:
-	- url							(url to match resource in backend)
-	- id							(unique id)
-	- winner					(url to backend resource)
-	- loser						(url to backend resource)
-	- winner_score		(number)
+/*
+Match objects contain:
+- url							(url to match resource in backend)
+- id							(unique id)
+- winner					(url to backend resource)
+- loser						(url to backend resource)
+- winner_score		(number)
 	- loser_score			(number)
 	- start_date			(string 'Month DD YYYY')
 	- end_date				(string 'Month DD YYYY')
@@ -61,41 +63,50 @@ const UserMatchHistoryList = ({ user, matches }) => {
 	- loser
 	- end_datetime
 	*/
+	const UserMatchHistoryList = ({ user, matches }) => {
 
-	if (!matches || matches.length < 1) {
-		return (
+		if (!matches || matches.length < 1) {
+		  return (
 			<div className={`card ${styles.customCard}`}>
-				<div className="card-body">
-					<h5 className="card-title mb-0">No matches to display :/</h5>
-					<p><a href={`/users/${user.id}`} className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-						Back to {user.username}'s profile
-					</a></p>
-				</div>
+			  <div className="card-body">
+				<h5 className="card-title mb-0">No matches to display :/</h5>
+				<p>
+				  <Link href={`/users/${user.id}`} passHref>
+					<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+					  Back to {user.username}'s profile
+					</a>
+				  </Link>
+				</p>
+			  </div>
 			</div>
-		);
-	}
-
-	return (
-		<div className={`card ${styles.customCard}`}>
+		  );
+		}
+	  
+		return (
+		  <div className={`card ${styles.customCard}`}>
 			<div className="card-body">
-				<h5 className="card-title">{user.username}'s match history</h5>
-				<ul className="list-group list-group">
-					{matches.map(match => (
-						<li key={match.id} className="list-group-item">
-						<UserMatchHistoryMatchPlayers user={user} match={match} />
-						<p className="fs-3 mb-0">{match.winner_score}-{match.loser_score}</p>
-						<p className="fs-4 mb-0">{match.end_date}</p>
-					</li>
-					))}
-				</ul>
-				<p><a href={`/users/${user.id}`} className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+			  <h5 className="card-title">{user.username}'s match history</h5>
+			  <ul className="list-group list-group">
+				{matches.map(match => (
+				  <li key={match.id} className="list-group-item">
+					<UserMatchHistoryMatchPlayers user={user} match={match} />
+					<p className="fs-3 mb-0">{match.winner_score}-{match.loser_score}</p>
+					<p className="fs-4 mb-0">{match.end_date}</p>
+				  </li>
+				))}
+			  </ul>
+			  <p>
+				<Link href={`/users/${user.id}`} passHref>
+				  <a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
 					Back to {user.username}'s profile
-				</a></p>
+				  </a>
+				</Link>
+			  </p>
 			</div>
-		</div>
-	);
-}
-
+		  </div>
+		);
+	  }
+	  
 export default function UserMatchHistory({ status, user, matches }) {
 	/* TODO: Implement redirect here
 	if (status === 404) {

@@ -2,9 +2,7 @@ import React from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import styles from '../../../styles/base.module.css';
-import Header from '../../../components/Header';
-
-{/* <div className={`card ${styles.customCard}`}></div> */}
+import Link from 'next/link';
 
 const ProfileMemberCard = ({ user }) => {
 	return (
@@ -32,18 +30,19 @@ const ProfileMemberCard = ({ user }) => {
 }
 
 
-
 const ProfileMatchPlayerLink = ({ id, username }) => {
 	if (id === null) {
-		return (<span>{username}</span>);
+	  return (<span>{username}</span>);
 	}
-
+  
 	return (
-		<a href={`/users/${id}`} className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-			{username}
+	  <Link href={`/users/${id}`} passHref>
+		<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+		  {username}
 		</a>
+	  </Link>
 	);
-}
+  }
 
 const ProfileMatchPlayers = ({ user, match }) => {
 	if (match.winner_id === user.id) {
@@ -122,17 +121,19 @@ const ProfileMatchList = ({ user, last_matches }) => {
 
 const ProfileSideInfo = ({ user, last_matches }) => {
 	return (
-			<div className={`card-body ${styles.cardInfo}`}>
-				<h5 className="card-text">Last Matches</h5>
-				<ProfileMatchList user={user} last_matches={last_matches} />
-				<p><a href={`/users/${user.id}/match_history`} className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-					See {user.username}'s full match history
-				</a></p>
-				</div>
-
-	);
-	
-}
+		<div className={`card-body ${styles.cardInfo}`}>
+		  <h5 className="card-text">Last Matches</h5>
+		  <ProfileMatchList user={user} last_matches={last_matches} />
+		  <p>
+			<Link href={`/users/${user.id}/match_history`} passHref>
+			  <a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+				See {user.username}'s full match history
+			  </a>
+			</Link>
+		  </p>
+		</div>
+	  );
+	}
 
 export default function Profile({ status, user, last_matches }) {
 	/* TODO: Implement redirect here
