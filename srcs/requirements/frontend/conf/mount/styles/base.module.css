@@ -51,6 +51,7 @@
 	font-family: 'random little things';
 	margin-left: 2cm;
 	margin-right: 2cm;
+	z-index: 5;
 }
 
 .backCard {
@@ -62,6 +63,9 @@
 	margin-left: 2cm;
 	margin-right: 2cm;
 	padding: 0.5cm;
+	z-index: 4;
+	/* align-items: center; */
+
 }
 
 .cardInfo{
