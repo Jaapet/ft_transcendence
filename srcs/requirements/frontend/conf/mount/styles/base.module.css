@@ -74,7 +74,7 @@
     color: rgb(255, 255, 255);
     background-color: #379391;
     background-image: url('../public/images/champion.png'), url('../public/images/champion.png');
-    background-size: 5%, 5%;
+    background-size: 7%, 7%;
     background-repeat: repeat-y, repeat-y;
     background-position: left, right;
     background-blend-mode: overlay;

@@ -1,7 +1,6 @@
 import React from 'react';
 import Head from 'next/head';
 import styles from '../../../styles/base.module.css';
-import Header from '../../../components/Header';
 import Link from 'next/link';
 
 const UserMatchHistoryMatchPlayerLink = ({ id, username }) => {
@@ -83,26 +82,29 @@ Match objects contain:
 		}
 	  
 		return (
-		  <div className={`card ${styles.customCard}`}>
+			  <div className={`card-body ${styles.cardInfo}`}>
+			  <h4 className="card-title">{user.username}'s match history</h4>
+			<div className={`card ${styles.customCard}`}>
 			<div className="card-body">
-			  <h5 className="card-title">{user.username}'s match history</h5>
+				
 			  <ul className="list-group list-group">
 				{matches.map(match => (
-				  <li key={match.id} className="list-group-item">
+				  <li key={match.id} className={`list-group-item ${styles.customList}`}>
 					<UserMatchHistoryMatchPlayers user={user} match={match} />
 					<p className="fs-3 mb-0">{match.winner_score}-{match.loser_score}</p>
 					<p className="fs-4 mb-0">{match.end_date}</p>
 				  </li>
 				))}
 			  </ul>
+			</div>
+		  </div>
 			  <p>
 				<Link href={`/users/${user.id}`} passHref>
-				  <a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+				<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
 					Back to {user.username}'s profile
 				  </a>
 				</Link>
 			  </p>
-			</div>
 		  </div>
 		);
 	  }
@@ -118,18 +120,16 @@ export default function UserMatchHistory({ status, user, matches }) {
 	}
 
 	return (
-		<div>
-			<Header />
 			<div className={styles.container}>
 				<Head>
 					<title>Profile Page</title>
 				</Head>
+				
 				<h1 className={`mt-3 ${styles.background_title}`}>{user.username}</h1>
-				<div className={`card ${styles.customCard}`}>
+				<div className={`card ${styles.backCard}`}>
 					<UserMatchHistoryList user={user} matches={matches} />
 				</div>
 			</div>
-		</div>
 	);
 };
 

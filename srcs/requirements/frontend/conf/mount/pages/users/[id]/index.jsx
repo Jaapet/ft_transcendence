@@ -102,6 +102,7 @@ const ProfileMatchList = ({ user, last_matches }) => {
 	}
 
 	return (
+		
 		<div className={`card ${styles.customCard}`}>
 			<div className="card-body">
 				
@@ -150,6 +151,7 @@ export default function Profile({ status, user, last_matches }) {
 				<Head>
 					<title>Profile Page</title>
 				</Head>
+				
 				<h1 className={`mt-3 ${styles.background_title}`}>{user.username}</h1>
 				<div className={`card ${styles.backCard}`}>
 				<div className="row">
