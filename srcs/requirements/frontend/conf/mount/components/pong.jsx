@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-const GamePage = () => {
+const Pong = () => {
   useEffect(() => {
 
 
@@ -416,4 +416,4 @@ const GamePage = () => {
   );
 };
 
-export default GamePage;
+export default Pong;

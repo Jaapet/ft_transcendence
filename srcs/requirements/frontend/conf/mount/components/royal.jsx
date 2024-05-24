@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import styles from '../styles/game.module.css';
 
-const GamePage = () => {
+const Royal = () => {
   useEffect(() => {
 
 
@@ -352,11 +353,13 @@ const GamePage = () => {
   return (
     <>
       <div>
-      <canvas id="royal-canvas" width="1000" height="800"></canvas>
+      <div className={styles.canvasWrapper}>
+        <canvas id="royal-canvas" className={styles.canvas} width="1000" height="700"></canvas>
+      </div>
  
       </div>
     </>
   );
 };
 
-export default GamePage;
+export default Royal;
