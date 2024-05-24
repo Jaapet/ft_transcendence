@@ -1,17 +1,18 @@
-import 'bootstrap/dist/css/bootstrap.min.css'
-import React from 'react'
-import { AuthenticationProvider } from '../context/AuthenticationContext'
-import  Header  from '../components/Header'
+import 'bootstrap/dist/css/bootstrap.min.css';
+import React from 'react';
+import { AuthenticationProvider } from '../context/AuthenticationContext';
+import { UserProvider } from '../context/UserContext';
+import  Header  from '../components/Header';
 
 function MyApp({ Component, pageProps }) {
 	return (
 		<AuthenticationProvider>
-			<Header/>
-			<Component {...pageProps} />
+			<UserProvider>
+				<Header/>
+				<Component {...pageProps} />
+			</UserProvider>
 		</AuthenticationProvider>
-
-	)
+	);
 }
 
-export default MyApp
-
+export default MyApp;

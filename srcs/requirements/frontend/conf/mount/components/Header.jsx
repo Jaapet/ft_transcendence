@@ -39,6 +39,8 @@ const ProfileNavLog = () => {
 
 		return (
 			<>
+				<NavDropdown.ItemText>{user.username}</NavDropdown.ItemText>
+				<NavDropdown.Divider />
 				<Link href={`/users/${user.id}`} passHref>
 					<NavDropdown.Item as="a">My Profile</NavDropdown.Item>
 				</Link>

@@ -120,16 +120,16 @@ export default function UserMatchHistory({ status, user, matches }) {
 	}
 
 	return (
-			<div className={styles.container}>
-				<Head>
-					<title>Profile Page</title>
-				</Head>
-				
-				<h1 className={`mt-3 ${styles.background_title}`}>{user.username}</h1>
-				<div className={`card ${styles.backCard}`}>
-					<UserMatchHistoryList user={user} matches={matches} />
-				</div>
+		<div className={styles.container}>
+			<Head>
+				<title>Profile Page</title>
+			</Head>
+			
+			<h1 className={`mt-3 ${styles.background_title}`}>{user.username}</h1>
+			<div className={`card ${styles.backCard}`}>
+				<UserMatchHistoryList user={user} matches={matches} />
 			</div>
+		</div>
 	);
 };
 

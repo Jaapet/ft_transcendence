@@ -36,7 +36,7 @@ class MemberSerializer(serializers.HyperlinkedModelSerializer):
 # Avatar is optional
 class RegisterMemberSerializer(serializers.HyperlinkedModelSerializer):
 	avatar = serializers.ImageField(required=False, validators=[validate_file_size])
-	
+
 	def create(self, validated_data):
 		avatar = validated_data.pop('avatar', None)
 		member = Member.objects.create_user(
@@ -143,7 +143,7 @@ class MatchSerializer(serializers.HyperlinkedModelSerializer):
 			'winner_id',
 			'loser_id'
 		]
-	
+
 	def get_winner_username(self, obj):
 		return obj.winner.username if obj.winner else 'Deleted user'
 

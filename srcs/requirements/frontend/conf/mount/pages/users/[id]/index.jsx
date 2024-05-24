@@ -3,28 +3,60 @@ import Head from 'next/head';
 import Image from 'next/image';
 import styles from '../../../styles/base.module.css';
 import Link from 'next/link';
+import { useAuth } from '../../../context/AuthenticationContext';
+import FriendButton from '../../../components/FriendButton';
+
+const ProfileMemberCardPicture = ({ user }) => {
+	return (
+		<div className={`card ${styles.customCard}`}>
+			<Image src={user.avatar} alt="Profile Picture" width={540} height={540} className="card-img-top" />
+			<div className="card-body">
+				<div className={`card-body ${styles.cardInfo}`}>
+					<h2 className="card-title">{user.username}</h2>
+					<p className="card-text">
+						<small>Joined on:<br/>{user.join_date}</small>
+					</p>
+				</div>
+			</div>
+		</div>
+	);
+}
+
+const ProfileMemberCardELO = ({ user }) => {
+	return (
+		<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '20px'}}>
+			<div className="card-body" style={{backgroundColor:'rgba(255, 255, 255, 0.1)'}}>
+				<p className="card-text" >Future elo here</p>
+			</div>
+		</div>
+	);
+}
+
+const ProfileMemberCardFriendButton = ({ target_user }) => {
+	const { user } = useAuth();
+
+	if (!user || !target_user || !user.id || !target_user.id || user.id === target_user.id) {
+		return ;
+	}
+
+	return (
+		<div className={`card ${styles.customCard}`} style={{marginTop: '15px'}}>
+			<FriendButton target_id={target_user.id} />
+		</div>
+	);
+}
 
 const ProfileMemberCard = ({ user }) => {
 	return (
 		<div>
 			{/* pp + join date */}
-			<div className={`card ${styles.customCard}`}>
-			<Image src={user.avatar} alt="Profile Picture" width={720} height={360} className="card-img-top" />
-				<div className="card-body">
-				<div className={`card-body ${styles.cardInfo}`}>
+			<ProfileMemberCardPicture user={user} />
 
-					<h2 className="card-title">{user.username}</h2>
-					<p className="card-text"><small >Joined on:<br/>{user.join_date}</small></p>
-				</div>
-			</div>
-			</div>
+			{/* friend button */}
+			<ProfileMemberCardFriendButton target_user={user} />
 
 			{/* elo */}
-			<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '20px' }}>
-			<div className="card-body" style={{backgroundColor:'rgba(255, 255, 255, 0.1)'}}>
-					<p className="card-text" > future elo here</p>
-					</div>
-			</div>
+			<ProfileMemberCardELO user={user} />
 		</div>
 	);
 }
@@ -102,13 +134,12 @@ const ProfileMatchList = ({ user, last_matches }) => {
 	}
 
 	return (
-		
 		<div className={`card ${styles.customCard}`}>
 			<div className="card-body">
 				
 				<ul className="list-group list-group">
 					{last_matches.map(match => (
- 						<li key={match.id} className={`list-group-item ${styles.customList}`}>							<ProfileMatchPlayers user={user} match={match} />
+						<li key={match.id} className={`list-group-item ${styles.customList}`}>							<ProfileMatchPlayers user={user} match={match} />
 							<p className="fs-3 mb-0">{match.winner_score}-{match.loser_score}</p>
 							<p className="fs-4 mb-0">{match.end_date}</p>
 						</li>
@@ -123,17 +154,17 @@ const ProfileMatchList = ({ user, last_matches }) => {
 const ProfileSideInfo = ({ user, last_matches }) => {
 	return (
 		<div className={`card-body ${styles.cardInfo}`}>
-		  <h5 className="card-text">Last Matches</h5>
-		  <ProfileMatchList user={user} last_matches={last_matches} />
-		  <p>
-			<Link href={`/users/${user.id}/match_history`} passHref>
-			  <a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-				See {user.username}'s full match history
-			  </a>
-			</Link>
-		  </p>
+			<h5 className="card-text">Last Matches</h5>
+			<ProfileMatchList user={user} last_matches={last_matches} />
+			<p>
+				<Link href={`/users/${user.id}/match_history`} passHref>
+					<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+						See {user.username}'s full match history
+					</a>
+				</Link>
+			</p>
 		</div>
-	  );
+		);
 	}
 
 export default function Profile({ status, user, last_matches }) {
