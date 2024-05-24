@@ -13,16 +13,19 @@ const ProfileMemberCard = ({ user }) => {
 			<div className={`card ${styles.customCard}`}>
 			<Image src={user.avatar} alt="Profile Picture" width={720} height={360} className="card-img-top" />
 				<div className="card-body">
-					<h5 className="card-title">{user.username}</h5>
-					<p className="card-text"><small className="text-muted">Joined on:<br/>{user.join_date}</small></p>
+				<div className={`card-body ${styles.cardInfo}`}>
+
+					<h2 className="card-title">{user.username}</h2>
+					<p className="card-text"><small >Joined on:<br/>{user.join_date}</small></p>
 				</div>
+			</div>
 			</div>
 
 			{/* elo */}
 			<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '20px' }}>
-				<div className="card-body">
-					<p className="card-text"> future elo here</p>
-				</div>
+			<div className="card-body" style={{backgroundColor:'rgba(255, 255, 255, 0.1)'}}>
+					<p className="card-text" > future elo here</p>
+					</div>
 			</div>
 		</div>
 	);
@@ -111,9 +114,7 @@ const ProfileMatchList = ({ user, last_matches }) => {
 						</li>
 					))}
 				</ul>
-				<p><a href={`/users/${user.id}/match_history`} className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-					See {user.username}'s full match history
-				</a></p>
+				
 			</div>
 		</div>
 	);
@@ -121,13 +122,14 @@ const ProfileMatchList = ({ user, last_matches }) => {
 
 const ProfileSideInfo = ({ user, last_matches }) => {
 	return (
-		<div className={`card ${styles.backCard}`}>
 			<div className={`card-body ${styles.cardInfo}`}>
 				<h5 className="card-text">Last Matches</h5>
 				<ProfileMatchList user={user} last_matches={last_matches} />
-				<h5 className="card-text">Email: {user.email}</h5>
-			</div>
-		</div>
+				<p><a href={`/users/${user.id}/match_history`} className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+					See {user.username}'s full match history
+				</a></p>
+				</div>
+
 	);
 	
 }
@@ -143,23 +145,23 @@ export default function Profile({ status, user, last_matches }) {
 	}
 
 	return (
-		<div>
-			<Header />
 			<div className={styles.container}>
 				<Head>
 					<title>Profile Page</title>
 				</Head>
 				<h1 className={`mt-3 ${styles.background_title}`}>{user.username}</h1>
+				<div className={`card ${styles.backCard}`}>
 				<div className="row">
 					<div className="col-md-4">
 						<ProfileMemberCard user={user} />
 					</div>
+
 					<div className="col-md-8">
 						<ProfileSideInfo user={user} last_matches={last_matches} />
 					</div>
 				</div>
+				</div>
 			</div>
-		</div>
 	);
 };
 

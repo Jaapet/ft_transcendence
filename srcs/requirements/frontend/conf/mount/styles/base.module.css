@@ -19,7 +19,7 @@
 	flex-direction:column;
 	align-items: center;
 	text-align: center;
-	background-color: rgb(54, 34, 54);
+	background-color: #38255f;
 	background-image: url('../public/images/doodleBack.jpg'); 
     background-size: 20%;
     background-repeat:repeat;
@@ -37,7 +37,7 @@
     border-radius: 100px;
     font-size: 1.5cm;
     padding: 10px 20px;
-    color:#ffffff;
+    color:white;
     font-family: 'block';
     text-align: center;
 }
@@ -46,7 +46,7 @@
 .customCard {
 	position:relative;
     box-shadow: 0 15px 15px rgba(0, 0, 0, 0.267);
-	background-color:#ff8a00;
+	background-color:#4f86c6a1;
 	color: rgb(255, 255, 255);
 	font-family: 'random little things';
 	margin-left: 2cm;
@@ -56,11 +56,12 @@
 .backCard {
 	position:relative;
     box-shadow: 0 15px 15px rgba(0, 0, 0, 0.267);
-	background-color: #000000c2;
+	background-color: rgba(0, 0, 0, 0.5);
 	color: rgb(255, 255, 255);
 	font-family: 'random little things';
 	margin-left: 2cm;
 	margin-right: 2cm;
+	padding: 0.5cm;
 }
 
 .cardInfo{
@@ -71,7 +72,7 @@
 
 .customList {
     color: rgb(255, 255, 255);
-    background-color: rgba(0, 0, 0, 0.733);
+    background-color: #379391;
     background-image: url('../public/images/champion.png'), url('../public/images/champion.png');
     background-size: 5%, 5%;
     background-repeat: repeat-y, repeat-y;
