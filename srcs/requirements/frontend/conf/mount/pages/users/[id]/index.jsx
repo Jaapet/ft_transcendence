@@ -2,32 +2,47 @@ import React from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import styles from '../../../styles/base.module.css';
-import Header from '../../../components/Header';
+import Link from 'next/link';
 
 const ProfileMemberCard = ({ user }) => {
 	return (
-		<div className={`card ${styles.customCard}`}>
-			<Image src={user.avatar} alt="Profile Picture" width={150} height={150} className="card-img-top" />
-			<div className="card-body">
-				<h5 className="card-title">{user.username}</h5>
-				{/* TODO: Add ELO here */}
-				<p className="card-text"><small className="text-muted">Joined on:<br/>{user.join_date}</small></p>
+		<div>
+			{/* pp + join date */}
+			<div className={`card ${styles.customCard}`}>
+			<Image src={user.avatar} alt="Profile Picture" width={720} height={360} className="card-img-top" />
+				<div className="card-body">
+				<div className={`card-body ${styles.cardInfo}`}>
+
+					<h2 className="card-title">{user.username}</h2>
+					<p className="card-text"><small >Joined on:<br/>{user.join_date}</small></p>
+				</div>
+			</div>
+			</div>
+
+			{/* elo */}
+			<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '20px' }}>
+			<div className="card-body" style={{backgroundColor:'rgba(255, 255, 255, 0.1)'}}>
+					<p className="card-text" > future elo here</p>
+					</div>
 			</div>
 		</div>
 	);
 }
 
+
 const ProfileMatchPlayerLink = ({ id, username }) => {
 	if (id === null) {
-		return (<span>{username}</span>);
+	  return (<span>{username}</span>);
 	}
-
+  
 	return (
-		<a href={`/users/${id}`} className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-			{username}
+	  <Link href={`/users/${id}`} passHref>
+		<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+		  {username}
 		</a>
+	  </Link>
 	);
-}
+  }
 
 const ProfileMatchPlayers = ({ user, match }) => {
 	if (match.winner_id === user.id) {
@@ -87,21 +102,19 @@ const ProfileMatchList = ({ user, last_matches }) => {
 	}
 
 	return (
+		
 		<div className={`card ${styles.customCard}`}>
 			<div className="card-body">
-				<h5 className="card-title">Last Matches</h5>
+				
 				<ul className="list-group list-group">
 					{last_matches.map(match => (
-						<li key={match.id} className="list-group-item">
-							<ProfileMatchPlayers user={user} match={match} />
+ 						<li key={match.id} className={`list-group-item ${styles.customList}`}>							<ProfileMatchPlayers user={user} match={match} />
 							<p className="fs-3 mb-0">{match.winner_score}-{match.loser_score}</p>
 							<p className="fs-4 mb-0">{match.end_date}</p>
 						</li>
 					))}
 				</ul>
-				<p><a href={`/users/${user.id}/match_history`} className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-					See {user.username}'s full match history
-				</a></p>
+				
 			</div>
 		</div>
 	);
@@ -109,15 +122,19 @@ const ProfileMatchList = ({ user, last_matches }) => {
 
 const ProfileSideInfo = ({ user, last_matches }) => {
 	return (
-		<div className={`card ${styles.customCard}`}>
-			<ProfileMatchList user={user} last_matches={last_matches} />
-			<div className="card-body">
-				<h5 className="card-title">Contact Information</h5>
-				<p className="card-text">Email: {user.email}</p>
-			</div>
+		<div className={`card-body ${styles.cardInfo}`}>
+		  <h5 className="card-text">Last Matches</h5>
+		  <ProfileMatchList user={user} last_matches={last_matches} />
+		  <p>
+			<Link href={`/users/${user.id}/match_history`} passHref>
+			  <a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+				See {user.username}'s full match history
+			  </a>
+			</Link>
+		  </p>
 		</div>
-	);
-}
+	  );
+	}
 
 export default function Profile({ status, user, last_matches }) {
 	/* TODO: Implement redirect here
@@ -133,23 +150,24 @@ export default function Profile({ status, user, last_matches }) {
 	// TODO: if (user === currently logged in user) then allow editing profile
 
 	return (
-		<div>
-			<Header />
 			<div className={styles.container}>
 				<Head>
 					<title>Profile Page</title>
 				</Head>
+				
 				<h1 className={`mt-3 ${styles.background_title}`}>{user.username}</h1>
+				<div className={`card ${styles.backCard}`}>
 				<div className="row">
 					<div className="col-md-4">
 						<ProfileMemberCard user={user} />
 					</div>
+
 					<div className="col-md-8">
 						<ProfileSideInfo user={user} last_matches={last_matches} />
 					</div>
 				</div>
+				</div>
 			</div>
-		</div>
 	);
 };
 

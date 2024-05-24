@@ -1,6 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import Header from '../../components/Header';
+import Link from 'next/link';
 
 const UserTableHead = () => {
 	return (
@@ -19,27 +19,33 @@ const UserTableHead = () => {
 
 const UserTableRow = ({ user }) => {
 	return (
-		<tr>
-			<td>
-				<a href={"/users/" + user.id}>
-				<Image
-					src={user.avatar}
-					alt={user.username + "'s avatar"}
-					width={40}
-					height={40}
-				/>
-				</a>
-			</td>
-			<th>{user.id}</th>
-			<th><a href={"/users/" + user.id}>
-				{user.username}
-			</a></th>
-			<td>{user.email}</td>
-			<td>{user.join_date}</td>
-			<td>{user.is_admin ? 'Admin' : 'User'}</td>
-		</tr>
+	  <tr>
+		<td>
+		  <Link href={`/users/${user.id}`} passHref>
+			<a>
+			  <Image
+				src={user.avatar}
+				alt={`${user.username}'s avatar`}
+				width={40}
+				height={40}
+			  />
+			</a>
+		  </Link>
+		</td>
+		<th>{user.id}</th>
+		<th>
+		  <Link href={`/users/${user.id}`} passHref>
+			<a>
+			  {user.username}
+			</a>
+		  </Link>
+		</th>
+		<td>{user.email}</td>
+		<td>{user.join_date}</td>
+		<td>{user.is_admin ? 'Admin' : 'User'}</td>
+	  </tr>
 	)
-}
+  }
 
 const UserTable = ({ users }) => {
 	return (
@@ -58,7 +64,6 @@ export default function Users({ users }) {
 	if (!users) {
 		return (
 			<div align="center">
-				<Header />
 				<p>Something went wrong...</p>
 				<p>Please reload the page.</p>
 			</div>
@@ -67,7 +72,6 @@ export default function Users({ users }) {
 
 	return (
 		<div>
-			<Header />
 			<h1 class="text-center mt-4 w-25 mx-auto">{ `User list` }</h1>
 			<UserTable users={users} />
 		</div>
