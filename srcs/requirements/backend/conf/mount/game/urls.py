@@ -6,6 +6,7 @@ from .views import (
 	FriendRequestViewSet,
 	RegisterMemberAPIView,
 	SendFriendRequestAPIView,
+	DeleteFriendRequestAPIView,
 	AcceptFriendRequestAPIView,
 	DeclineFriendRequestAPIView,
 	MatchViewSet
@@ -27,6 +28,7 @@ urlpatterns = [
 	path('user/', MemberAPIView.as_view(), name='login'),
 	path('register/', RegisterMemberAPIView.as_view(), name='register'),
 	path('friend_request/send', SendFriendRequestAPIView.as_view(), name='send_friend_request'),
+	path('friend_request/delete', DeleteFriendRequestAPIView.as_view(), name='delete_friend_request'),
 	path('friend_request/accept', AcceptFriendRequestAPIView.as_view(), name='accept_friend_request'),
 	path('friend_request/decline', DeclineFriendRequestAPIView.as_view(), name='decline_friend_request')
 ]

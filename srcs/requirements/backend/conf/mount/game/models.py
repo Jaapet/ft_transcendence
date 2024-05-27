@@ -32,11 +32,11 @@ class MemberManager(BaseUserManager):
 
 # Member objects contain:
 # - username	(CharField)
-# - email		(EmailField)
+# - email			(EmailField)
 # - avatar		(ImageField)
 # - join_date	(DateField)
-# - is_admin	(booleanField)
-# - TODO: Friend list
+# - is_admin	(BooleanField)
+# - friends		(ManyToManyField Member)
 # - everything else is from AbstractBaseUser
 #
 # From Match objects:
@@ -88,6 +88,7 @@ class Member(AbstractBaseUser, PermissionsMixin):
 	friends = models.ManyToManyField(
 		"Member",
 		blank=True,
+		symmetrical=True,
 		verbose_name="Friends list"
 	)
 
@@ -115,17 +116,22 @@ class Member(AbstractBaseUser, PermissionsMixin):
 		return self.is_admin
 
 	def send_friend_request(self, target):
-		# TODO: Also check if target is already your friend
+		if (target in self.friends.all()):
+			raise ValueError("This user is already your friend.")
 		if (self == target):
 			raise ValueError("You can't add yourself as a friend.")
 		if (FriendRequest.objects.filter(sender=self, recipient=target).exists()):
 			raise ValueError("You already sent a friend request to this user.")
 		if (FriendRequest.objects.filter(sender=target, recipient=self).exists()):
-			# TODO: Accept the other friend request
 			raise ValueError("This user already sent you a friend request.")
 		friend_request = FriendRequest(sender=self, recipient=target)
 		friend_request.save()
 		return friend_request
+
+	def delete_friend_request(self, friend_request):
+		if (friend_request.sender != self):
+			raise ValueError("This friend request was not made by you!")
+		friend_request.delete()
 
 	def accept_friend_request(self, friend_request):
 		if (friend_request.recipient != self):
@@ -140,12 +146,14 @@ class Member(AbstractBaseUser, PermissionsMixin):
 		friend_request.delete()
 
 # FriendRequest objects contain:
-# - sender		(Member Foreign Key)
-# - recipient	(Member Foreign Key)
+# - sender		(Member ForeignKey)
+# - recipient	(Member ForeignKey)
 # - datetime	(DateTimeField)
 #
 # Indexed on:
 # - datetime
+# - sender
+# - recipient
 class FriendRequest(models.Model):
 	sender = models.ForeignKey(
 		Member,
@@ -177,7 +185,9 @@ class FriendRequest(models.Model):
 		verbose_name = "friend request"
 		verbose_name_plural = "friend requests"
 		indexes = [
-			models.Index(fields=["datetime"], name="friend_request_date_idx")
+			models.Index(fields=["datetime"], name="friend_request_date_idx"),
+			models.Index(fields=["sender"], name="friend_request_sender_idx"),
+			models.Index(fields=["recipient"], name="friend_request_recipient_idx")
 		]
 
 	def __str__(self):

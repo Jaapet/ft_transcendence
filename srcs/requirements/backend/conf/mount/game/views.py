@@ -89,6 +89,19 @@ class SendFriendRequestAPIView(APIView):
 		except ValueError as err:
 			return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
+class DeleteFriendRequestAPIView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def post(self, request, *args, **kwargs):
+		serializer = ReceiveFriendRequestSerializer(data=request.data)
+		serializer.is_valid(raise_exception=True)
+		friend_request = serializer.validated_data['request_id']
+		try:
+			request.user.delete_friend_request(friend_request)
+			return Response({"detail": "Friend request deleted."}, status=status.HTTP_200_OK)
+		except ValueError as err:
+			return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
 class AcceptFriendRequestAPIView(APIView):
 	permission_classes = [permissions.IsAuthenticated]
 
