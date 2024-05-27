@@ -1,10 +1,13 @@
-import React from 'react';
+import { useState } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import styles from '../../../styles/base.module.css';
 import Link from 'next/link';
 import { useAuth } from '../../../context/AuthenticationContext';
 import FriendButton from '../../../components/FriendButton';
+import ToastList from '../../../components/toasts/ToastList';
+import ErrorToast from '../../../components/toasts/ErrorToast';
+import SuccessToast from '../../../components/toasts/SuccessToast';
 
 const ProfileMemberCardPicture = ({ user }) => {
 	return (
@@ -32,7 +35,7 @@ const ProfileMemberCardELO = ({ user }) => {
 	);
 }
 
-const ProfileMemberCardFriendButton = ({ target_user }) => {
+const ProfileMemberCardFriendButton = ({ target_user, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
 	const { user } = useAuth();
 
 	if (!user || !target_user || !user.id || !target_user.id || user.id === target_user.id) {
@@ -41,19 +44,31 @@ const ProfileMemberCardFriendButton = ({ target_user }) => {
 
 	return (
 		<div className={`card ${styles.customCard}`} style={{marginTop: '15px'}}>
-			<FriendButton target_id={target_user.id} />
+			<FriendButton
+				target_id={target_user.id}
+				setShowError={setShowError}
+				setErrorMsg={setErrorMsg}
+				setShowMsg={setShowMsg}
+				setMsg={setMsg}
+			/>
 		</div>
 	);
 }
 
-const ProfileMemberCard = ({ user }) => {
+const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
 	return (
 		<div>
 			{/* pp + join date */}
 			<ProfileMemberCardPicture user={user} />
 
 			{/* friend button */}
-			<ProfileMemberCardFriendButton target_user={user} />
+			<ProfileMemberCardFriendButton
+				target_user={user}
+				setShowError={setShowError}
+				setErrorMsg={setErrorMsg}
+				setShowMsg={setShowMsg}
+				setMsg={setMsg}
+			/>
 
 			{/* elo */}
 			<ProfileMemberCardELO user={user} />
@@ -139,7 +154,8 @@ const ProfileMatchList = ({ user, last_matches }) => {
 				
 				<ul className="list-group list-group">
 					{last_matches.map(match => (
-						<li key={match.id} className={`list-group-item ${styles.customList}`}>							<ProfileMatchPlayers user={user} match={match} />
+						<li key={match.id} className={`list-group-item ${styles.customList}`}>
+							<ProfileMatchPlayers user={user} match={match} />
 							<p className="fs-3 mb-0">{match.winner_score}-{match.loser_score}</p>
 							<p className="fs-4 mb-0">{match.end_date}</p>
 						</li>
@@ -164,10 +180,34 @@ const ProfileSideInfo = ({ user, last_matches }) => {
 				</Link>
 			</p>
 		</div>
-		);
-	}
+	);
+}
+
+const ProfileToasts = ({ showError, setShowError, errorMsg, showMsg, setShowMsg, msg }) => {
+	return (
+		<ToastList position="top-right">
+			<ErrorToast
+				name="Error"
+				show={showError}
+				setShow={setShowError}
+				errorMessage={errorMsg}
+			/>
+			<SuccessToast
+				name="Success"
+				show={showMsg}
+				setShow={setShowMsg}
+				message={msg}
+			/>
+		</ToastList>
+	);
+}
 
 export default function Profile({ status, user, last_matches }) {
+	const [showError, setShowError] = useState(false);
+	const [errorMsg, setErrorMsg] = useState('');
+	const [showMsg, setShowMsg] = useState(false);
+	const [msg, setMsg] = useState('');
+
 	/* TODO: Implement redirect here
 	if (status === 404) {
 		// redirect here
@@ -179,20 +219,35 @@ export default function Profile({ status, user, last_matches }) {
 	}
 
 	// TODO: if (user === currently logged in user) then allow editing profile
+	// Maybe make it replace the Add Friend button?
 
 	return (
 			<div className={styles.container}>
+				<ProfileToasts
+					showError={showError}
+					setShowError={setShowError}
+					errorMsg={errorMsg}
+					showMsg={showMsg}
+					setShowMsg={setShowMsg}
+					msg={msg}
+				/>
+
 				<Head>
 					<title>Profile Page</title>
 				</Head>
-				
+
 				<h1 className={`mt-3 ${styles.background_title}`}>{user.username}</h1>
 				<div className={`card ${styles.backCard}`}>
 				<div className="row">
 					<div className="col-md-4">
-						<ProfileMemberCard user={user} />
+						<ProfileMemberCard
+							user={user}
+							setShowError={setShowError}
+							setErrorMsg={setErrorMsg}
+							setShowMsg={setShowMsg}
+							setMsg={setMsg}
+						/>
 					</div>
-
 					<div className="col-md-8">
 						<ProfileSideInfo user={user} last_matches={last_matches} />
 					</div>

@@ -64,8 +64,13 @@ const LoginFormFields = ({
 
 const LoginToasts = ({ showError, setShowError, errorMessage }) => {
 	return (
-		<ToastList>
-			<ErrorToast name="Login failed" show={showError} setShow={setShowError} errorMessage={errorMessage} />
+		<ToastList position="top-left">
+			<ErrorToast
+				name="Login failed"
+				show={showError}
+				setShow={setShowError}
+				errorMessage={errorMessage}
+			/>
 		</ToastList>
 	);
 }
