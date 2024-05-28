@@ -23,6 +23,7 @@ const AddFriendButton = ({ target_id, setShowError, setErrorMsg, setShowMsg, set
 		addFriend({target_id});
 	}
 
+	// TODO: Make this a bootstrap button!
 	return (
 		<button
 			type="button"

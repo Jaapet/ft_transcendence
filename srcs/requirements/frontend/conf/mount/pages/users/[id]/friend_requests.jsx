@@ -1,8 +1,145 @@
-import React from 'react';
+import { useState } from 'react';
 import Head from 'next/head';
 import styles from '../../../styles/base.module.css';
 import Link from 'next/link';
 import { useAuth } from '../../../context/AuthenticationContext'
+import { Card, Nav, ListGroup, Button } from 'react-bootstrap';
+
+const UserFriendRequestSent = ({ request }) => {
+	return (
+		<ListGroup.Item
+			className={`
+				d-flex
+				justify-content-between
+				align-items-center
+				bg-dark
+				text-white
+			`}
+		>
+			<div className="ms-2 me-auto text-start" style={{ display: 'flex', flexDirection: 'column' }}>
+				<div style={{ fontSize: 'max(min(2vw, 30px), 20px)' }}>
+					You invited&nbsp;
+					<Link href={`/users/${request.recipient_id}`} passHref>
+						<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+							{request.recipient_username}
+						</a>
+					</Link>
+				</div>
+				<div style={{ fontSize: 'max(min(1.4vw, 21px), 14px)' }}>
+					{request.date} {request.time}
+				</div>
+			</div>
+			<Button variant="outline-danger">Delete</Button>
+		</ListGroup.Item>
+	);
+}
+
+const UserFriendRequestsTableBodySent = ({ requests }) => {
+	if (!requests || requests.length < 1) {
+		return (
+			<Card.Text>No requests to display</Card.Text>
+		);
+	}
+
+	return (
+		<ListGroup>
+			{ requests.map(request => (
+				<UserFriendRequestSent key={request.id} request={request} />
+			)) }
+		</ListGroup>
+	);
+}
+
+const UserFriendRequestReceived = ({ request }) => {
+	return (
+		<ListGroup.Item
+			className={`
+				d-flex
+				justify-content-between
+				align-items-center
+				bg-dark
+				text-white
+			`}
+		>
+			<div className="ms-2 me-auto text-start" style={{ display: 'flex', flexDirection: 'column' }}>
+				<div style={{ fontSize: 'max(min(2vw, 30px), 20px)' }}>
+					<Link href={`/users/${request.sender_id}`} passHref>
+						<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+							{request.sender_username}
+						</a>
+					</Link>
+					&nbsp;invited you
+				</div>
+				<div style={{ fontSize: 'max(min(1.4vw, 21px), 14px)' }}>
+					{request.date} {request.time}
+				</div>
+			</div>
+			<Button variant="success" className="me-2">Accept</Button>
+			<Button variant="outline-danger">Decline</Button>
+		</ListGroup.Item>
+	);
+}
+
+const UserFriendRequestsTableBodyReceived = ({ requests }) => {
+	if (!requests || requests.length < 1) {
+		return (
+			<Card.Text>No requests to display</Card.Text>
+		);
+	}
+
+	return (
+		<ListGroup>
+			{ requests.map(request => (
+				<UserFriendRequestReceived key={request.id} request={request} />
+			)) }
+		</ListGroup>
+	);
+}
+
+const UserFriendRequestsTableBody = ({ activeTab, sent, recv }) => {
+	if (activeTab === '#sent') {
+		return (<UserFriendRequestsTableBodySent requests={sent} />);
+	} else if (activeTab === '#received') {
+		return (<UserFriendRequestsTableBodyReceived requests={recv} />);
+	} else {
+		return (<Card.Text>Somethig went wrong...</Card.Text>);
+	}
+}
+
+const UserFriendRequestsTable = ({ sent, recv }) => {
+	const [activeTab, setActiveTab] = useState('#received');
+
+	const handleSelect = (eventKey) => {
+		setActiveTab(eventKey);
+	}
+
+	return (
+		<Card
+			className="bg-dark text-white mt-3"
+			style={{ width: '60%' }}
+		>
+			<Card.Header>
+				<Nav
+					justify
+					variant="tabs"
+					defaultActiveKey="#received"
+					onSelect={handleSelect}
+					className="bg-dark text-white"
+				>
+					<Nav.Item>
+						<Nav.Link href="#received">Received {recv.length ? `(${recv.length})` : '(0)'}</Nav.Link>
+					</Nav.Item>
+					<Nav.Item>
+						<Nav.Link href="#sent">Sent {sent.length ? `(${sent.length})` : '(0)'}</Nav.Link>
+					</Nav.Item>
+				</Nav>
+			</Card.Header>
+			<Card.Body>
+				<UserFriendRequestsTableBody activeTab={activeTab} sent={sent} recv={recv} />
+			</Card.Body>
+		</Card>
+	);
+}
 
 export default function UserFriendRequests({ status, current_user, requests_sent, requests_received }) {
 	const { user } = useAuth();
@@ -24,33 +161,23 @@ export default function UserFriendRequests({ status, current_user, requests_sent
 		);
 	}
 
-	console.log('user', user); // debug
-
 	if (current_user.id !== user.id) {
 		return (
 			<div className={styles.container}>
 				<Head>
 					<title>Forbidden</title>
 				</Head>
-				<p>Forbidden!</p>
+				<p className="bg-light text-black">Forbidden</p>
 			</div>
 		);
 	}
-
-	console.log('current_user', current_user); // debug
-	console.log('requests_sent', requests_sent); // debug
-	console.log('requests_received', requests_received); // debug
 
 	return (
 		<div className={styles.container}>
 			<Head>
 				<title>Profile Page</title>
 			</Head>
-			
-			{/* TODO: 2 lists: friend requests sent and received
-			with options to accept and decline the received ones
-			and delete the sent ones*/}
-			<p>Work in progress...</p>
+			<UserFriendRequestsTable sent={requests_sent} recv={requests_received} />
 		</div>
 	);
 };

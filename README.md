@@ -15,10 +15,10 @@ As we are not required to complete all modules, here is our temporary selection:
 - Standard user management, authentification and tournaments
 - Advanced 3D with ThreeJS
 - A second game with user history and match-making
+- Distant players (playing on 2 different computers)
 #### Maybe
 - AI-controlled player
 - Remote authentification (OAuth 42)
-- Distant players (playing on 2 different computers)
 - Multiple players (more than 2 in one game)
 - WAF or Mod Security + HashiCorp Vault
 - 2FA + JSON Web Tokens

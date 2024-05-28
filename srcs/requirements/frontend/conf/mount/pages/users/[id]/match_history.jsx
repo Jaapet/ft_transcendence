@@ -5,17 +5,17 @@ import Link from 'next/link';
 
 const UserMatchHistoryMatchPlayerLink = ({ id, username }) => {
 	if (id === null) {
-	  return (<span>{username}</span>);
+		return (<span>{username}</span>);
 	}
-  
+
 	return (
-	  <Link href={`/users/${id}`} passHref>
-		<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-		  {username}
-		</a>
-	  </Link>
+		<Link href={`/users/${id}`} passHref>
+			<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+				{username}
+			</a>
+		</Link>
 	);
-  }
+}
 
 const UserMatchHistoryMatchPlayers = ({ user, match }) => {
 	if (match.winner_id === user.id) {

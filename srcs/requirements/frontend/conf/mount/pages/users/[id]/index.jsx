@@ -4,6 +4,7 @@ import Image from 'next/image';
 import styles from '../../../styles/base.module.css';
 import Link from 'next/link';
 import { useAuth } from '../../../context/AuthenticationContext';
+import { Button } from 'react-bootstrap';
 import FriendButton from '../../../components/FriendButton';
 import ToastList from '../../../components/toasts/ToastList';
 import ErrorToast from '../../../components/toasts/ErrorToast';
@@ -55,6 +56,27 @@ const ProfileMemberCardFriendButton = ({ target_user, setShowError, setErrorMsg,
 	);
 }
 
+const ProfileMemberCardFriendRequestsButton = ({ target_user }) => {
+	const { user } = useAuth();
+
+	if (!user || !target_user || !user.id || !target_user.id || user.id !== target_user.id) {
+		return ;
+	}
+
+	return (
+		<div className={`card ${styles.customCard}`} style={{marginTop: '15px'}}>
+			<Button
+				type="button"
+				variant="info"
+				style={{fontSize: '25px'}}
+				href={`${user.id}/friend_requests`}
+			>
+				<strong>See friend requests</strong>
+			</Button>
+		</div>
+	);
+}
+
 const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
 	return (
 		<div>
@@ -69,6 +91,11 @@ const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg
 				setShowMsg={setShowMsg}
 				setMsg={setMsg}
 			/>
+
+			{/* Friend requests button */}
+			<ProfileMemberCardFriendRequestsButton target_user={user} />
+
+			{/* TODO: Edit profile button */}
 
 			{/* elo */}
 			<ProfileMemberCardELO user={user} />
