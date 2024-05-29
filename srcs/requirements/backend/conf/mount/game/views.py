@@ -77,6 +77,23 @@ class FriendRequestViewSet(viewsets.ModelViewSet):
 		serializer = self.get_serializer(user_requests, many=True)
 		return Response(serializer.data)
 
+class CheckFriendshipStatusAPIView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def get(self, request):
+		user1_id = request.query_params.get('user1_id')
+		user2_id = request.query_params.get('user2_id')
+		if not (user1_id and user2_id):
+			return Response({"detail": "Both user IDs are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+		try:
+			user1 = Member.objects.get(id=user1_id)
+			user2 = Member.objects.get(id=user2_id)
+			is_friend = user1.friends.filter(id=user2_id).exists()
+			return Response({"detail": is_friend}, status=status.HTTP_200_OK)
+		except Member.DoesNotExist:
+			return Response({"detail": "One or both users do not exist."}, status=status.HTTP_404_NOT_FOUND)
+
 class SendFriendRequestAPIView(APIView):
 	permission_classes = [permissions.IsAuthenticated]
 
