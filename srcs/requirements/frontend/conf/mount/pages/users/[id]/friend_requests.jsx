@@ -29,7 +29,7 @@ const UserFriendRequestSent = ({ request }) => {
 					{request.date} {request.time}
 				</div>
 			</div>
-			<Button variant="outline-danger">Delete</Button>
+			<Button variant="danger">Delete</Button>
 		</ListGroup.Item>
 	);
 }

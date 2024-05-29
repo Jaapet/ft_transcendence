@@ -1,6 +1,40 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthenticationContext';
 import { useUser } from '../context/UserContext';
+
+const RemoveFriendButton = ({ target_id, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
+	const { removeFriend, userError, clearUserError, userMsg, clearUserMsg } = useUser();
+
+	useEffect(() => {
+		if (userError) {
+			setErrorMsg(userError);
+			setShowError(true);
+			clearUserError();
+		}
+		if (userMsg) {
+			setMsg(userMsg);
+			setShowMsg(true);
+			clearUserMsg();
+		}
+	}, [userError, userMsg, setErrorMsg, setShowError, setMsg, setShowMsg, clearUserError, clearUserMsg]);
+
+	const handleClick = async (event) => {
+		event.preventDefault();
+		removeFriend({target_id});
+	}
+
+	// TODO: Make this a bootstrap button!
+	return (
+		<button
+			type="button"
+			className="btn btn-danger"
+			style={{fontSize: '25px'}}
+			onClick={handleClick}
+		>
+			Remove friend
+		</button>
+	);
+}
 
 const AddFriendButton = ({ target_id, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
 	const { addFriend, userError, clearUserError, userMsg, clearUserMsg } = useUser();
@@ -50,11 +84,38 @@ const FriendButton = ({ target_id, setShowError, setErrorMsg, setShowMsg, setMsg
 		return ;
 	}
 
-	//	TODO: Check if already friends, and propose removing from friends list instead
-	//	return (<ProfileMemberCardFriendRemove user={user} target_user={target_user} />);
+	const { isFriends } = useUser();
+	const [show, setShow] = useState(true);
+	const [isFriend, setIsFriend] = useState(null);
 
-	//	TODO: Check if request already exists (no matter which way)
-	//	return (<ProfileMemberCardFriendRemove user={user} target_user={target_user} />);
+	useEffect(() => {
+		const checkFriendship = async () => {
+			const status = await isFriends({ target_id });
+			if (status === null) {
+				setShow(false);
+			}
+			else {
+				setIsFriend(status.message);
+				setShow(true);
+			}
+		}
+
+		checkFriendship();
+	}, [user, target_id, isFriends]);
+
+	if (show === false || isFriend === null) {
+		return ;
+	}
+
+	if (isFriend === true) {
+		return (
+			<RemoveFriendButton
+				target_id={target_id}
+				setShowError={setShowError} setErrorMsg={setErrorMsg}
+				setShowMsg={setShowMsg} setMsg={setMsg}
+			/>
+		);
+	}
 
 	return (
 		<AddFriendButton

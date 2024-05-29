@@ -22,7 +22,7 @@ export default async (req, res) => {
 			throw new Error('No user id provided');
 		}
 
-		const reqRes = await fetch(`http://backend:8000/api/friend_request/send`, {
+		const reqRes = await fetch(`http://backend:8000/api/friends/remove`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -31,20 +31,20 @@ export default async (req, res) => {
 			body: JSON.stringify({ target_id })
 		});
 		if (!reqRes) {
-			throw new Error(`Could not send friend request to user ${target_id}`);
+			throw new Error(`Could not remove user ${target_id} from friends list`);
 		}
 
 		const reqData = await reqRes.json();
 		if (!reqData) {
-			throw new Error(`Could not send friend request to user ${target_id}`);
+			throw new Error(`Could not remove user ${target_id} from friends list`);
 		}
 		if (!reqRes.ok) {
-			throw new Error(reqData.detail || `Could not send friend request to user ${target_id}`);
+			throw new Error(reqData.detail || `Could not remove user ${target_id} from friends list`);
 		}
 
-		return res.status(201).json({ message: reqData.detail });
+		return res.status(200).json({ message: reqData.detail });
 	} catch (error) {
-		console.error('API ADD FRIEND:', error);
+		console.error('API REMOVE FRIEND:', error);
 		return res.status(401).json({ message: error.message });
 	}
 }
