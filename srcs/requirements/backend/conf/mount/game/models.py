@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 
@@ -8,16 +8,19 @@ class MemberManager(BaseUserManager):
 	use_in_migrations=True
 
 	def _create_user(self, username, email, is_admin, password=None, **extra_fields):
-		if not username:
-			raise ValueError('Need a username')
-		if not email:
-			raise ValueError('Need an email address')
-		username = username
-		email = self.normalize_email(email)
-		member = self.model(username=username, email=email, is_admin=is_admin, **extra_fields)
-		member.set_password(password)
-		member.save(using=self._db)
-		return member
+		try:
+			if not username:
+				raise ValueError('Need a username')
+			if not email:
+				raise ValueError('Need an email address')
+			email = self.normalize_email(email)
+			with transaction.atomic():
+				member = self.model(username=username, email=email, is_admin=is_admin, **extra_fields)
+				member.set_password(password)
+				member.save(using=self._db)
+			return member
+		except Exception as e:
+			raise ValueError(f'Failed to create user: {str(e)}')
 
 	def create_user(self, username, email, password=None, **extra_fields):
 		extra_fields.setdefault('is_superuser', False)
@@ -27,7 +30,7 @@ class MemberManager(BaseUserManager):
 		extra_fields.setdefault('is_superuser', True)
 		# This might be a useless check
 		if extra_fields.get('is_superuser') is not True:
-			raise ValueError('Superuser must have is_superuser=True.')
+			raise ValueError('Failed to create super user: Super user must have is_superuser=True.')
 		return self._create_user(username, email, True, password, **extra_fields)
 
 # Member objects contain:
@@ -116,34 +119,60 @@ class Member(AbstractBaseUser, PermissionsMixin):
 		return self.is_admin
 
 	def send_friend_request(self, target):
-		if (target in self.friends.all()):
-			raise ValueError("This user is already your friend.")
-		if (self == target):
-			raise ValueError("You can't add yourself as a friend.")
-		if (FriendRequest.objects.filter(sender=self, recipient=target).exists()):
-			raise ValueError("You already sent a friend request to this user.")
-		if (FriendRequest.objects.filter(sender=target, recipient=self).exists()):
-			raise ValueError("This user already sent you a friend request.")
-		friend_request = FriendRequest(sender=self, recipient=target)
-		friend_request.save()
-		return friend_request
+		try:
+			if (target in self.friends.all()):
+				raise ValueError("This user is already your friend.")
+			if (self == target):
+				raise ValueError("You can't add yourself as a friend.")
+			if (FriendRequest.objects.filter(sender=self, recipient=target).exists()):
+				raise ValueError("You already sent a friend request to this user.")
+			if (FriendRequest.objects.filter(sender=target, recipient=self).exists()):
+				raise ValueError("This user already sent you a friend request.")
+			with transaction.atomic():
+				friend_request = FriendRequest(sender=self, recipient=target)
+				friend_request.save()
+			return friend_request
+		except Exception as e:
+			raise ValueError(f'Failed to create friend request: {str(e)}')
 
 	def delete_friend_request(self, friend_request):
-		if (friend_request.sender != self):
-			raise ValueError("This friend request was not made by you!")
-		friend_request.delete()
+		try:
+			if (friend_request.sender != self):
+				raise ValueError("This friend request was not made by you!")
+			friend_request.delete()
+		except Exception as e:
+			raise ValueError(f'Failed to delete friend request: {str(e)}')
 
 	def accept_friend_request(self, friend_request):
-		if (friend_request.recipient != self):
-			raise ValueError("This friend request is not for you!")
-		self.friends.add(friend_request.sender)
-		friend_request.sender.friends.add(self)
-		friend_request.delete()
+		try:
+			if (friend_request.recipient != self):
+				raise ValueError("This friend request is not for you!")
+			with transaction.atomic():
+				self.friends.add(friend_request.sender)
+				friend_request.sender.friends.add(self)
+				friend_request.delete()
+		except Exception as e:
+			raise ValueError(f'Failed to accept friend request: {str(e)}')
 
 	def decline_friend_request(self, friend_request):
-		if (friend_request.recipient != self):
-			raise ValueError("This friend request is not for you!")
-		friend_request.delete()
+		try:
+			if (friend_request.recipient != self):
+				raise ValueError("This friend request is not for you!")
+			friend_request.delete()
+		except Exception as e:
+			raise ValueError(f'Failed to decline friend request: {str(e)}')
+
+	def remove_friend(self, target):
+		try:
+			if (target not in self.friends.all()):
+				raise ValueError("This user is not your friend.")
+			if (self == target):
+				raise ValueError("You can't remove yourself as a friend.")
+			with transaction.atomic():
+				self.friends.remove(target)
+				target.friends.remove(self)
+		except Exception as e:
+			raise ValueError(f'Failed to remove friend: {str(e)}')
 
 # FriendRequest objects contain:
 # - sender		(Member ForeignKey)
