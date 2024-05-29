@@ -11,7 +11,8 @@ from .serializers import (
 	RegisterMemberSerializer,
 	FriendRequestSerializer,
 	SendFriendRequestSerializer,
-	ReceiveFriendRequestSerializer,
+	InteractFriendRequestSerializer,
+	RemoveFriendSerializer,
 	MatchSerializer
 )
 
@@ -93,7 +94,7 @@ class DeleteFriendRequestAPIView(APIView):
 	permission_classes = [permissions.IsAuthenticated]
 
 	def post(self, request, *args, **kwargs):
-		serializer = ReceiveFriendRequestSerializer(data=request.data)
+		serializer = InteractFriendRequestSerializer(data=request.data)
 		serializer.is_valid(raise_exception=True)
 		friend_request = serializer.validated_data['request_id']
 		try:
@@ -106,7 +107,7 @@ class AcceptFriendRequestAPIView(APIView):
 	permission_classes = [permissions.IsAuthenticated]
 
 	def post(self, request, *args, **kwargs):
-		serializer = ReceiveFriendRequestSerializer(data=request.data)
+		serializer = InteractFriendRequestSerializer(data=request.data)
 		serializer.is_valid(raise_exception=True)
 		friend_request = serializer.validated_data['request_id']
 		try:
@@ -119,12 +120,25 @@ class DeclineFriendRequestAPIView(APIView):
 	permission_classes = [permissions.IsAuthenticated]
 
 	def post(self, request, *args, **kwargs):
-		serializer = ReceiveFriendRequestSerializer(data=request.data)
+		serializer = InteractFriendRequestSerializer(data=request.data)
 		serializer.is_valid(raise_exception=True)
 		friend_request = serializer.validated_data['request_id']
 		try:
 			request.user.decline_friend_request(friend_request)
 			return Response({"detail": "Friend request declined."}, status=status.HTTP_200_OK)
+		except ValueError as err:
+			return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
+class RemoveFriendAPIView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def post(self, request, *args, **kwargs):
+		serializer = RemoveFriendSerializer(data=request.data)
+		serializer.is_valid(raise_exception=True)
+		friend = serializer.validated_data['target_id']
+		try:
+			request.user.remove_friend(friend)
+			return Response({"detail": "Friend removed."}, status=status.HTTP_200_OK)
 		except ValueError as err:
 			return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 

@@ -60,7 +60,7 @@ class RegisterMemberSerializer(serializers.HyperlinkedModelSerializer):
 		]
 
 class SendFriendRequestSerializer(serializers.Serializer):
-	target_id = serializers.CharField()
+	target_id = serializers.IntegerField()
 
 	def validate_target_id(self, value):
 		try:
@@ -69,7 +69,7 @@ class SendFriendRequestSerializer(serializers.Serializer):
 			raise serializers.ValidationError("Recipient does not exist.")
 		return target
 
-class ReceiveFriendRequestSerializer(serializers.Serializer):
+class InteractFriendRequestSerializer(serializers.Serializer):
 	request_id = serializers.IntegerField()
 
 	def validate_request_id(self, value):
@@ -78,6 +78,16 @@ class ReceiveFriendRequestSerializer(serializers.Serializer):
 		except FriendRequest.DoesNotExist:
 			raise serializers.ValidationError("Friend request does not exist.")
 		return friend_request
+
+class RemoveFriendSerializer(serializers.Serializer):
+	target_id = serializers.IntegerField()
+
+	def validate_target_id(self, value):
+		try:
+			target = Member.objects.get(id=value)
+		except Member.DoesNotExist:
+			raise serializers.ValidationError("Recipient does not exist.")
+		return target
 
 class FriendRequestSerializer(serializers.HyperlinkedModelSerializer):
 	sender_username = serializers.SerializerMethodField()
