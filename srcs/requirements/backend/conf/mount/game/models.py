@@ -20,7 +20,7 @@ class MemberManager(BaseUserManager):
 				member.save(using=self._db)
 			return member
 		except Exception as e:
-			raise ValueError(f'Failed to create user: {str(e)}')
+			raise ValueError(str(e))
 
 	def create_user(self, username, email, password=None, **extra_fields):
 		extra_fields.setdefault('is_superuser', False)
@@ -133,7 +133,7 @@ class Member(AbstractBaseUser, PermissionsMixin):
 				friend_request.save()
 			return friend_request
 		except Exception as e:
-			raise ValueError(f'Failed to create friend request: {str(e)}')
+			raise ValueError(str(e))
 
 	def delete_friend_request(self, friend_request):
 		try:
@@ -141,7 +141,7 @@ class Member(AbstractBaseUser, PermissionsMixin):
 				raise ValueError("This friend request was not made by you!")
 			friend_request.delete()
 		except Exception as e:
-			raise ValueError(f'Failed to delete friend request: {str(e)}')
+			raise ValueError(str(e))
 
 	def accept_friend_request(self, friend_request):
 		try:
@@ -152,7 +152,7 @@ class Member(AbstractBaseUser, PermissionsMixin):
 				friend_request.sender.friends.add(self)
 				friend_request.delete()
 		except Exception as e:
-			raise ValueError(f'Failed to accept friend request: {str(e)}')
+			raise ValueError(str(e))
 
 	def decline_friend_request(self, friend_request):
 		try:
@@ -160,7 +160,7 @@ class Member(AbstractBaseUser, PermissionsMixin):
 				raise ValueError("This friend request is not for you!")
 			friend_request.delete()
 		except Exception as e:
-			raise ValueError(f'Failed to decline friend request: {str(e)}')
+			raise ValueError(str(e))
 
 	def remove_friend(self, target):
 		try:
@@ -172,7 +172,7 @@ class Member(AbstractBaseUser, PermissionsMixin):
 				self.friends.remove(target)
 				target.friends.remove(self)
 		except Exception as e:
-			raise ValueError(f'Failed to remove friend: {str(e)}')
+			raise ValueError(str(e))
 
 # FriendRequest objects contain:
 # - sender		(Member ForeignKey)
