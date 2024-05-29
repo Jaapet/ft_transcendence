@@ -186,7 +186,7 @@ export async function getServerSideProps(context) {
 	const { id } = context.params;
 
 	try {
-		const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user_friend_requests`, {
+		const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/current_user/user_friend_requests`, {
 			method: 'POST',
 			headers: {
 				'Accept': 'application/json',

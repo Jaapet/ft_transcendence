@@ -91,7 +91,7 @@ Each member has the following data:
 */
 export async function getServerSideProps(context) {
 	try {
-		const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user_list`, {
+		const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/user_list`, {
 			method: 'POST',
 			headers: {
 				'Accept': 'application/json',

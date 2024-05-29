@@ -56,6 +56,7 @@ const ProfileMemberCardFriendButton = ({ target_user, setShowError, setErrorMsg,
 	);
 }
 
+// TODO: Make this a button to see your friends list instead
 const ProfileMemberCardFriendRequestsButton = ({ target_user }) => {
 	const { user } = useAuth();
 
@@ -288,7 +289,7 @@ export async function getServerSideProps(context) {
 	const { id } = context.params;
 
 	try {
-		const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/profile`, {
+		const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/profile`, {
 			method: 'POST',
 			headers: {
 				'Accept': 'application/json',

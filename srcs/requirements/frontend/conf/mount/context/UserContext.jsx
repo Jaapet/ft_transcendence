@@ -15,7 +15,7 @@ export const UserProvider = ({ children }) => {
 
 		const user_id = user.id;
 		try {
-			const response = await fetch(`/api/friendship_status/?user_id=${user_id}&target_id=${target_id}`, {
+			const response = await fetch(`/api/users/friendship_status/?user_id=${user_id}&target_id=${target_id}`, {
 				method: 'GET',
 				headers: {
 					'Accept': 'application/json',
@@ -47,7 +47,7 @@ export const UserProvider = ({ children }) => {
 		}
 
 		try {
-			const response = await fetch(`/api/add_friend`, {
+			const response = await fetch(`/api/current_user/add_friend`, {
 				method: 'POST',
 				headers: {
 					'Accept': 'application/json',
@@ -80,7 +80,7 @@ export const UserProvider = ({ children }) => {
 		}
 
 		try {
-			const response = await fetch(`/api/remove_friend`, {
+			const response = await fetch(`/api/current_user/remove_friend`, {
 				method: 'POST',
 				headers: {
 					'Accept': 'application/json',
