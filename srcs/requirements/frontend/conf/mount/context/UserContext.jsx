@@ -58,7 +58,7 @@ export const UserProvider = ({ children }) => {
 			if (!response) {
 				throw new Error('Failed to send friend request');
 			}
-	
+
 			const data = await response.json();
 			if (!data) {
 				throw new Error('Failed to send friend request');
@@ -107,6 +107,39 @@ export const UserProvider = ({ children }) => {
 		}
 	}
 
+	const acceptFriendRequest = async ({ request_id }) => {
+		if (!user) {
+			return ;
+		}
+
+		try {
+			const response = await fetch(`/api/current_user/accept_friend_request`, {
+				method: 'POST',
+				headers: {
+					'Accept': 'application/json',
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ request_id })
+			});
+			if (!response) {
+				throw new Error(`Failed to accept friend request ${request_id}`);
+			}
+
+			const data = await response.json();
+			if (!data) {
+				throw new Error(`Failed to accept friend request ${request_id}`);
+			}
+			if (!response.ok) {
+				throw new Error(data.message || `Failed to accept friend request ${request_id}`);
+			}
+
+			setUserMsg(data.message);
+		} catch (error) {
+			console.error('ACCEPT FRIEND REQUEST:', error);
+			setUserError(error.message);
+		}
+	}
+
 	const clearUserError = () => {
 		setUserError(null);
 	}
@@ -119,7 +152,8 @@ export const UserProvider = ({ children }) => {
 		<UserContext.Provider value={{
 			userError, setUserError, clearUserError,
 			userMsg, setUserMsg, clearUserMsg,
-			isFriends, addFriend, removeFriend
+			isFriends, addFriend, removeFriend,
+			acceptFriendRequest
 		}}>
 			{children}
 		</UserContext.Provider>

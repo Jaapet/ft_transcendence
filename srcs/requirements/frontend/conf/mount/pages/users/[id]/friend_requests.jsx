@@ -1,11 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import styles from '../../../styles/base.module.css';
 import Link from 'next/link';
-import { useAuth } from '../../../context/AuthenticationContext'
+import { useAuth } from '../../../context/AuthenticationContext';
+import { useUser } from '../../../context/UserContext';
 import { Card, Nav, ListGroup, Button } from 'react-bootstrap';
+import ToastList from '../../../components/toasts/ToastList';
+import ErrorToast from '../../../components/toasts/ErrorToast';
+import SuccessToast from '../../../components/toasts/SuccessToast';
 
-const UserFriendRequestSent = ({ request }) => {
+const UserFriendRequestSent = ({ request, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
 	return (
 		<ListGroup.Item
 			className={`
@@ -34,7 +38,7 @@ const UserFriendRequestSent = ({ request }) => {
 	);
 }
 
-const UserFriendRequestsTableBodySent = ({ requests }) => {
+const UserFriendRequestsTableBodySent = ({ requests, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
 	if (!requests || requests.length < 1) {
 		return (
 			<Card.Text>No requests to display</Card.Text>
@@ -44,13 +48,52 @@ const UserFriendRequestsTableBodySent = ({ requests }) => {
 	return (
 		<ListGroup>
 			{ requests.map(request => (
-				<UserFriendRequestSent key={request.id} request={request} />
+				<UserFriendRequestSent
+					key={request.id}
+					request={request}
+					setShowError={setShowError}
+					setErrorMsg={setErrorMsg}
+					setShowMsg={setShowMsg}
+					setMsg={setMsg}
+				/>
 			)) }
 		</ListGroup>
 	);
 }
 
-const UserFriendRequestReceived = ({ request }) => {
+const AcceptFriendRequestButton = ({ request_id, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
+	const { acceptFriendRequest, userError, clearUserError, userMsg, clearUserMsg } = useUser();
+
+	useEffect(() => {
+		if (userError) {
+			setErrorMsg(userError);
+			setShowError(true);
+			clearUserError();
+		}
+		if (userMsg) {
+			setMsg(userMsg);
+			setShowMsg(true);
+			clearUserMsg();
+		}
+	}, [userError, userMsg, setErrorMsg, setShowError, setMsg, setShowMsg, clearUserError, clearUserMsg]);
+
+	const handleClick = async (event) => {
+		event.preventDefault();
+		acceptFriendRequest({request_id});
+	}
+
+	return (
+		<Button
+			variant="success"
+			className="me-2"
+			onClick={handleClick}
+		>
+			Accept
+		</Button>
+	);
+}
+
+const UserFriendRequestReceived = ({ request, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
 	return (
 		<ListGroup.Item
 			className={`
@@ -74,13 +117,19 @@ const UserFriendRequestReceived = ({ request }) => {
 					{request.date} {request.time}
 				</div>
 			</div>
-			<Button variant="success" className="me-2">Accept</Button>
+			<AcceptFriendRequestButton
+				request_id={request.id}
+				setShowError={setShowError}
+				setErrorMsg={setErrorMsg}
+				setShowMsg={setShowMsg}
+				setMsg={setMsg}
+			/>
 			<Button variant="outline-danger">Decline</Button>
 		</ListGroup.Item>
 	);
 }
 
-const UserFriendRequestsTableBodyReceived = ({ requests }) => {
+const UserFriendRequestsTableBodyReceived = ({ requests, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
 	if (!requests || requests.length < 1) {
 		return (
 			<Card.Text>No requests to display</Card.Text>
@@ -90,23 +139,46 @@ const UserFriendRequestsTableBodyReceived = ({ requests }) => {
 	return (
 		<ListGroup>
 			{ requests.map(request => (
-				<UserFriendRequestReceived key={request.id} request={request} />
+				<UserFriendRequestReceived
+					key={request.id}
+					request={request}
+					setShowError={setShowError}
+					setErrorMsg={setErrorMsg}
+					setShowMsg={setShowMsg}
+					setMsg={setMsg}
+				/>
 			)) }
 		</ListGroup>
 	);
 }
 
-const UserFriendRequestsTableBody = ({ activeTab, sent, recv }) => {
+const UserFriendRequestsTableBody = ({ activeTab, sent, recv, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
 	if (activeTab === '#sent') {
-		return (<UserFriendRequestsTableBodySent requests={sent} />);
+		return (
+			<UserFriendRequestsTableBodySent
+				requests={sent}
+				setShowError={setShowError}
+				setErrorMsg={setErrorMsg}
+				setShowMsg={setShowMsg}
+				setMsg={setMsg}
+			/>
+		);
 	} else if (activeTab === '#received') {
-		return (<UserFriendRequestsTableBodyReceived requests={recv} />);
+		return (
+			<UserFriendRequestsTableBodyReceived
+				requests={recv}
+				setShowError={setShowError}
+				setErrorMsg={setErrorMsg}
+				setShowMsg={setShowMsg}
+				setMsg={setMsg}
+			/>
+		);
 	} else {
 		return (<Card.Text>Somethig went wrong...</Card.Text>);
 	}
 }
 
-const UserFriendRequestsTable = ({ sent, recv }) => {
+const UserFriendRequestsTable = ({ sent, recv, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
 	const [activeTab, setActiveTab] = useState('#received');
 
 	const handleSelect = (eventKey) => {
@@ -135,9 +207,36 @@ const UserFriendRequestsTable = ({ sent, recv }) => {
 				</Nav>
 			</Card.Header>
 			<Card.Body>
-				<UserFriendRequestsTableBody activeTab={activeTab} sent={sent} recv={recv} />
+				<UserFriendRequestsTableBody
+					activeTab={activeTab}
+					sent={sent}
+					recv={recv}
+					setShowError={setShowError}
+					setErrorMsg={setErrorMsg}
+					setShowMsg={setShowMsg}
+					setMsg={setMsg}
+				/>
 			</Card.Body>
 		</Card>
+	);
+}
+
+const FriendRequestsToasts = ({ showError, setShowError, errorMsg, showMsg, setShowMsg, msg }) => {
+	return (
+		<ToastList position="top-right">
+			<ErrorToast
+				name="Error"
+				show={showError}
+				setShow={setShowError}
+				errorMessage={errorMsg}
+			/>
+			<SuccessToast
+				name="Success"
+				show={showMsg}
+				setShow={setShowMsg}
+				message={msg}
+			/>
+		</ToastList>
 	);
 }
 
@@ -172,12 +271,34 @@ export default function UserFriendRequests({ status, current_user, requests_sent
 		);
 	}
 
+	const [showError, setShowError] = useState(false);
+	const [errorMsg, setErrorMsg] = useState('');
+	const [showMsg, setShowMsg] = useState(false);
+	const [msg, setMsg] = useState('');
+
 	return (
 		<div className={styles.container}>
+			<FriendRequestsToasts
+				showError={showError}
+				setShowError={setShowError}
+				errorMsg={errorMsg}
+				showMsg={showMsg}
+				setShowMsg={setShowMsg}
+				msg={msg}
+			/>
+
 			<Head>
 				<title>Profile Page</title>
 			</Head>
-			<UserFriendRequestsTable sent={requests_sent} recv={requests_received} />
+
+			<UserFriendRequestsTable
+				sent={requests_sent}
+				recv={requests_received}
+				setShowError={setShowError}
+				setErrorMsg={setErrorMsg}
+				setShowMsg={setShowMsg}
+				setMsg={setMsg}
+			/>
 		</div>
 	);
 };
