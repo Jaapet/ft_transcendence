@@ -1,7 +1,10 @@
 import Toast from 'react-bootstrap/Toast';
 
-const SuccessToast = ({ name, show, setShow, message }) => {
-	const toggle = () => setShow(!show);
+const SuccessToast = ({ name, show, setShow, message, setMessage }) => {
+	const toggle = () => {
+		setShow(!show);
+		setMessage('');
+	}
 
 	return (
 		<Toast show={show} onClose={toggle} bg="success">

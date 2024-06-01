@@ -211,7 +211,7 @@ const ProfileSideInfo = ({ user, last_matches }) => {
 	);
 }
 
-const ProfileToasts = ({ showError, setShowError, errorMsg, showMsg, setShowMsg, msg }) => {
+const ProfileToasts = ({ showError, setShowError, errorMsg, setErrorMsg, showMsg, setShowMsg, msg, setMsg }) => {
 	return (
 		<ToastList position="top-right">
 			<ErrorToast
@@ -219,12 +219,14 @@ const ProfileToasts = ({ showError, setShowError, errorMsg, showMsg, setShowMsg,
 				show={showError}
 				setShow={setShowError}
 				errorMessage={errorMsg}
+				setErrorMessage={setErrorMsg}
 			/>
 			<SuccessToast
 				name="Success"
 				show={showMsg}
 				setShow={setShowMsg}
 				message={msg}
+				setMessage={setMsg}
 			/>
 		</ToastList>
 	);
@@ -255,9 +257,11 @@ export default function Profile({ status, user, last_matches }) {
 					showError={showError}
 					setShowError={setShowError}
 					errorMsg={errorMsg}
+					setErrorMsg={setErrorMsg}
 					showMsg={showMsg}
 					setShowMsg={setShowMsg}
 					msg={msg}
+					setMsg={setMsg}
 				/>
 
 				<Head>

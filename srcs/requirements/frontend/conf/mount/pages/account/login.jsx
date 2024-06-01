@@ -62,7 +62,7 @@ const LoginFormFields = ({
 	);
 }
 
-const LoginToasts = ({ showError, setShowError, errorMessage }) => {
+const LoginToasts = ({ showError, setShowError, errorMessage, setErrorMessage }) => {
 	return (
 		<ToastList position="top-left">
 			<ErrorToast
@@ -70,6 +70,7 @@ const LoginToasts = ({ showError, setShowError, errorMessage }) => {
 				show={showError}
 				setShow={setShowError}
 				errorMessage={errorMessage}
+				setErrorMessage={setErrorMessage}
 			/>
 		</ToastList>
 	);
@@ -101,7 +102,12 @@ const LoginForm = () => {
 
 	return (
 		<section className="vh-100" style={{backgroundColor: '#eee'}}>
-			<LoginToasts showError={showError} setShowError={setShowError} errorMessage={errorMessage} />
+			<LoginToasts
+				showError={showError}
+				setShowError={setShowError}
+				errorMessage={errorMessage}
+				setErrorMessage={setErrorMessage}
+			/>
 			<div className="container h-100">
 				<div className="row d-flex justify-content-center align-items-center h-100">
 					<div className="col-lg-12 col-xl-11">

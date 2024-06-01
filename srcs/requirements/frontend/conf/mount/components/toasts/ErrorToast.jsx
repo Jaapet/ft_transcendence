@@ -1,8 +1,9 @@
 import Toast from 'react-bootstrap/Toast';
 
-const ErrorToast = ({ name, show, setShow, errorMessage }) => {
+const ErrorToast = ({ name, show, setShow, errorMessage, setErrorMessage }) => {
 	const toggle = () => {
 		setShow(!show);
+		setErrorMessage('');
 	}
 
 	return (

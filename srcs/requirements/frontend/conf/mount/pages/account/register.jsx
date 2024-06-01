@@ -143,7 +143,7 @@ const SignupFormFields = ({
 	);
 }
 
-const SignupToasts = ({ showError, setShowError, errorMessage }) => {
+const SignupToasts = ({ showError, setShowError, errorMessage, setErrorMessage }) => {
 	return (
 		<ToastList position="top-left">
 			<ErrorToast
@@ -151,6 +151,7 @@ const SignupToasts = ({ showError, setShowError, errorMessage }) => {
 				show={showError}
 				setShow={setShowError}
 				errorMessage={errorMessage}
+				setErrorMessage={setErrorMessage}
 			/>
 		</ToastList>
 	);
@@ -191,6 +192,7 @@ const SignupForm = () => {
 				showError={showError}
 				setShowError={setShowError}
 				errorMessage={errorMessage}
+				setErrorMessage={setErrorMessage}
 			/>
 			<div className="container h-100">
 				<div className="row d-flex justify-content-center align-items-center h-100">
