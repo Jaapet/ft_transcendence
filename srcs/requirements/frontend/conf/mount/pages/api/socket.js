@@ -1,16 +1,43 @@
 const http = require('http');
 const { Server } = require('socket.io');
-const cors = require('cors');
 const express = require('express');
+const cors = require('cors');
 
 const app = express();
-const server = http.createServer();
-const io = new Server(server);
 
+// Configurer CORS pour permettre les requêtes depuis toutes les origines (pour le prototype seulement)
 app.use(cors({
-	origin: 'http://transcendence.gmcg.fr:50381',
-	credentials: true // Si nécessaire
-  }));
+  origin: '*',  // Permettre toutes les origines
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true // Si nécessaire
+}));
+
+// Middleware pour définir les en-têtes CORS
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,POST');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  next();
+});
+
+// Exemple de route pour tester le serveur
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
+
+// Créer le serveur HTTP
+const server = http.createServer(app);
+
+// Initialiser Socket.io avec le serveur HTTP
+const io = new Server(server, {
+  cors: {
+    origin: '*',  // Permettre toutes les origines
+    methods: ['GET', 'POST'],
+    credentials: true // Si nécessaire
+  }
+});
 
 io.on('connection', (socket) => {
   console.log('A user connected');

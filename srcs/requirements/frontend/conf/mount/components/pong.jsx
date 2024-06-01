@@ -10,7 +10,7 @@ const Pong = () => {
 
   useEffect(() => {
 	const socket = io('http://localhost:3000');
-    socketRef.current = socket;
+	socketRef.current = socket;
 
     function main() {
       const canvas = canvasRef.current;
