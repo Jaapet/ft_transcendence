@@ -18,6 +18,11 @@ const ChooseGame = () => {
                         <a className={styles.button}>Royal Pong</a>
                     </Link>
                 </div>
+				<div>
+				<img src="/images/pongicon.png" alt="Pong Icon" style={{ width: '300px', marginTop: '1rem', marginRight:'2cm' }} />
+
+				<img src="/images/crown.jpg" alt="Royal Icon" style={{ width: '200px', marginLeft:'0cm' }} />
+            </div>
             </div>
     );
 };
