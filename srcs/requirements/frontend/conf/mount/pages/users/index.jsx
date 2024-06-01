@@ -74,9 +74,8 @@ export default function Users({ users }) {
 
 	return (
 		<div>
-			    <div className={styles.container}>
-
-			<h1 class="text-center mt-4 w-25 mx-auto">{ `User list` }</h1>
+			<div className={styles.container}>
+			<h1 className={styles.background_title}> User List </h1>
 			<UserTable users={users} />
 		</div>
 		</div>
