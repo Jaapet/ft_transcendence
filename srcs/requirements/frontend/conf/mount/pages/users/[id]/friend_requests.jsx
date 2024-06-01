@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Head from 'next/head';
-import styles from '../../../styles/base.module.css';
 import Link from 'next/link';
+import styles from '../../../styles/base.module.css';
 import { useAuth } from '../../../context/AuthenticationContext';
 import { useUser } from '../../../context/UserContext';
 import { Card, Nav, ListGroup, Button } from 'react-bootstrap';
@@ -9,7 +9,61 @@ import ToastList from '../../../components/toasts/ToastList';
 import ErrorToast from '../../../components/toasts/ErrorToast';
 import SuccessToast from '../../../components/toasts/SuccessToast';
 
-const UserFriendRequestSent = ({ request, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
+const AcceptFriendRequestButton = ({ requests, setReqs, request_id, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
+	const { acceptFriendRequest } = useUser();
+
+	const handleClick = async (event) => {
+		event.preventDefault();
+		const success = await acceptFriendRequest({request_id});
+		if (success) {
+			setReqs((requests) => requests.filter(request => request.id !== request_id));
+		}
+	}
+
+	return (
+		<Button variant="success" className="me-2" onClick={handleClick}>
+			Accept
+		</Button>
+	);
+}
+
+const DeclineFriendRequestButton = ({ requests, setReqs, request_id, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
+	const { declineFriendRequest } = useUser();
+
+	const handleClick = async (event) => {
+		event.preventDefault();
+		const success = await declineFriendRequest({request_id});
+		if (success) {
+			setReqs((requests) => requests.filter(request => request.id !== request_id));
+		}
+	}
+
+	return (
+		<Button variant="outline-danger" onClick={handleClick}>
+			Decline
+		</Button>
+	);
+}
+
+const DeleteFriendRequestButton = ({ requests, setReqs, request_id, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
+	const { deleteFriendRequest } = useUser();
+
+	const handleClick = async (event) => {
+		event.preventDefault();
+		const success = await deleteFriendRequest({request_id});
+		if (success) {
+			setReqs((requests) => requests.filter(request => request.id !== request_id));
+		}
+	}
+
+	return (
+		<Button variant="danger" onClick={handleClick}>
+			Delete
+		</Button>
+	);
+}
+
+const UserFriendRequestSent = ({ requests, setReqs, request, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
 	return (
 		<ListGroup.Item
 			className={`
@@ -33,12 +87,20 @@ const UserFriendRequestSent = ({ request, setShowError, setErrorMsg, setShowMsg,
 					{request.date} {request.time}
 				</div>
 			</div>
-			<Button variant="danger">Delete</Button>
+			<DeleteFriendRequestButton
+				requests={requests}
+				setReqs={setReqs}
+				request_id={request.id}
+				setShowError={setShowError}
+				setErrorMsg={setErrorMsg}
+				setShowMsg={setShowMsg}
+				setMsg={setMsg}
+			/>
 		</ListGroup.Item>
 	);
 }
 
-const UserFriendRequestsTableBodySent = ({ requests, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
+const UserFriendRequestsTableBodySent = ({ requests, setReqs, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
 	if (!requests || requests.length < 1) {
 		return (
 			<Card.Text>No requests to display</Card.Text>
@@ -50,6 +112,8 @@ const UserFriendRequestsTableBodySent = ({ requests, setShowError, setErrorMsg, 
 			{ requests.map(request => (
 				<UserFriendRequestSent
 					key={request.id}
+					requests={requests}
+					setReqs={setReqs}
 					request={request}
 					setShowError={setShowError}
 					setErrorMsg={setErrorMsg}
@@ -61,39 +125,7 @@ const UserFriendRequestsTableBodySent = ({ requests, setShowError, setErrorMsg, 
 	);
 }
 
-const AcceptFriendRequestButton = ({ request_id, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
-	const { acceptFriendRequest, userError, clearUserError, userMsg, clearUserMsg } = useUser();
-
-	useEffect(() => {
-		if (userError) {
-			setErrorMsg(userError);
-			setShowError(true);
-			clearUserError();
-		}
-		if (userMsg) {
-			setMsg(userMsg);
-			setShowMsg(true);
-			clearUserMsg();
-		}
-	}, [userError, userMsg, setErrorMsg, setShowError, setMsg, setShowMsg, clearUserError, clearUserMsg]);
-
-	const handleClick = async (event) => {
-		event.preventDefault();
-		acceptFriendRequest({request_id});
-	}
-
-	return (
-		<Button
-			variant="success"
-			className="me-2"
-			onClick={handleClick}
-		>
-			Accept
-		</Button>
-	);
-}
-
-const UserFriendRequestReceived = ({ request, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
+const UserFriendRequestReceived = ({ requests, setReqs, request, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
 	return (
 		<ListGroup.Item
 			className={`
@@ -118,18 +150,28 @@ const UserFriendRequestReceived = ({ request, setShowError, setErrorMsg, setShow
 				</div>
 			</div>
 			<AcceptFriendRequestButton
+				requests={requests}
+				setReqs={setReqs}
 				request_id={request.id}
 				setShowError={setShowError}
 				setErrorMsg={setErrorMsg}
 				setShowMsg={setShowMsg}
 				setMsg={setMsg}
 			/>
-			<Button variant="outline-danger">Decline</Button>
+			<DeclineFriendRequestButton
+				requests={requests}
+				setReqs={setReqs}
+				request_id={request.id}
+				setShowError={setShowError}
+				setErrorMsg={setErrorMsg}
+				setShowMsg={setShowMsg}
+				setMsg={setMsg}
+			/>
 		</ListGroup.Item>
 	);
 }
 
-const UserFriendRequestsTableBodyReceived = ({ requests, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
+const UserFriendRequestsTableBodyReceived = ({ requests, setReqs, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
 	if (!requests || requests.length < 1) {
 		return (
 			<Card.Text>No requests to display</Card.Text>
@@ -141,6 +183,8 @@ const UserFriendRequestsTableBodyReceived = ({ requests, setShowError, setErrorM
 			{ requests.map(request => (
 				<UserFriendRequestReceived
 					key={request.id}
+					requests={requests}
+					setReqs={setReqs}
 					request={request}
 					setShowError={setShowError}
 					setErrorMsg={setErrorMsg}
@@ -152,11 +196,12 @@ const UserFriendRequestsTableBodyReceived = ({ requests, setShowError, setErrorM
 	);
 }
 
-const UserFriendRequestsTableBody = ({ activeTab, sent, recv, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
+const UserFriendRequestsTableBody = ({ activeTab, sent, recv, setSent, setRecv, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
 	if (activeTab === '#sent') {
 		return (
 			<UserFriendRequestsTableBodySent
 				requests={sent}
+				setReqs={setSent}
 				setShowError={setShowError}
 				setErrorMsg={setErrorMsg}
 				setShowMsg={setShowMsg}
@@ -167,6 +212,7 @@ const UserFriendRequestsTableBody = ({ activeTab, sent, recv, setShowError, setE
 		return (
 			<UserFriendRequestsTableBodyReceived
 				requests={recv}
+				setReqs={setRecv}
 				setShowError={setShowError}
 				setErrorMsg={setErrorMsg}
 				setShowMsg={setShowMsg}
@@ -178,7 +224,7 @@ const UserFriendRequestsTableBody = ({ activeTab, sent, recv, setShowError, setE
 	}
 }
 
-const UserFriendRequestsTable = ({ sent, recv, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
+const UserFriendRequestsTable = ({ sent, recv, setSent, setRecv, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
 	const [activeTab, setActiveTab] = useState('#received');
 
 	const handleSelect = (eventKey) => {
@@ -211,6 +257,8 @@ const UserFriendRequestsTable = ({ sent, recv, setShowError, setErrorMsg, setSho
 					activeTab={activeTab}
 					sent={sent}
 					recv={recv}
+					setSent={setSent}
+					setRecv={setRecv}
 					setShowError={setShowError}
 					setErrorMsg={setErrorMsg}
 					setShowMsg={setShowMsg}
@@ -221,7 +269,7 @@ const UserFriendRequestsTable = ({ sent, recv, setShowError, setErrorMsg, setSho
 	);
 }
 
-const FriendRequestsToasts = ({ showError, setShowError, errorMsg, showMsg, setShowMsg, msg }) => {
+const FriendRequestsToasts = ({ showError, setShowError, errorMsg, setErrorMsg, showMsg, setShowMsg, msg, setMsg }) => {
 	return (
 		<ToastList position="top-right">
 			<ErrorToast
@@ -229,12 +277,14 @@ const FriendRequestsToasts = ({ showError, setShowError, errorMsg, showMsg, setS
 				show={showError}
 				setShow={setShowError}
 				errorMessage={errorMsg}
+				setErrorMessage={setErrorMsg}
 			/>
 			<SuccessToast
 				name="Success"
 				show={showMsg}
 				setShow={setShowMsg}
 				message={msg}
+				setMessage={setMsg}
 			/>
 		</ToastList>
 	);
@@ -242,6 +292,29 @@ const FriendRequestsToasts = ({ showError, setShowError, errorMsg, showMsg, setS
 
 export default function UserFriendRequests({ status, current_user, requests_sent, requests_received }) {
 	const { user } = useAuth();
+	const { userError, userMsg, clearUserError, clearUserMsg } = useUser();
+
+	const [showError, setShowError] = useState(false);
+	const [errorMsg, setErrorMsg] = useState('');
+	const [showMsg, setShowMsg] = useState(false);
+	const [msg, setMsg] = useState('');
+	const [sentRequests, setSentRequests] = useState(requests_sent);
+	const [receivedRequests, setReceivedRequests] = useState(requests_received);
+
+	useEffect(() => {
+		console.log('usr_err:', userError);
+		console.log('usr_msg:', userMsg);
+		if (userError) {
+			setErrorMsg(userError);
+			setShowError(true);
+			clearUserError();
+		}
+		if (userMsg) {
+			setMsg(userMsg);
+			setShowMsg(true);
+			clearUserMsg();
+		}
+	}, [userError, userMsg, setErrorMsg, setShowError, setMsg, setShowMsg, clearUserError, clearUserMsg]);
 
 	/* TODO: Implement redirect here
 	if (status === 404) {
@@ -271,20 +344,17 @@ export default function UserFriendRequests({ status, current_user, requests_sent
 		);
 	}
 
-	const [showError, setShowError] = useState(false);
-	const [errorMsg, setErrorMsg] = useState('');
-	const [showMsg, setShowMsg] = useState(false);
-	const [msg, setMsg] = useState('');
-
 	return (
 		<div className={styles.container}>
 			<FriendRequestsToasts
 				showError={showError}
 				setShowError={setShowError}
 				errorMsg={errorMsg}
+				setErrorMsg={setErrorMsg}
 				showMsg={showMsg}
 				setShowMsg={setShowMsg}
 				msg={msg}
+				setMsg={setMsg}
 			/>
 
 			<Head>
@@ -292,8 +362,10 @@ export default function UserFriendRequests({ status, current_user, requests_sent
 			</Head>
 
 			<UserFriendRequestsTable
-				sent={requests_sent}
-				recv={requests_received}
+				sent={sentRequests}
+				recv={receivedRequests}
+				setSent={setSentRequests}
+				setRecv={setReceivedRequests}
 				setShowError={setShowError}
 				setErrorMsg={setErrorMsg}
 				setShowMsg={setShowMsg}

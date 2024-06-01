@@ -122,21 +122,93 @@ export const UserProvider = ({ children }) => {
 				body: JSON.stringify({ request_id })
 			});
 			if (!response) {
-				throw new Error(`Failed to accept friend request ${request_id}`);
+				throw new Error(`Failed to accept friend request`);
 			}
 
 			const data = await response.json();
 			if (!data) {
-				throw new Error(`Failed to accept friend request ${request_id}`);
+				throw new Error(`Failed to accept friend request`);
 			}
 			if (!response.ok) {
-				throw new Error(data.message || `Failed to accept friend request ${request_id}`);
+				throw new Error(data.message || `Failed to accept friend request`);
 			}
 
 			setUserMsg(data.message);
+			return true;
 		} catch (error) {
 			console.error('ACCEPT FRIEND REQUEST:', error);
 			setUserError(error.message);
+			return false;
+		}
+	}
+
+	const declineFriendRequest = async ({ request_id }) => {
+		if (!user) {
+			return ;
+		}
+
+		try {
+			const response = await fetch(`/api/current_user/decline_friend_request`, {
+				method: 'POST',
+				headers: {
+					'Accept': 'application/json',
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ request_id })
+			});
+			if (!response) {
+				throw new Error(`Failed to decline friend request`);
+			}
+
+			const data = await response.json();
+			if (!data) {
+				throw new Error(`Failed to decline friend request`);
+			}
+			if (!response.ok) {
+				throw new Error(data.message || `Failed to decline friend request`);
+			}
+
+			setUserMsg(data.message);
+			return true;
+		} catch (error) {
+			console.error('DECLINE FRIEND REQUEST:', error);
+			setUserError(error.message);
+			return false;
+		}
+	}
+
+	const deleteFriendRequest = async ({ request_id }) => {
+		if (!user) {
+			return ;
+		}
+
+		try {
+			const response = await fetch(`/api/current_user/delete_friend_request`, {
+				method: 'POST',
+				headers: {
+					'Accept': 'application/json',
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ request_id })
+			});
+			if (!response) {
+				throw new Error(`Failed to delete friend request`);
+			}
+
+			const data = await response.json();
+			if (!data) {
+				throw new Error(`Failed to delete friend request`);
+			}
+			if (!response.ok) {
+				throw new Error(data.message || `Failed to delete friend request`);
+			}
+
+			setUserMsg(data.message);
+			return true;
+		} catch (error) {
+			console.error('DELETE FRIEND REQUEST:', error);
+			setUserError(error.message);
+			return false;
 		}
 	}
 
@@ -153,7 +225,7 @@ export const UserProvider = ({ children }) => {
 			userError, setUserError, clearUserError,
 			userMsg, setUserMsg, clearUserMsg,
 			isFriends, addFriend, removeFriend,
-			acceptFriendRequest
+			acceptFriendRequest, declineFriendRequest, deleteFriendRequest
 		}}>
 			{children}
 		</UserContext.Provider>
