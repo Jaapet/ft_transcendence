@@ -1,6 +1,6 @@
 services:
   db:
-    container_name: main_db
+    container_name: mmidon_db
     image: postgres:14.11
     env_file:
       - .env
@@ -10,12 +10,12 @@ services:
 
   backend:
     build: ./requirements/backend
-    container_name: main_backend
-    image: main_backend
+    container_name: mmidon_backend
+    image: mmidon_backend
 #    Changez le 3eme chiffre du 1er port selon la personne
 #    1 greg 2 theo 3 melanie 4 benjamin 5 noe
     ports:
-      - "50280:8000"
+      - "50380:8000"
     env_file:
       - .env
     volumes:
@@ -26,12 +26,12 @@ services:
 
   frontend:
     build: ./requirements/frontend
-    container_name: main_frontend
-    image: main_frontend
+    container_name: mmidon_frontend
+    image: mmidon_frontend
 #    Changez le 3eme chiffre du 1er port selon la personne
 #    1 greg 2 theo 3 melanie 4 benjamin 5 noe
     ports:
-      - "50281:3000"
+      - "50381:3000"
     env_file:
       - .env
     volumes:
