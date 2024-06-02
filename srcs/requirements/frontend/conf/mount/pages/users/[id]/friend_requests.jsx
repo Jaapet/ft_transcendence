@@ -345,40 +345,54 @@ export default function UserFriendRequests({ status, current_user, requests_sent
 	}
 
 	return (
-		<div className={styles.container}>
-			<FriendRequestsToasts
-				showError={showError}
-				setShowError={setShowError}
-				errorMsg={errorMsg}
-				setErrorMsg={setErrorMsg}
-				showMsg={showMsg}
-				setShowMsg={setShowMsg}
-				msg={msg}
-				setMsg={setMsg}
-			/>
+<div
+  className={styles.container}
+  style={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: '91vh',
+    flexDirection: 'column',
+    textAlign: 'center',
+  }}
+>
+  <FriendRequestsToasts
+    showError={showError}
+    setShowError={setShowError}
+    errorMsg={errorMsg}
+    setErrorMsg={setErrorMsg}
+    showMsg={showMsg}
+    setShowMsg={setShowMsg}
+    msg={msg}
+    setMsg={setMsg}
+  />
 
-			<Head>
-				<title>Profile Page</title>
-			</Head>
+  <Head>
+    <title>Profile Page</title>
+  </Head>
 
-			<UserFriendRequestsTable
-				sent={sentRequests}
-				recv={receivedRequests}
-				setSent={setSentRequests}
-				setRecv={setReceivedRequests}
-				setShowError={setShowError}
-				setErrorMsg={setErrorMsg}
-				setShowMsg={setShowMsg}
-				setMsg={setMsg}
-			/>
-			<p>
-				<Link href={`/users/${user.id}`} passHref>
-					<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
-						Back to profile
-					</a>
-				</Link>
-			</p>
-		</div>
+  <UserFriendRequestsTable
+    sent={sentRequests}
+    recv={receivedRequests}
+    setSent={setSentRequests}
+    setRecv={setReceivedRequests}
+    setShowError={setShowError}
+    setErrorMsg={setErrorMsg}
+    setShowMsg={setShowMsg}
+    setMsg={setMsg}
+  />
+  <p>
+    <Link href={`/users/${user.id}`} passHref>
+      <a
+        className={styles.cardInfo}
+        style={{ fontWeight: 'bold' }}
+      >
+        Back to profile
+      </a>
+    </Link>
+  </p>
+</div>
+
 	);
 }
 
