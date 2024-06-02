@@ -3,8 +3,9 @@ from rest_framework import routers
 from .views import (
 	MemberViewSet,
 	MemberAPIView,
-	FriendRequestViewSet,
 	RegisterMemberAPIView,
+	FriendListAPIView,
+	FriendRequestViewSet,
 	CheckFriendshipStatusAPIView,
 	SendFriendRequestAPIView,
 	DeleteFriendRequestAPIView,
@@ -33,7 +34,7 @@ urlpatterns = [
 	path('friend_request/delete', DeleteFriendRequestAPIView.as_view(), name='delete_friend_request'),
 	path('friend_request/accept', AcceptFriendRequestAPIView.as_view(), name='accept_friend_request'),
 	path('friend_request/decline', DeclineFriendRequestAPIView.as_view(), name='decline_friend_request'),
-#	path('friends/', FRIEND LIST),
+	path('friends/', FriendListAPIView.as_view(), name="friend_list"),
 	path('friends/remove', RemoveFriendAPIView.as_view(), name='remove_friend'),
 	path('friends/friendship_status', CheckFriendshipStatusAPIView.as_view(), name='friendship_status')
 ]

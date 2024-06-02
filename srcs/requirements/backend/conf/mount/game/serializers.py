@@ -59,6 +59,18 @@ class RegisterMemberSerializer(serializers.HyperlinkedModelSerializer):
 			'avatar'
 		]
 
+class FriendSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Member
+		fields = [
+			'url',
+			'id',
+			'username',
+			'email',
+			'avatar',
+			'join_date'
+		]
+
 class SendFriendRequestSerializer(serializers.Serializer):
 	target_id = serializers.IntegerField()
 

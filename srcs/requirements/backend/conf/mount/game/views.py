@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from .serializers import (
 	MemberSerializer,
 	RegisterMemberSerializer,
+	FriendSerializer,
 	FriendRequestSerializer,
 	SendFriendRequestSerializer,
 	InteractFriendRequestSerializer,
@@ -49,6 +50,15 @@ class RegisterMemberAPIView(APIView):
 		print(serializer)
 		print(serializer.errors)
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class FriendListAPIView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def get(self, request):
+		user = request.user
+		friends = user.friends.all()
+		serializer = FriendSerializer(friends, many=True, context={'request': request})
+		return Response(serializer.data)
 
 # Queries all friend requests ordered by most recent
 # Requires authentication
