@@ -1,21 +1,22 @@
 {
-  "name": "ft_transcendence",
-  "version": "1.0.0",
-  "description": "",
-  "main": "script.js",
-  "scripts": {
-    "dev": "next dev"
-  },
-  "dependencies": {
-    "bootstrap": "^5.3.3",
-    "cookie": "^0.6.0",
-    "formidable": "^3.5.1",
-    "next": "^12.3.4",
-    "react": "^18.0.0",
-    "react-bootstrap": "^2.10.2",
-    "react-dom": "^18.0.0",
-	"three": "^0.164.1"
-  },
-  "author": "uwu c'est moi uwu",
-  "license": "ISC"
+	"name": "ft_transcendence",
+	"version": "1.0.0",
+	"description": "",
+	"main": "script.js",
+	"scripts": {
+		"dev": "next dev"
+	},
+	"dependencies": {
+		"bootstrap": "^5.3.3",
+		"cookie": "^0.6.0",
+		"formidable": "^3.5.1",
+		"next": "^12.3.4",
+		"react": "^18.0.0",
+		"react-bootstrap": "^2.10.2",
+		"react-dom": "^18.0.0",
+		"socket.io-client": "^4.7.5",
+		"three": "^0.164.1"
+	},
+	"author": "uwu c'est moi uwu",
+	"license": "ISC"
 }
