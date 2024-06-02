@@ -70,9 +70,9 @@ const ProfileMemberCardFriendRequestsButton = ({ target_user }) => {
 				type="button"
 				variant="info"
 				style={{fontSize: '25px'}}
-				href={`${user.id}/friend_requests`}
+				href={`${user.id}/friends`}
 			>
-				<strong>See friend requests</strong>
+				<strong>Friend List</strong>
 			</Button>
 		</div>
 	);

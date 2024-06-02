@@ -25,10 +25,10 @@ const UserTableRow = ({ user }) => {
 				<Link href={`/users/${user.id}`} passHref>
 					<a>
 						<Image
-						src={user.avatar}
-						alt={`${user.username}'s avatar`}
-						width={40}
-						height={40}
+							src={user.avatar}
+							alt={`${user.username}'s avatar`}
+							width={40}
+							height={40}
 						/>
 					</a>
 				</Link>

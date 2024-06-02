@@ -1,28 +1,71 @@
 import React from 'react';
 import Head from 'next/head';
-import styles from '../../../styles/base.module.css';
 import Link from 'next/link';
+import Image from 'next/image';
+import styles from '../../../styles/base.module.css';
 import { useAuth } from '../../../context/AuthenticationContext';
+import { useUser } from '../../../context/UserContext';
+import { ListGroup } from 'react-bootstrap';
 
-const UserFriendListFriendLink = ({ id, username }) => {
-	if (id === null) {
-		return (<span>{username}</span>);
+const RemoveFriendButton = ({ target_id }) => {
+	const { removeFriend } = useUser();
+
+	const handleClick = async (event) => {
+		event.preventDefault();
+		removeFriend({target_id});
 	}
 
+	// TODO: Make this a bootstrap button!
 	return (
-		<Link href={`/users/${id}`} passHref>
-			<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-				{username}
-			</a>
-		</Link>
+		<button
+			type="button"
+			className="btn btn-danger"
+			style={{fontSize: '15px'}}
+			onClick={handleClick}
+		>
+			Remove friend
+		</button>
 	);
 }
 
 const UserFriendListFriend = ({ user, friend }) => {
 	return (
-		<p className="fs-2 mb-0">
-			<UserFriendListFriendLink id={friend.id} username={friend.username} />
-		</p>
+		<ListGroup.Item
+			className={`
+				d-flex
+				justify-content-between
+				align-items-center
+				bg-dark
+				text-white
+			`}
+		>
+			<div className="ms-1 me-auto text-start" style={{ display: 'flex', flexDirection: 'row' }}>
+				<div className="mt-2 mb-0 ml-0 mr-1">
+					<Link href={`/users/${friend.id}`} passHref>
+						<a>
+							<Image
+								src={friend.avatar}
+								alt={`${friend.username}'s avatar`}
+								width={40}
+								height={40}
+							/>
+						</a>
+					</Link>
+				</div>
+				<div className="mx-2 my-2">
+					<Link href={`/users/${friend.id}`} passHref>
+						<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+							{friend.username}
+						</a>
+					</Link>
+				</div>
+				<div>
+					<RemoveFriendButton
+						target_id={friend.id}
+					/>
+				</div>
+			</div>
+		</ListGroup.Item>
 	);
 }
 
@@ -71,13 +114,15 @@ Match objects contain:
 			<h4 className="card-title">Your friends</h4>
 			<div className={`card ${styles.customCard}`}>
 				<div className="card-body">
-					<ul className="list-group list-group">
+					<ListGroup>
 						{friends.map(friend => (
-							<li key={friend.id} className={`list-group-item ${styles.customList}`}>
-								<UserFriendListFriend user={user} friend={friend} />
-							</li>
+							<UserFriendListFriend 
+								key={friend.id}
+								user={user}
+								friend={friend}
+							/>
 						))}
-					</ul>
+					</ListGroup>
 				</div>
 			</div>
 			<p>
@@ -129,7 +174,6 @@ export default function UserFriends({ status, current_user, friends }) {
 				<title>Friend List</title>
 			</Head>
 
-			<h1 className={`mt-3 ${styles.background_title}`}>{user.username}</h1>
 			<div className={`card ${styles.backCard}`}>
 				<UserFriendList user={user} friends={friends} />
 			</div>
