@@ -65,50 +65,49 @@ Match objects contain:
 	const UserMatchHistoryList = ({ user, matches }) => {
 
 		if (!matches || matches.length < 1) {
-		  return (
-			<div className={`card ${styles.customCard}`}>
-			  <div className="card-body">
-				<h5 className="card-title mb-0">No matches to display :/</h5>
-				<p>
-				  <Link href={`/users/${user.id}`} passHref>
-					<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-					  Back to {user.username}'s profile
-					</a>
-				  </Link>
-				</p>
-			  </div>
-			</div>
-		  );
+			return (
+				<div className={`card ${styles.customCard}`}>
+					<div className="card-body">
+						<h5 className="card-title mb-0">No matches to display :/</h5>
+						<p>
+							<Link href={`/users/${user.id}`} passHref>
+								<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+									Back to {user.username}'s profile
+								</a>
+							</Link>
+						</p>
+					</div>
+				</div>
+			);
 		}
-	  
-		return (
-			  <div className={`card-body ${styles.cardInfo}`}>
-			  <h4 className="card-title">{user.username}'s match history</h4>
+
+	return (
+		<div className={`card-body ${styles.cardInfo}`}>
+			<h4 className="card-title">{user.username}'s match history</h4>
 			<div className={`card ${styles.customCard}`}>
-			<div className="card-body">
-				
-			  <ul className="list-group list-group">
-				{matches.map(match => (
-				  <li key={match.id} className={`list-group-item ${styles.customList}`}>
-					<UserMatchHistoryMatchPlayers user={user} match={match} />
-					<p className="fs-3 mb-0">{match.winner_score}-{match.loser_score}</p>
-					<p className="fs-4 mb-0">{match.end_date}</p>
-				  </li>
-				))}
-			  </ul>
+				<div className="card-body">
+					<ul className="list-group list-group">
+						{matches.map(match => (
+							<li key={match.id} className={`list-group-item ${styles.customList}`}>
+								<UserMatchHistoryMatchPlayers user={user} match={match} />
+								<p className="fs-3 mb-0">{match.winner_score}-{match.loser_score}</p>
+								<p className="fs-4 mb-0">{match.end_date}</p>
+							</li>
+						))}
+					</ul>
+				</div>
 			</div>
-		  </div>
-			  <p>
+			<p>
 				<Link href={`/users/${user.id}`} passHref>
-				<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
-					Back to {user.username}'s profile
-				  </a>
+					<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
+						Back to {user.username}'s profile
+					</a>
 				</Link>
-			  </p>
-		  </div>
-		);
-	  }
-	  
+			</p>
+		</div>
+	);
+}
+
 export default function UserMatchHistory({ status, user, matches }) {
 	/* TODO: Implement redirect here
 	if (status === 404) {

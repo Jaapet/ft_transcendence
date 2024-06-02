@@ -371,9 +371,16 @@ export default function UserFriendRequests({ status, current_user, requests_sent
 				setShowMsg={setShowMsg}
 				setMsg={setMsg}
 			/>
+			<p>
+				<Link href={`/users/${user.id}`} passHref>
+					<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
+						Back to profile
+					</a>
+				</Link>
+			</p>
 		</div>
 	);
-};
+}
 
 export async function getServerSideProps(context) {
 	const { id } = context.params;
