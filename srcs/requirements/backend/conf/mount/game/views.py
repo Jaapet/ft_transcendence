@@ -2,13 +2,14 @@ from .models import Member, FriendRequest, Match
 from django.db.models import Q
 from rest_framework import viewsets, permissions, status
 from rest_framework.views import APIView
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from rest_framework.parsers import MultiPartParser
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .serializers import (
 	MemberSerializer,
 	RegisterMemberSerializer,
+	UpdateMemberSerializer,
 	FriendSerializer,
 	FriendRequestSerializer,
 	SendFriendRequestSerializer,
@@ -46,6 +47,21 @@ class RegisterMemberAPIView(APIView):
 			avatar_data = request.data.get('avatar')
 			serializer.save(avatar=avatar_data)
 			return Response(serializer.data, status=status.HTTP_201_CREATED)
+		print("Invalid Serializer:")
+		print(serializer)
+		print(serializer.errors)
+		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UpdateMemberAPIView(UpdateAPIView):
+	permission_classes = [permissions.IsAuthenticated]
+	serializer_class = UpdateMemberSerializer
+	parser_classes = [MultiPartParser]
+
+	def put(self, request, *args, **kwargs):
+		serializer = self.serializer_class(data=request.data, instance=request.user, context={'request': request})
+		if serializer.is_valid():
+			serializer.save()
+			return Response(serializer.data, status=status.HTTP_200_OK)
 		print("Invalid Serializer:")
 		print(serializer)
 		print(serializer.errors)

@@ -59,6 +59,42 @@ class RegisterMemberSerializer(serializers.HyperlinkedModelSerializer):
 			'avatar'
 		]
 
+# Serializes sent data for Member update
+# Checks if avatar is under size limit defined in validate_file_size
+# Checks if avatar is a correct image file
+# Checks if username and email are unique across DB
+# Checks if email is valid
+# Hashes password
+# All fields are optional
+class UpdateMemberSerializer(serializers.HyperlinkedModelSerializer):
+	avatar = serializers.ImageField(required=False, validators=[validate_file_size])
+
+	def update(self, instance, validated_data):
+		avatar = validated_data.pop('avatar', None)
+		if avatar:
+			instance.avatar = avatar
+		password = validated_data.pop('password', None)
+		if password:
+			instance.set_password(password)
+		instance.username = validated_data.get('username', instance.username)
+		instance.email = validated_data.get('email', instance.email)
+		return super().update(instance, validated_data)
+
+	class Meta:
+		model = Member
+		fields = [
+			'username',
+			'password',
+			'email',
+			'avatar'
+		]
+		extra_kwargs = {
+			'username': {'required': False},
+			'password': {'required': False},
+			'email': {'required': False},
+			'avatar': {'required': False}
+		}
+
 class FriendSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Member
