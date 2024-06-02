@@ -29,8 +29,8 @@ As we are not required to complete all modules, here is our temporary selection:
 - PostgreSQL DB in back-end
 - Bootstrap toolkit and Next.js in front-end
 - Dashboards for users and game stats
-#### Maybe
 - Multiple browser support
+#### Maybe
 - RGPD compliance
 - Monitoring system
 
