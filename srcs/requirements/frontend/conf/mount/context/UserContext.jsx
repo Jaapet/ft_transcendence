@@ -101,9 +101,11 @@ export const UserProvider = ({ children }) => {
 			}
 
 			setUserMsg(data.message);
+			return true;
 		} catch (error) {
 			console.error('REMOVE FRIEND:', error);
 			setUserError(error.message);
+			return false;
 		}
 	}
 

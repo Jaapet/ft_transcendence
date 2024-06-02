@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import styles from '../../../styles/base.module.css';
@@ -302,8 +302,6 @@ export default function UserFriendRequests({ status, current_user, requests_sent
 	const [receivedRequests, setReceivedRequests] = useState(requests_received);
 
 	useEffect(() => {
-		console.log('usr_err:', userError);
-		console.log('usr_msg:', userMsg);
 		if (userError) {
 			setErrorMsg(userError);
 			setShowError(true);
