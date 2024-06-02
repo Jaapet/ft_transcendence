@@ -19,7 +19,7 @@ export default async (req, res) => {
 
 		const { id } = req.body;
 		if (!id) {
-			throw new Error('No profile id provided');
+			throw new Error('No user id provided');
 		}
 
 		// Fetch user

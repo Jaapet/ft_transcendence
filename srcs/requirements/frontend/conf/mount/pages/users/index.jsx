@@ -1,6 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import styles from '../../styles/base.module.css';
 
 const UserTableHead = () => {
 	return (
@@ -63,7 +64,7 @@ const UserTable = ({ users }) => {
 export default function Users({ users }) {
 	if (!users) {
 		return (
-			<div align="center">
+			<div className={styles.container}>
 				<p>Something went wrong...</p>
 				<p>Please reload the page.</p>
 			</div>
@@ -71,7 +72,7 @@ export default function Users({ users }) {
 	}
 
 	return (
-		<div>
+		<div className={styles.container}>
 			<h1 className="text-center mt-4 w-25 mx-auto">{ `User list` }</h1>
 			<UserTable users={users} />
 		</div>
