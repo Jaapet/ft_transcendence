@@ -97,7 +97,7 @@ Match objects contain:
 				<div className={`card ${styles.customCard}`}>
 					<div className="card-body">
 						<h5 className="card-title mb-0">You have no friends 🤭🫵</h5>
-
+						<img src="/images/sadboy.png" alt="Royal Icon" style={{ width: '50%', height: 'auto' }}></img>
 					</div>
 				</div>
 			);
