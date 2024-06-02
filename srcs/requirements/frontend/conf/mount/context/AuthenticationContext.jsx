@@ -38,7 +38,7 @@ export const AuthenticationProvider = ({ children }) => {
 	// Login user
 	const login = async ({ username, password }) => {
 		try {
-			const response = await fetch(`/api/login`, {
+			const response = await fetch(`/api/auth/login`, {
 				method: 'POST',
 				headers: {
 					'Accept': 'application/json',
@@ -71,7 +71,7 @@ export const AuthenticationProvider = ({ children }) => {
 	// Logout user
 	const logout = async () => {
 		try {
-			const response = await fetch(`/api/logout`, {
+			const response = await fetch(`/api/auth/logout`, {
 				method: 'POST'
 			});
 			if (!response) {
@@ -107,7 +107,7 @@ export const AuthenticationProvider = ({ children }) => {
 				formData.append('avatar', avatar);
 			}
 
-			const response = await fetch(`/api/register`, {
+			const response = await fetch(`/api/auth/register`, {
 				method: 'POST',
 				body: formData
 			});
@@ -132,7 +132,7 @@ export const AuthenticationProvider = ({ children }) => {
 	// refresh data fetches to backend if that's the case
 	const isLoggedIn = async () => {
 		try {
-			const response = await fetch(`/api/user`, {
+			const response = await fetch(`/api/auth/user`, {
 				method: 'POST'
 			});
 			if (!response) {
@@ -158,7 +158,12 @@ export const AuthenticationProvider = ({ children }) => {
 	}
 
 	return (
-		<AuthenticationContext.Provider value={{ user, accessToken, error, setError, clearError, login, logout, register }}>
+		<AuthenticationContext.Provider value={{
+			user,
+			accessToken,
+			error, setError, clearError,
+			login, logout, register
+		}}>
 			{children}
 		</AuthenticationContext.Provider>
 	);

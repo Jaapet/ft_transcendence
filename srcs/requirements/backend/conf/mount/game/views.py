@@ -1,4 +1,4 @@
-from .models import Member, Match
+from .models import Member, FriendRequest, Match
 from django.db.models import Q
 from rest_framework import viewsets, permissions, status
 from rest_framework.views import APIView
@@ -6,8 +6,16 @@ from rest_framework.generics import RetrieveAPIView
 from rest_framework.parsers import MultiPartParser
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .serializers import MemberSerializer, RegisterMemberSerializer, MatchSerializer
-import json
+from .serializers import (
+	MemberSerializer,
+	RegisterMemberSerializer,
+	FriendSerializer,
+	FriendRequestSerializer,
+	SendFriendRequestSerializer,
+	InteractFriendRequestSerializer,
+	RemoveFriendSerializer,
+	MatchSerializer
+)
 
 # Queries all members ordered by username
 # Requires authentication
@@ -43,6 +51,124 @@ class RegisterMemberAPIView(APIView):
 		print(serializer.errors)
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class FriendListAPIView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def get(self, request):
+		user = request.user
+		friends = user.friends.all()
+		serializer = FriendSerializer(friends, many=True, context={'request': request})
+		return Response(serializer.data)
+
+# Queries all friend requests ordered by most recent
+# Requires authentication
+class FriendRequestViewSet(viewsets.ModelViewSet):
+	permission_classes = [permissions.IsAuthenticated]
+	serializer_class = FriendRequestSerializer
+	queryset = FriendRequest.objects.all().select_related("sender", "recipient").order_by('-datetime')
+
+	# Get all friend requests sent by 1 user
+	@action(detail=False, methods=['get'])
+	def requests_sent(self, request, pk=None):
+		user_id = request.query_params.get('user_id', None)
+		if (user_id is None):
+			return Response({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+		user_requests = FriendRequest.objects.filter(Q(sender_id=user_id)).select_related("sender", "recipient").order_by('-datetime')
+		serializer = self.get_serializer(user_requests, many=True)
+		return Response(serializer.data)
+
+	# Get all friend requests received by 1 user
+	@action(detail=False, methods=['get'])
+	def requests_received(self, request, pk=None):
+		user_id = request.query_params.get('user_id', None)
+		if (user_id is None):
+			return Response({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+		user_requests = FriendRequest.objects.filter(Q(recipient_id=user_id)).select_related("sender", "recipient").order_by('-datetime')
+		serializer = self.get_serializer(user_requests, many=True)
+		return Response(serializer.data)
+
+class CheckFriendshipStatusAPIView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def get(self, request):
+		user1_id = request.query_params.get('user1_id')
+		user2_id = request.query_params.get('user2_id')
+		if not (user1_id and user2_id):
+			return Response({"detail": "Both user IDs are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+		try:
+			user1 = Member.objects.get(id=user1_id)
+			user2 = Member.objects.get(id=user2_id)
+			is_friend = user1.friends.filter(id=user2_id).exists()
+			return Response({"detail": is_friend}, status=status.HTTP_200_OK)
+		except Member.DoesNotExist:
+			return Response({"detail": "One or both users do not exist."}, status=status.HTTP_404_NOT_FOUND)
+
+class SendFriendRequestAPIView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def post(self, request, *args, **kwargs):
+		serializer = SendFriendRequestSerializer(data=request.data)
+		serializer.is_valid(raise_exception=True)
+		target = serializer.validated_data['target_id']
+		try:
+			request.user.send_friend_request(target)
+			return Response({"detail": "Friend request sent."}, status=status.HTTP_201_CREATED)
+		except ValueError as err:
+			return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
+class DeleteFriendRequestAPIView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def post(self, request, *args, **kwargs):
+		serializer = InteractFriendRequestSerializer(data=request.data)
+		serializer.is_valid(raise_exception=True)
+		friend_request = serializer.validated_data['request_id']
+		try:
+			request.user.delete_friend_request(friend_request)
+			return Response({"detail": "Friend request deleted."}, status=status.HTTP_200_OK)
+		except ValueError as err:
+			return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
+class AcceptFriendRequestAPIView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def post(self, request, *args, **kwargs):
+		serializer = InteractFriendRequestSerializer(data=request.data)
+		serializer.is_valid(raise_exception=True)
+		friend_request = serializer.validated_data['request_id']
+		try:
+			request.user.accept_friend_request(friend_request)
+			return Response({"detail": "Friend request accepted."}, status=status.HTTP_200_OK)
+		except ValueError as err:
+			return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
+class DeclineFriendRequestAPIView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def post(self, request, *args, **kwargs):
+		serializer = InteractFriendRequestSerializer(data=request.data)
+		serializer.is_valid(raise_exception=True)
+		friend_request = serializer.validated_data['request_id']
+		try:
+			request.user.decline_friend_request(friend_request)
+			return Response({"detail": "Friend request declined."}, status=status.HTTP_200_OK)
+		except ValueError as err:
+			return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
+class RemoveFriendAPIView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def post(self, request, *args, **kwargs):
+		serializer = RemoveFriendSerializer(data=request.data)
+		serializer.is_valid(raise_exception=True)
+		friend = serializer.validated_data['target_id']
+		try:
+			request.user.remove_friend(friend)
+			return Response({"detail": "Friend removed."}, status=status.HTTP_200_OK)
+		except ValueError as err:
+			return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
 # Queries all matches ordered by most recently finished
 # Requires authentication
 class MatchViewSet(viewsets.ModelViewSet):
@@ -50,6 +176,7 @@ class MatchViewSet(viewsets.ModelViewSet):
 	serializer_class = MatchSerializer
 	queryset = Match.objects.all().select_related("winner", "loser").order_by('-end_datetime')
 
+	# Get all matches involving 1 player
 	@action(detail=False, methods=['get'])
 	def player_matches(self, request, pk=None):
 		player_id = request.query_params.get('player_id', None)
@@ -59,6 +186,7 @@ class MatchViewSet(viewsets.ModelViewSet):
 		serializer = self.get_serializer(player_matches, many=True)
 		return Response(serializer.data)
 
+	# Get a player's last 3 matches
 	@action(detail=False, methods=['get'])
 	def last_player_matches(self, request, pk=None):
 		player_id = request.query_params.get('player_id', None)

@@ -143,10 +143,16 @@ const SignupFormFields = ({
 	);
 }
 
-const SignupToasts = ({ showError, setShowError, errorMessage }) => {
+const SignupToasts = ({ showError, setShowError, errorMessage, setErrorMessage }) => {
 	return (
-		<ToastList>
-			<ErrorToast name="Registration failed" show={showError} setShow={setShowError} errorMessage={errorMessage} />
+		<ToastList position="top-left">
+			<ErrorToast
+				name="Registration failed"
+				show={showError}
+				setShow={setShowError}
+				errorMessage={errorMessage}
+				setErrorMessage={setErrorMessage}
+			/>
 		</ToastList>
 	);
 }
@@ -182,7 +188,12 @@ const SignupForm = () => {
 
 	return (
 		<section className="vh-100" style={{backgroundColor: '#eee'}}>
-			<SignupToasts showError={showError} setShowError={setShowError} errorMessage={errorMessage} />
+			<SignupToasts
+				showError={showError}
+				setShowError={setShowError}
+				errorMessage={errorMessage}
+				setErrorMessage={setErrorMessage}
+			/>
 			<div className="container h-100">
 				<div className="row d-flex justify-content-center align-items-center h-100">
 					<div className="col-lg-12 col-xl-11">

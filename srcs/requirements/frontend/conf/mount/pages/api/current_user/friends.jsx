@@ -19,7 +19,7 @@ export default async (req, res) => {
 
 		const { id } = req.body;
 		if (!id) {
-			throw new Error('No profile id provided');
+			throw new Error('No user id provided');
 		}
 
 		// Fetch user
@@ -33,46 +33,46 @@ export default async (req, res) => {
 		if (!userRes) {
 			throw new Error(`Could not fetch data for user ${id}`);
 		}
-		
+
 		const userData = await userRes.json();
 		if (!userData) {
 			throw new Error(`Could not fetch data for user ${id}`);
 		}
 		if (userRes.status === 404) {
-			console.error('API USER MATCH HISTORY:', userData.detail);
+			console.error('API USER FRIEND LIST:', userData.detail);
 			return res.status(404).json({ message: userData.detail });
 		}
 		if (!userRes.ok) {
 			throw new Error(userData.detail || `Could not fetch data for user ${id}`);
 		}
 
-		// Fetch user's match history
-		const matchRes = await fetch(`http://backend:8000/api/matches/player_matches/?player_id=${id}`, {
+		// Fetch user's friend list
+		const friendRes = await fetch(`http://backend:8000/api/friends`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
 				'Authorization': `Bearer ${access}`
 			}
 		});
-		if (!matchRes) {
-			throw new Error(`Could not fetch match history for user ${id}`);
-		}
-		
-		const matchData = await matchRes.json();
-		if (!matchData) {
-			throw new Error(`Could not fetch match history for user ${id}`);
-		}
-		if (matchRes.status === 404) {
-			console.error('API USER MATCH HISTORY:', matchData.detail);
-			return res.status(200).json({ user: userData, matches: null });
-		}
-		if (!matchRes.ok) {
-			throw new Error(matchData.detail || `Could not fetch match history for user ${id}`);
+		if (!friendRes) {
+			throw new Error(`Could not fetch friend list for user ${id}`);
 		}
 
-		return res.status(200).json({ user: userData, matches: matchData });
+		const friendData = await friendRes.json();
+		if (!friendData) {
+			throw new Error(`Could not fetch friend list for user ${id}`);
+		}
+		if (friendRes.status === 404) {
+			console.error('API USER FRIEND LIST:', friendData.detail);
+			return res.status(200).json({ user: userData, friends: null });
+		}
+		if (!friendRes.ok) {
+			throw new Error(friendData.detail || `Could not fetch friend list for user ${id}`);
+		}
+
+		return res.status(200).json({ user: userData, friends: friendData });
 	} catch (error) {
-		console.error('API USER MATCH HISTORY:', error);
+		console.error('API USER FRIEND LIST:', error);
 		return res.status(401).json({ message: error.message });
 	}
 }

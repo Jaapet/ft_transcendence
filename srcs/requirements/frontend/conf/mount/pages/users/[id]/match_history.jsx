@@ -5,17 +5,17 @@ import Link from 'next/link';
 
 const UserMatchHistoryMatchPlayerLink = ({ id, username }) => {
 	if (id === null) {
-	  return (<span>{username}</span>);
+		return (<span>{username}</span>);
 	}
-  
+
 	return (
-	  <Link href={`/users/${id}`} passHref>
-		<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-		  {username}
-		</a>
-	  </Link>
+		<Link href={`/users/${id}`} passHref>
+			<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+				{username}
+			</a>
+		</Link>
 	);
-  }
+}
 
 const UserMatchHistoryMatchPlayers = ({ user, match }) => {
 	if (match.winner_id === user.id) {
@@ -65,50 +65,49 @@ Match objects contain:
 	const UserMatchHistoryList = ({ user, matches }) => {
 
 		if (!matches || matches.length < 1) {
-		  return (
-			<div className={`card ${styles.customCard}`}>
-			  <div className="card-body">
-				<h5 className="card-title mb-0">No matches to display :/</h5>
-				<p>
-				  <Link href={`/users/${user.id}`} passHref>
-					<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-					  Back to {user.username}'s profile
-					</a>
-				  </Link>
-				</p>
-			  </div>
-			</div>
-		  );
+			return (
+				<div className={`card ${styles.customCard}`}>
+					<div className="card-body">
+						<h5 className="card-title mb-0">No matches to display :/</h5>
+						<p>
+							<Link href={`/users/${user.id}`} passHref>
+								<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+									Back to {user.username}'s profile
+								</a>
+							</Link>
+						</p>
+					</div>
+				</div>
+			);
 		}
-	  
-		return (
-			  <div className={`card-body ${styles.cardInfo}`}>
-			  <h4 className="card-title">{user.username}'s match history</h4>
+
+	return (
+		<div className={`card-body ${styles.cardInfo}`}>
+			<h4 className="card-title">{user.username}'s match history</h4>
 			<div className={`card ${styles.customCard}`}>
-			<div className="card-body">
-				
-			  <ul className="list-group list-group">
-				{matches.map(match => (
-				  <li key={match.id} className={`list-group-item ${styles.customList}`}>
-					<UserMatchHistoryMatchPlayers user={user} match={match} />
-					<p className="fs-3 mb-0">{match.winner_score}-{match.loser_score}</p>
-					<p className="fs-4 mb-0">{match.end_date}</p>
-				  </li>
-				))}
-			  </ul>
+				<div className="card-body">
+					<ul className="list-group list-group">
+						{matches.map(match => (
+							<li key={match.id} className={`list-group-item ${styles.customList}`}>
+								<UserMatchHistoryMatchPlayers user={user} match={match} />
+								<p className="fs-3 mb-0">{match.winner_score}-{match.loser_score}</p>
+								<p className="fs-4 mb-0">{match.end_date}</p>
+							</li>
+						))}
+					</ul>
+				</div>
 			</div>
-		  </div>
-			  <p>
+			<p>
 				<Link href={`/users/${user.id}`} passHref>
-				<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
-					Back to {user.username}'s profile
-				  </a>
+					<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
+						Back to {user.username}'s profile
+					</a>
 				</Link>
-			  </p>
-		  </div>
-		);
-	  }
-	  
+			</p>
+		</div>
+	);
+}
+
 export default function UserMatchHistory({ status, user, matches }) {
 	/* TODO: Implement redirect here
 	if (status === 404) {
@@ -120,16 +119,16 @@ export default function UserMatchHistory({ status, user, matches }) {
 	}
 
 	return (
-			<div className={styles.container}>
-				<Head>
-					<title>Profile Page</title>
-				</Head>
-				
-				<h1 className={`mt-3 ${styles.background_title}`}>{user.username}</h1>
-				<div className={`card ${styles.backCard}`}>
-					<UserMatchHistoryList user={user} matches={matches} />
-				</div>
+		<div className={styles.container}>
+			<Head>
+				<title>Profile Page</title>
+			</Head>
+			
+			<h1 className={`mt-3 ${styles.background_title}`}>{user.username}</h1>
+			<div className={`card ${styles.backCard}`}>
+				<UserMatchHistoryList user={user} matches={matches} />
 			</div>
+		</div>
 	);
 };
 
@@ -137,7 +136,7 @@ export async function getServerSideProps(context) {
 	const { id } = context.params;
 
 	try {
-		const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user_match_history`, {
+		const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/user_match_history`, {
 			method: 'POST',
 			headers: {
 				'Accept': 'application/json',

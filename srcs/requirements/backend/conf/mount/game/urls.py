@@ -1,6 +1,19 @@
 from django.urls import include, path
 from rest_framework import routers
-from .views import MemberViewSet, MemberAPIView, RegisterMemberAPIView, MatchViewSet
+from .views import (
+	MemberViewSet,
+	MemberAPIView,
+	RegisterMemberAPIView,
+	FriendListAPIView,
+	FriendRequestViewSet,
+	CheckFriendshipStatusAPIView,
+	SendFriendRequestAPIView,
+	DeleteFriendRequestAPIView,
+	AcceptFriendRequestAPIView,
+	DeclineFriendRequestAPIView,
+	RemoveFriendAPIView,
+	MatchViewSet
+)
 from rest_framework_simplejwt import views as jwt_views
 
 # Every route defined here will be prefixed with api/
@@ -8,6 +21,7 @@ from rest_framework_simplejwt import views as jwt_views
 
 router = routers.DefaultRouter()
 router.register(r'members', MemberViewSet)
+router.register(r'friend_requests', FriendRequestViewSet)
 router.register(r'matches', MatchViewSet)
 
 urlpatterns = [
@@ -16,4 +30,11 @@ urlpatterns = [
 	path('token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
 	path('user/', MemberAPIView.as_view(), name='login'),
 	path('register/', RegisterMemberAPIView.as_view(), name='register'),
+	path('friend_request/send', SendFriendRequestAPIView.as_view(), name='send_friend_request'),
+	path('friend_request/delete', DeleteFriendRequestAPIView.as_view(), name='delete_friend_request'),
+	path('friend_request/accept', AcceptFriendRequestAPIView.as_view(), name='accept_friend_request'),
+	path('friend_request/decline', DeclineFriendRequestAPIView.as_view(), name='decline_friend_request'),
+	path('friends/', FriendListAPIView.as_view(), name="friend_list"),
+	path('friends/remove', RemoveFriendAPIView.as_view(), name='remove_friend'),
+	path('friends/friendship_status', CheckFriendshipStatusAPIView.as_view(), name='friendship_status')
 ]

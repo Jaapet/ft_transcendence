@@ -19,7 +19,7 @@ export default async (req, res) => {
 
 		const { id } = req.body;
 		if (!id) {
-			throw new Error('No profile id provided');
+			throw new Error('No user id provided');
 		}
 
 		// Fetch user
@@ -33,7 +33,7 @@ export default async (req, res) => {
 		if (!userRes) {
 			throw new Error(`Could not fetch data for user ${id}`);
 		}
-		
+
 		const userData = await userRes.json();
 		if (!userData) {
 			throw new Error(`Could not fetch data for user ${id}`);

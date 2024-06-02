@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 
@@ -8,16 +8,19 @@ class MemberManager(BaseUserManager):
 	use_in_migrations=True
 
 	def _create_user(self, username, email, is_admin, password=None, **extra_fields):
-		if not username:
-			raise ValueError('Need a username')
-		if not email:
-			raise ValueError('Need an email address')
-		username = username
-		email = self.normalize_email(email)
-		member = self.model(username=username, email=email, is_admin=is_admin, **extra_fields)
-		member.set_password(password)
-		member.save(using=self._db)
-		return member
+		try:
+			if not username:
+				raise ValueError('Need a username')
+			if not email:
+				raise ValueError('Need an email address')
+			email = self.normalize_email(email)
+			with transaction.atomic():
+				member = self.model(username=username, email=email, is_admin=is_admin, **extra_fields)
+				member.set_password(password)
+				member.save(using=self._db)
+			return member
+		except Exception as e:
+			raise ValueError(str(e))
 
 	def create_user(self, username, email, password=None, **extra_fields):
 		extra_fields.setdefault('is_superuser', False)
@@ -27,16 +30,16 @@ class MemberManager(BaseUserManager):
 		extra_fields.setdefault('is_superuser', True)
 		# This might be a useless check
 		if extra_fields.get('is_superuser') is not True:
-			raise ValueError('Superuser must have is_superuser=True.')
+			raise ValueError('Failed to create super user: Super user must have is_superuser=True.')
 		return self._create_user(username, email, True, password, **extra_fields)
 
 # Member objects contain:
 # - username	(CharField)
-# - email		(EmailField)
+# - email			(EmailField)
 # - avatar		(ImageField)
 # - join_date	(DateField)
-# - is_admin	(booleanField)
-# - TODO: Friend list
+# - is_admin	(BooleanField)
+# - friends		(ManyToManyField Member)
 # - everything else is from AbstractBaseUser
 #
 # From Match objects:
@@ -85,6 +88,13 @@ class Member(AbstractBaseUser, PermissionsMixin):
 		verbose_name="Admin status"
 	)
 
+	friends = models.ManyToManyField(
+		"Member",
+		blank=True,
+		symmetrical=True,
+		verbose_name="Friends list"
+	)
+
 	objects = MemberManager()
 
 	# Required for extending AbstractBaseUser
@@ -96,9 +106,9 @@ class Member(AbstractBaseUser, PermissionsMixin):
 		verbose_name = "member"
 		verbose_name_plural = "members"
 		indexes = [
-			models.Index(fields=["username"], name="username_idx"),
-			models.Index(fields=["join_date", "username"], name="join_date_idx"),
-			models.Index(fields=["-join_date", "username"], name="join_date_rev_idx")
+			models.Index(fields=["username"], name="member_username_idx"),
+			models.Index(fields=["join_date", "username"], name="member_join_date_idx"),
+			models.Index(fields=["-join_date", "username"], name="member_join_date_rev_idx")
 		]
 
 	def __str__(self):
@@ -107,6 +117,110 @@ class Member(AbstractBaseUser, PermissionsMixin):
 	@property
 	def is_staff(self):
 		return self.is_admin
+
+	def send_friend_request(self, target):
+		try:
+			if (target in self.friends.all()):
+				raise ValueError("This user is already your friend.")
+			if (self == target):
+				raise ValueError("You can't add yourself as a friend.")
+			if (FriendRequest.objects.filter(sender=self, recipient=target).exists()):
+				raise ValueError("You already sent a friend request to this user.")
+			if (FriendRequest.objects.filter(sender=target, recipient=self).exists()):
+				raise ValueError("This user already sent you a friend request.")
+			with transaction.atomic():
+				friend_request = FriendRequest(sender=self, recipient=target)
+				friend_request.save()
+			return friend_request
+		except Exception as e:
+			raise ValueError(str(e))
+
+	def delete_friend_request(self, friend_request):
+		try:
+			if (friend_request.sender != self):
+				raise ValueError("This friend request was not made by you!")
+			friend_request.delete()
+		except Exception as e:
+			raise ValueError(str(e))
+
+	def accept_friend_request(self, friend_request):
+		try:
+			if (friend_request.recipient != self):
+				raise ValueError("This friend request is not for you!")
+			with transaction.atomic():
+				self.friends.add(friend_request.sender)
+				friend_request.sender.friends.add(self)
+				friend_request.delete()
+		except Exception as e:
+			raise ValueError(str(e))
+
+	def decline_friend_request(self, friend_request):
+		try:
+			if (friend_request.recipient != self):
+				raise ValueError("This friend request is not for you!")
+			friend_request.delete()
+		except Exception as e:
+			raise ValueError(str(e))
+
+	def remove_friend(self, target):
+		try:
+			if (target not in self.friends.all()):
+				raise ValueError("This user is not your friend.")
+			if (self == target):
+				raise ValueError("You can't remove yourself as a friend.")
+			with transaction.atomic():
+				self.friends.remove(target)
+				target.friends.remove(self)
+		except Exception as e:
+			raise ValueError(str(e))
+
+# FriendRequest objects contain:
+# - sender		(Member ForeignKey)
+# - recipient	(Member ForeignKey)
+# - datetime	(DateTimeField)
+#
+# Indexed on:
+# - datetime
+# - sender
+# - recipient
+class FriendRequest(models.Model):
+	sender = models.ForeignKey(
+		Member,
+		null=False,
+		blank=False,
+		related_name="sender",
+		on_delete=models.CASCADE,
+		db_comment="Sender",
+		verbose_name="Friend request sender"
+	)
+
+	recipient = models.ForeignKey(
+		Member,
+		null=False,
+		blank=False,
+		related_name="recipient",
+		on_delete=models.CASCADE,
+		db_comment="Recipient",
+		verbose_name="Friend request recipient"
+	)
+
+	datetime = models.DateTimeField(
+		auto_now_add=True,
+		db_comment="Date and time of the creation of the friend request",
+		verbose_name="Date and time of friend request"
+	)
+
+	class Meta:
+		verbose_name = "friend request"
+		verbose_name_plural = "friend requests"
+		indexes = [
+			models.Index(fields=["datetime"], name="friend_request_date_idx"),
+			models.Index(fields=["sender"], name="friend_request_sender_idx"),
+			models.Index(fields=["recipient"], name="friend_request_recipient_idx")
+		]
+
+	def __str__(self):
+		return f"{self.sender.username} invited {self.recipient.username} ({self.datetime})"
 
 # Match objects contain:
 # - winner			(Member Foreign Key)
@@ -168,9 +282,9 @@ class Match(models.Model):
 		verbose_name = "match"
 		verbose_name_plural = "matches"
 		indexes = [
-			models.Index(fields=["winner"], name="winner_idx"),
-			models.Index(fields=["loser"], name="loser_idx"),
-			models.Index(fields=["end_datetime"], name="date_idx")
+			models.Index(fields=["winner"], name="match_winner_idx"),
+			models.Index(fields=["loser"], name="match_loser_idx"),
+			models.Index(fields=["end_datetime"], name="match_date_idx")
 		]
 
 	def __str__(self):

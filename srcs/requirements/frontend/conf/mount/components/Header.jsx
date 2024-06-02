@@ -39,8 +39,16 @@ const ProfileNavLog = () => {
 
 		return (
 			<>
+				<NavDropdown.ItemText>{user.username}</NavDropdown.ItemText>
+				<NavDropdown.Divider />
 				<Link href={`/users/${user.id}`} passHref>
 					<NavDropdown.Item as="a">My Profile</NavDropdown.Item>
+				</Link>
+				<Link href={`/users/${user.id}/friends`} passHref>
+					<NavDropdown.Item as="a">Friends</NavDropdown.Item>
+				</Link>
+				<Link href={`/users/${user.id}/friend_requests`} passHref>
+					<NavDropdown.Item as="a">Friend requests</NavDropdown.Item>
 				</Link>
 				<NavDropdown.Item as="button" onClick={handleLogout}>Log out</NavDropdown.Item>
 			</>

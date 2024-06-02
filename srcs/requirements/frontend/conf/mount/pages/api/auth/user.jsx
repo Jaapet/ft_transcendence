@@ -1,5 +1,7 @@
 import cookie from 'cookie';
 
+// This function is used for Login Refresh
+
 export default async (req, res) => {
 	// Only POST allowed
 	if (req.method !== 'POST') {
