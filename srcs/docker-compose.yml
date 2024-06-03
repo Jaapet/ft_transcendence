@@ -1,24 +1,47 @@
 services:
+  proxy:
+    build: ./requirements/proxy
+    container_name: proxy #Proxy will get the "localhost.cert"
+    image: proxy_${PROJECT_NAME}
+    command: #Startup traefik cmd to populate the static conf
+      # - "--log.level=DEBUG"
+      - "--api.insecure=false"
+      - "--api.dashboard=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--providers.file.filename=/app/ssl.yml"
+
+    ports:
+      - "${PROJECT_PORT_ID}80:80" #Will be 80 when submiting
+      - "${PROJECT_PORT_ID}81:443" #Will be 443 when submiting
+      - "${PROJECT_PORT_ID}82:8080" #Will be 8080 when submiting, used for traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock #Docker sock, should work in the school
+    env_file:
+      - .env
+    restart: unless-stopped
   db:
-    container_name: main_db
+    container_name: db #Don't change it, its important for certificates, db will receive the "db.cert"
     image: postgres:14.11
     env_file:
       - .env
-    volumes:
+    volumes: #Volumes binded should be changed before submiting the project
       - ./requirements/db:/var/lib/postgresql/data
     restart: unless-stopped
 
   backend:
     build: ./requirements/backend
-    container_name: main_backend
-    image: main_backend
-#    Changez le 3eme chiffre du 1er port selon la personne
-#    1 greg 2 theo 3 melanie 4 benjamin 5 noe
-    ports:
-      - "50280:8000"
+    container_name: backend #Don't change it, its important for certificates,  main_backend will receive the "main_db.cert"
+    image: backend_${PROJECT_NAME}
+    # ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
+      # - "${PROJECT_PORT_ID}80:8000"
     env_file:
       - .env
-    volumes:
+    volumes: #Volumes binded should be changed before submiting the project
       - ./requirements/backend/conf/mount:/usr/app
     depends_on:
       - db
@@ -26,16 +49,21 @@ services:
 
   frontend:
     build: ./requirements/frontend
-    container_name: main_frontend
-    image: main_frontend
-#    Changez le 3eme chiffre du 1er port selon la personne
-#    1 greg 2 theo 3 melanie 4 benjamin 5 noe
-    ports:
-      - "50281:3000"
+    container_name: frontend #Don't change it, its important for certificates, frontend will receive the "frontend.cert"
+    image: frontend_${PROJECT_NAME}
+    # ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
+      # - "${PROJECT_PORT_ID}80:3000"
+    labels: #Label used to dynamically conf traefik
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`${FQDN}`)"
+      - "traefik.http.routers.frontend.tls=true"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
     env_file:
       - .env
-    volumes:
+    volumes: #Volumes binded should be changed before submiting the project
       - ./requirements/frontend/conf/mount:/app/src
     depends_on:
       - backend
+      - proxy
     restart: unless-stopped
