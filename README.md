@@ -18,7 +18,7 @@ As we are not required to complete all modules, here is our temporary selection:
 - Distant players (playing on 2 different computers)
 #### Maybe
 - Multiple players (more than 2 in one game)
-- Log management
+- Log management (ELK)
 - 2FA + JSON Web Tokens
 - WAF or Mod Security + HashiCorp Vault
 - AI-controlled player
