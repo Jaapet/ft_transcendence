@@ -1,7 +1,7 @@
 services:
   proxy:
     build: ./requirements/proxy
-    container_name: proxy #Proxy will get the "localhost.cert"
+    container_name: proxy_${PROJECT_NAME} #Proxy will get the "localhost.cert"
     image: proxy_${PROJECT_NAME}
     command: #Startup traefik cmd to populate the static conf
       # - "--log.level=DEBUG"
@@ -35,7 +35,7 @@ services:
 
   backend:
     build: ./requirements/backend
-    container_name: backend #Don't change it, its important for certificates,  main_backend will receive the "main_db.cert"
+    container_name: backend_${PROJECT_NAME} #Don't change it, its important for certificates,  main_backend will receive the "main_db.cert"
     image: backend_${PROJECT_NAME}
     # ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
       # - "${PROJECT_PORT_ID}80:8000"
@@ -49,7 +49,7 @@ services:
 
   frontend:
     build: ./requirements/frontend
-    container_name: frontend #Don't change it, its important for certificates, frontend will receive the "frontend.cert"
+    container_name: frontend_${PROJECT_NAME} #Don't change it, its important for certificates, frontend will receive the "frontend.cert"
     image: frontend_${PROJECT_NAME}
     # ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
       # - "${PROJECT_PORT_ID}80:3000"
