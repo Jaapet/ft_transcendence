@@ -25,7 +25,7 @@ services:
       - .env
     restart: unless-stopped
   db:
-    container_name: db #Don't change it, its important for certificates, db will receive the "db.cert"
+    container_name: db_${PROJECT_NAME} #Don't change it, its important for certificates, db will receive the "db.cert"
     image: postgres:14.11
     env_file:
       - .env
