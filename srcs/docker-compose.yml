@@ -18,7 +18,7 @@ services:
     ports:
       # - "${PROJECT_PORT_ID}80:80" #Will be 80 when submiting
       - "${PROJECT_PORT_ID}81:443" #Will be 443 when submiting
-      - "${PROJECT_PORT_ID}82:8080" #Will be 8080 when submiting, used for traefik dashboard
+      # - "${PROJECT_PORT_ID}82:8080" #Will be 8080 when submiting, used for traefik dashboard
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock #Docker sock, should work in the school
     env_file:
