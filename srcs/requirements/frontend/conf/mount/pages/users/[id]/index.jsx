@@ -244,7 +244,7 @@ export default function Profile({ status, user, last_matches }) {
 	}
 	*/
 
-	if (status === 401 || status === 404) {
+	if (status === 401 || status === 404 || !user) {
 		return (<p>Something went wrong...</p>);
 	}
 
