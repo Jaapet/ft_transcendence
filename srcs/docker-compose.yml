@@ -16,7 +16,7 @@ services:
       - "--providers.file.filename=/app/ssl.yml"
 
     ports:
-      - "${PROJECT_PORT_ID}80:80" #Will be 80 when submiting
+      # - "${PROJECT_PORT_ID}80:80" #Will be 80 when submiting
       - "${PROJECT_PORT_ID}81:443" #Will be 443 when submiting
       - "${PROJECT_PORT_ID}82:8080" #Will be 8080 when submiting, used for traefik dashboard
     volumes:
@@ -37,8 +37,8 @@ services:
     build: ./requirements/backend
     container_name: backend_${PROJECT_NAME} #Don't change it, its important for certificates,  main_backend will receive the "main_db.cert"
     image: backend_${PROJECT_NAME}
-    # ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
-      # - "${PROJECT_PORT_ID}80:8000"
+    ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
+      - "${PROJECT_PORT_ID}80:8000"
     env_file:
       - .env
     volumes: #Volumes binded should be changed before submiting the project
