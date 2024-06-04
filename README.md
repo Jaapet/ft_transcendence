@@ -22,7 +22,7 @@ As we are not required to complete all modules, here is our temporary selection:
 - Multiple players (more than 2 in one game)
 - WAF or Mod Security + HashiCorp Vault
 - 2FA + JSON Web Tokens
-- Log management
+- Log management (ELK)
 ---
 ### Minor modules
 #### Validated
