@@ -17,12 +17,12 @@ As we are not required to complete all modules, here is our temporary selection:
 - A second game with user history and match-making
 - Distant players (playing on 2 different computers)
 #### Maybe
+- Multiple players (more than 2 in one game)
+- Log management
+- 2FA + JSON Web Tokens
+- WAF or Mod Security + HashiCorp Vault
 - AI-controlled player
 - Remote authentification (OAuth 42)
-- Multiple players (more than 2 in one game)
-- WAF or Mod Security + HashiCorp Vault
-- 2FA + JSON Web Tokens
-- Log management
 ---
 ### Minor modules
 #### Validated
@@ -31,8 +31,8 @@ As we are not required to complete all modules, here is our temporary selection:
 - Dashboards for users and game stats
 - Multiple browser support
 #### Maybe
-- RGPD compliance
 - Monitoring system
+- RGPD compliance
 
 > 📝 Note that we will not do all of them.  
 > 📝 This is just the first selection, it will be trimmed down.  
