@@ -1,0 +1,9 @@
+tls:
+  options:
+    default:
+      minVersion: "VersionTLS12"                          # Minimum TLS Version
+  certificates:
+    - certFile: /app/transcendence.gmcg.fr.crt
+      keyFile: /app/transcendence.gmcg.fr.key
+    - certFile: /app/localhost.crt
+      keyFile: /app/localhost.key
