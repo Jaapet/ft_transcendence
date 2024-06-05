@@ -370,6 +370,13 @@ export default function UserFriendRequests({ status, current_user, requests_sent
 				setMsg={setMsg}
 			/>
 			<p>
+				<Link href={`/users/${user.id}/friends`} passHref>
+					<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
+						Go to friend list
+					</a>
+				</Link>
+			</p>
+			<p>
 				<Link href={`/users/${user.id}`} passHref>
 					<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
 						Back to profile

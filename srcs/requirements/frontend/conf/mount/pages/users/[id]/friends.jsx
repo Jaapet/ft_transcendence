@@ -102,6 +102,13 @@ Match objects contain:
 					<div className="card-body">
 						<h5 className="card-title mb-0">You have no friends 🤭🫵</h5>
 						<p>
+							<Link href={`/users/${user.id}/friend_requests`} passHref>
+								<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
+									Go to friend requests inbox
+								</a>
+							</Link>
+						</p>
+						<p>
 							<Link href={`/users/${user.id}`} passHref>
 								<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
 									Back to profile
@@ -130,6 +137,13 @@ Match objects contain:
 					</ListGroup>
 				</div>
 			</div>
+			<p>
+				<Link href={`/users/${user.id}/friend_requests`} passHref>
+					<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
+						Go to friend requests inbox
+					</a>
+				</Link>
+			</p>
 			<p>
 				<Link href={`/users/${user.id}`} passHref>
 					<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
