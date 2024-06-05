@@ -1,11 +1,11 @@
 #ggualerz header
 
-FROM		postgres:14.11
+FROM		postgres:16.3-alpine
 
 LABEL		author="thepaqui@student.42nice.fr"
 
 # Install CA certificates package
-RUN apt-get update && apt-get install -y ca-certificates
+RUN apk update && apk add ca-certificates && update-ca-certificates
 
 # Copy your custom CA
 COPY CA.crt /usr/local/share/ca-certificates/CA.crt

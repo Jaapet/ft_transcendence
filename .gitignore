@@ -6,6 +6,8 @@
 __pycache__
 .next
 node_modules
+srcs/requirements/backend/conf/mount/backend/media
+!srcs/requirements/backend/conf/mount/backend/media/default.png
 srcs/requirements/db/mount
 Makefile
 .env

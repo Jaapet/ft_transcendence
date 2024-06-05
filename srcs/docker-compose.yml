@@ -60,7 +60,6 @@ services:
       - db
     restart: unless-stopped
 
-
   frontend:
     build: ./requirements/frontend
     container_name: frontend_${PROJECT_NAME} #Don't change it, its important for certificates, frontend will receive the "frontend.cert"
