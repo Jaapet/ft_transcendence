@@ -102,20 +102,6 @@ Match objects contain:
 					<div className="card-body">
 						<h2 className="card-title mb-0">You have no friends 🤭🫵</h2>
 						<img src="/images/sadboy.png" alt="Royal Icon" style={{ width: '50%', height: 'auto' }}></img>
-						<p>
-							<Link href={`/users/${user.id}/friend_requests`} passHref>
-								<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
-									Go to friend requests inbox
-								</a>
-							</Link>
-						</p>
-						<p>
-							<Link href={`/users/${user.id}`} passHref>
-								<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-									Back to profile
-								</a>
-							</Link>
-						</p>
 					</div>
 				</div>
 			);
@@ -137,20 +123,6 @@ Match objects contain:
 					</ListGroup>
 				</div>
 			</div>
-			<p>
-				<Link href={`/users/${user.id}/friend_requests`} passHref>
-					<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
-						Go to friend requests inbox
-					</a>
-				</Link>
-			</p>
-			<p>
-				<Link href={`/users/${user.id}`} passHref>
-					<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
-						Back to profile
-					</a>
-				</Link>
-			</p>
 		</div>
 	);
 }
@@ -229,17 +201,17 @@ export default function UserFriends({ status, current_user, friends }) {
 	}
 
 	return (
-<div
-  className={styles.container}
-  style={{
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '91vh',
-    flexDirection: 'column',
-    textAlign: 'center',
-  }}
->
+		<div
+			className={styles.container}
+			style={{
+				display: 'flex',
+				justifyContent: 'center',
+				alignItems: 'center',
+				minHeight: '91vh',
+				flexDirection: 'column',
+				textAlign: 'center',
+			}}
+		>
 			<FriendListToasts
 				showError={showError}
 				setShowError={setShowError}
@@ -250,16 +222,32 @@ export default function UserFriends({ status, current_user, friends }) {
 				msg={msg}
 				setMsg={setMsg}
 			/>
-  <Head>
-    <title>Friend List</title>
-  </Head>
-  <h1 className={styles.background_title}>Your friends</h1>
-  <div className={`card ${styles.backCard}`}>
-    <UserFriendList user={user} friends={friends} setMyFriends={setMyFriends} />
-  </div>
-</div>
+
+			<Head>
+				<title>Friend List</title>
+			</Head>
+
+			<h1 className={styles.background_title}>Your friends</h1>
+			<div className={`card ${styles.backCard}`}>
+				<UserFriendList user={user} friends={friends} setMyFriends={setMyFriends} />
+				<p>
+					<Link href={`/users/${user.id}/friend_requests`} passHref>
+						<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
+							Go to friend requests inbox
+						</a>
+					</Link>
+				</p>
+				<p>
+					<Link href={`/users/${user.id}`} passHref>
+						<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
+							Back to profile
+						</a>
+					</Link>
+				</p>
+			</div>
+		</div>
 	);
-};
+}
 
 export async function getServerSideProps(context) {
 	const { id } = context.params;
