@@ -103,7 +103,10 @@ const UserFriendRequestSent = ({ requests, setReqs, request, setShowError, setEr
 const UserFriendRequestsTableBodySent = ({ requests, setReqs, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
 	if (!requests || requests.length < 1) {
 		return (
-			<Card.Text>No requests to display</Card.Text>
+			<div>
+			<Card.Text>Don't you want to socialize?</Card.Text>
+				<img src="/images/andrewtate.png" alt="gaymen" style={{ width: '20%', height: 'auto' }}></img>
+			</div>
 		);
 	}
 
@@ -174,7 +177,10 @@ const UserFriendRequestReceived = ({ requests, setReqs, request, setShowError, s
 const UserFriendRequestsTableBodyReceived = ({ requests, setReqs, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
 	if (!requests || requests.length < 1) {
 		return (
-			<Card.Text>No requests to display</Card.Text>
+			<div>
+			<Card.Text>You're not interesting anyone...</Card.Text>
+				<img src="/images/noonelovesme.png" alt="lonelynessssss" style={{ width: '20%', height: 'auto' }}></img>
+			</div>
 		);
 	}
 
@@ -320,7 +326,7 @@ export default function UserFriendRequests({ status, current_user, requests_sent
 	}
 	*/
 
-	if (!user || !user.id || status === 401 || status === 404) {
+	if (!current_user || !current_user.id || !user || !user.id || status === 401 || status === 404) {
 		return (
 			<div className={styles.container}>
 				<Head>
@@ -343,7 +349,17 @@ export default function UserFriendRequests({ status, current_user, requests_sent
 	}
 
 	return (
-		<div className={styles.container}>
+		<div
+			className={styles.container}
+			style={{
+				display: 'flex',
+				justifyContent: 'center',
+				alignItems: 'center',
+				minHeight: '91vh',
+				flexDirection: 'column',
+				textAlign: 'center',
+			}}
+		>
 			<FriendRequestsToasts
 				showError={showError}
 				setShowError={setShowError}
@@ -370,8 +386,21 @@ export default function UserFriendRequests({ status, current_user, requests_sent
 				setMsg={setMsg}
 			/>
 			<p>
+				<Link href={`/users/${user.id}/friends`} passHref>
+					<a
+						className={styles.cardInfo}
+						style={{ fontWeight: 'bold' }}
+					>
+						Go to friend list
+					</a>
+				</Link>
+			</p>
+			<p>
 				<Link href={`/users/${user.id}`} passHref>
-					<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
+					<a
+						className={styles.cardInfo}
+						style={{ fontWeight: 'bold' }}
+					>
 						Back to profile
 					</a>
 				</Link>

@@ -100,14 +100,8 @@ Match objects contain:
 			return (
 				<div className={`card ${styles.customCard}`}>
 					<div className="card-body">
-						<h5 className="card-title mb-0">You have no friends 🤭🫵</h5>
-						<p>
-							<Link href={`/users/${user.id}`} passHref>
-								<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-									Back to profile
-								</a>
-							</Link>
-						</p>
+						<h2 className="card-title mb-0">You have no friends 🤭🫵</h2>
+						<img src="/images/sadboy.png" alt="Royal Icon" style={{ width: '50%', height: 'auto' }}></img>
 					</div>
 				</div>
 			);
@@ -115,7 +109,6 @@ Match objects contain:
 
 	return (
 		<div className={`card-body ${styles.cardInfo}`}>
-			<h4 className="card-title">Your friends</h4>
 			<div className={`card ${styles.customCard}`}>
 				<div className="card-body">
 					<ListGroup>
@@ -130,13 +123,6 @@ Match objects contain:
 					</ListGroup>
 				</div>
 			</div>
-			<p>
-				<Link href={`/users/${user.id}`} passHref>
-					<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
-						Back to profile
-					</a>
-				</Link>
-			</p>
 		</div>
 	);
 }
@@ -191,7 +177,7 @@ export default function UserFriends({ status, current_user, friends }) {
 	}
 	*/
 
-	if (!user || !user.id || status === 401 || status === 404) {
+	if (!current_user || !current_user.id || !user || !user.id || status === 401 || status === 404) {
 		return (
 			<div className={styles.container}>
 				<Head>
@@ -215,7 +201,17 @@ export default function UserFriends({ status, current_user, friends }) {
 	}
 
 	return (
-		<div className={styles.container}>
+		<div
+			className={styles.container}
+			style={{
+				display: 'flex',
+				justifyContent: 'center',
+				alignItems: 'center',
+				minHeight: '91vh',
+				flexDirection: 'column',
+				textAlign: 'center',
+			}}
+		>
 			<FriendListToasts
 				showError={showError}
 				setShowError={setShowError}
@@ -231,16 +227,27 @@ export default function UserFriends({ status, current_user, friends }) {
 				<title>Friend List</title>
 			</Head>
 
+			<h1 className={styles.background_title}>Your friends</h1>
 			<div className={`card ${styles.backCard}`}>
-				<UserFriendList
-					user={user}
-					myFriends={myFriends}
-					setMyFriends={setMyFriends}
-				/>
+				<UserFriendList user={user} myFriends={myFriends} setMyFriends={setMyFriends} />
+				<p>
+					<Link href={`/users/${user.id}/friend_requests`} passHref>
+						<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
+							Go to friend requests inbox
+						</a>
+					</Link>
+				</p>
+				<p>
+					<Link href={`/users/${user.id}`} passHref>
+						<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
+							Back to profile
+						</a>
+					</Link>
+				</p>
 			</div>
 		</div>
 	);
-};
+}
 
 export async function getServerSideProps(context) {
 	const { id } = context.params;
