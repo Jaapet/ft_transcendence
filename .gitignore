@@ -6,10 +6,9 @@
 __pycache__
 .next
 node_modules
+srcs/requirements/db/mount
 Makefile
 .env
-docker-compose.yml
-srcs/requirements/db/mount
 *.crt
 *.csr
 *.key

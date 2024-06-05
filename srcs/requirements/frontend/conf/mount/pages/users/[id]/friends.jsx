@@ -177,7 +177,7 @@ export default function UserFriends({ status, current_user, friends }) {
 	}
 	*/
 
-	if (!user || !user.id || status === 401 || status === 404) {
+	if (!current_user || !current_user.id || !user || !user.id || status === 401 || status === 404) {
 		return (
 			<div className={styles.container}>
 				<Head>
@@ -229,7 +229,7 @@ export default function UserFriends({ status, current_user, friends }) {
 
 			<h1 className={styles.background_title}>Your friends</h1>
 			<div className={`card ${styles.backCard}`}>
-				<UserFriendList user={user} friends={friends} setMyFriends={setMyFriends} />
+				<UserFriendList user={user} myFriends={myFriends} setMyFriends={setMyFriends} />
 				<p>
 					<Link href={`/users/${user.id}/friend_requests`} passHref>
 						<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>

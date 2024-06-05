@@ -18,10 +18,12 @@ export
 # TODO: Need to launch this in rootless mode :(
 
 all:
+	@./srcs/requirements/CAandCertGeneration.sh
 	@echo "Building the services and starting them in background"
 	@cd srcs && docker compose build && docker compose -p ${PROJECT_NAME} up -d
 
 f:
+	@./srcs/requirements/CAandCertGeneration.sh
 	@echo "Building the services and starting them in foreground"
 	@cd srcs && docker compose build && docker compose -p ${PROJECT_NAME} up
 
@@ -30,6 +32,7 @@ clean:
 	@cd srcs && docker compose -p ${PROJECT_NAME} down
 
 fclean:
+	@./srcs/requirements/CAandCertDeletion.sh
 	@echo "Stopping services and their network, deleting volumes and images"
 	@cd srcs && docker compose -p ${PROJECT_NAME} down -v
 	@docker system prune --all
