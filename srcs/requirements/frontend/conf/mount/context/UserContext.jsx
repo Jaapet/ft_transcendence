@@ -8,6 +8,40 @@ export const UserProvider = ({ children }) => {
 	const [userError, setUserError] = useState(null);
 	const [userMsg, setUserMsg] = useState(null);
 
+	// Edit profile
+	const edit = async ({ username, email, password, avatar }) => {
+		if (!user) {
+			return ;
+		}
+
+		try {
+			const formData = new FormData();
+			formData.append('username', username);
+			formData.append('email', email);
+			formData.append('password', password);
+			formData.append('avatar', avatar);
+
+			const response = await fetch(`/api/current_user/edit`, {
+				method: 'PUT',
+				body: formData
+			});
+			if (!response) {
+				throw new Error('Edit failed');
+			}
+
+			const data = await response.json();
+			if (!data)
+				throw new Error('Edit failed');
+			if (!response.ok)
+				throw new Error(data.message || 'Edit failed');
+
+			setUserMsg(data.message);
+		} catch (error) {
+			console.error('CONTEXT EDIT:', error);
+			setUserError(error.message);
+		}
+	}
+
 	const isFriends = async ({ target_id }) => {
 		if (!user) {
 			return ;
@@ -101,9 +135,11 @@ export const UserProvider = ({ children }) => {
 			}
 
 			setUserMsg(data.message);
+			return true;
 		} catch (error) {
 			console.error('REMOVE FRIEND:', error);
 			setUserError(error.message);
+			return false;
 		}
 	}
 
@@ -224,6 +260,7 @@ export const UserProvider = ({ children }) => {
 		<UserContext.Provider value={{
 			userError, setUserError, clearUserError,
 			userMsg, setUserMsg, clearUserMsg,
+			edit,
 			isFriends, addFriend, removeFriend,
 			acceptFriendRequest, declineFriendRequest, deleteFriendRequest
 		}}>

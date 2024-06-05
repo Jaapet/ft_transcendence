@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-//done
+// TODO: Make login refresh HERE
 
 export function middleware(req) {
 	const { nextUrl, cookies } = req;
@@ -8,9 +8,9 @@ export function middleware(req) {
 	const isLoggedIn = cookies.get('refresh');
 
 	if (isLoggedIn && (isLoginPage)) {
-        const homeUrl = new URL('/', nextUrl.origin);
-        return NextResponse.redirect(homeUrl.href);
-    }
+		const homeUrl = new URL('/', nextUrl.origin);
+		return NextResponse.redirect(homeUrl.href);
+	}
 
 	if (!isLoginPage && !isLoggedIn) {
 		const loginUrl = new URL('/account/login', nextUrl.origin);

@@ -56,8 +56,7 @@ const ProfileMemberCardFriendButton = ({ target_user, setShowError, setErrorMsg,
 	);
 }
 
-// TODO: Make this a button to see your friends list instead
-const ProfileMemberCardFriendRequestsButton = ({ target_user }) => {
+const ProfileMemberCardFriendsButton = ({ target_user }) => {
 	const { user } = useAuth();
 
 	if (!user || !target_user || !user.id || !target_user.id || user.id !== target_user.id) {
@@ -78,6 +77,27 @@ const ProfileMemberCardFriendRequestsButton = ({ target_user }) => {
 	);
 }
 
+const ProfileMemberCardEditButton = ({ target_user }) => {
+	const { user } = useAuth();
+
+	if (!user || !target_user || !user.id || !target_user.id || user.id !== target_user.id) {
+		return ;
+	}
+
+	return (
+		<div className={`card ${styles.customCard}`} style={{marginTop: '15px'}}>
+			<Button
+				type="button"
+				variant="warning"
+				style={{fontSize: '25px'}}
+				href={`${user.id}/edit`}
+			>
+				<strong>Edit</strong>
+			</Button>
+		</div>
+	);
+}
+
 const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
 	return (
 		<div>
@@ -93,10 +113,11 @@ const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg
 				setMsg={setMsg}
 			/>
 
-			{/* Friend requests button */}
-			<ProfileMemberCardFriendRequestsButton target_user={user} />
+			{/* Edit button */}
+			<ProfileMemberCardEditButton target_user={user} />
 
-			{/* TODO: Edit profile button */}
+			{/* Friends button */}
+			<ProfileMemberCardFriendsButton target_user={user} />
 
 			{/* elo */}
 			<ProfileMemberCardELO user={user} />
@@ -244,7 +265,7 @@ export default function Profile({ status, user, last_matches }) {
 	}
 	*/
 
-	if (status === 401 || status === 404) {
+	if (status === 401 || status === 404 || !user) {
 		return (<p>Something went wrong...</p>);
 	}
 
