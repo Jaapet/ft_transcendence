@@ -9,4 +9,3 @@ node_modules
 srcs/requirements/db
 Makefile
 .env
-docker-compose.yml
