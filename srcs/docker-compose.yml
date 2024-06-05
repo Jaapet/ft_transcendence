@@ -14,7 +14,9 @@ services:
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
       - "--providers.file.filename=/app/ssl.yml"
-
+      - "--providers.docker.constraints=Label(`my.zone`, `${PROJECT_NAME}`)"
+    labels: #Label used to dynamically conf traefik
+      - "my.zone=${PROJECT_NAME}"
     ports:
       # - "${PROJECT_PORT_ID}80:80" #Will be 80 when submiting
       - "${PROJECT_PORT_ID}81:443" #Will be 443 when submiting
@@ -54,6 +56,7 @@ services:
     # ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
       # - "${PROJECT_PORT_ID}80:3000"
     labels: #Label used to dynamically conf traefik
+      - "my.zone=${PROJECT_NAME}"
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`${FQDN}`)"
       - "traefik.http.routers.frontend.tls=true"
