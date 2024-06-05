@@ -13,3 +13,5 @@ docker-compose.yml
 *.crt
 *.csr
 *.key
+.ssl_is_gen
+*.srl

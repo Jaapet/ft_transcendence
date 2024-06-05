@@ -4,7 +4,7 @@ services:
     container_name: proxy_${PROJECT_NAME} #Proxy will get the "localhost.cert"
     image: proxy_${PROJECT_NAME}
     command: #Startup traefik cmd to populate the static conf
-      - "--log.level=DEBUG"
+      # - "--log.level=DEBUG"
       - "--api.dashboard=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedByDefault=false"
