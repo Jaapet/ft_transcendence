@@ -18,5 +18,5 @@ RUN mkdir /ssl
 COPY *.crt /ssl/
 COPY *.key /ssl/
 RUN chmod 400 /ssl/* && chown postgres:postgres /ssl/*
-#Force Postgresql in ssl
-RUN echo "hostssl all all all scram-sha-256" > /var/lib/postgresql/data/pg_hba.conf
+
+# echo "hostssl all all all scram-sha-256" > /var/lib/postgresql/data/pg_hba.conf
