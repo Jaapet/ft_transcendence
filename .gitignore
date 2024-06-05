@@ -9,7 +9,6 @@ node_modules
 srcs/requirements/db/mount
 Makefile
 .env
-docker-compose.yml
 *.crt
 *.csr
 *.key
