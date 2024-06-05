@@ -1,6 +1,8 @@
 import React from 'react';
+import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import { useUser } from '../../../context/UserContext';
+import { useAuth } from '../../../context/AuthenticationContext';
 import Link from 'next/link';
 import ToastList from '../../../components/toasts/ToastList';
 import ErrorToast from '../../../components/toasts/ErrorToast';
@@ -161,7 +163,10 @@ const EditToasts = ({ showError, setShowError, errorMsg, setErrorMsg, showMsg, s
 	);
 }
 
-export default function({ status, user }) {
+export default function EditPage({ status, current_user }) {
+	const { user } = useAuth();
+	const { edit, userError, setUserError, clearUserError, userMsg, clearUserMsg } = useUser();
+
 	const [username, setUsername] = useState('');
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
@@ -171,18 +176,6 @@ export default function({ status, user }) {
 	const [errorMsg, setErrorMsg] = useState('');
 	const [showMsg, setShowMsg] = useState(false);
 	const [msg, setMsg] = useState('');
-
-	const { edit, userError, setUserError, clearUserError, userMsg, setUserMsg, clearUserMsg } = useUser();
-
-	/* TODO: Implement redirect here
-	if (status === 404) {
-		// redirect here
-	}
-	*/
-
-	if (status === 401 || status === 404 || !user) {
-		return (<p>Something went wrong...</p>);
-	}
 
 	useEffect(() => {
 		if (userError) {
@@ -196,6 +189,34 @@ export default function({ status, user }) {
 			clearUserMsg();
 		}
 	}, [userError, userMsg, setErrorMsg, setShowError, setMsg, setShowMsg, clearUserError, clearUserMsg]);
+
+	/* TODO: Implement redirect here
+	if (status === 404) {
+		// redirect here
+	}
+	*/
+
+	if (!current_user || !current_user.id || !user || !user.id || status === 401 || status === 404) {
+		return (
+			<div>
+				<Head>
+					<title>Error</title>
+				</Head>
+				<p className="bg-light text-black">Something went wrong...</p>
+			</div>
+		);
+	}
+
+	if (current_user.id !== user.id) {
+		return (
+			<div>
+				<Head>
+					<title>Forbidden</title>
+				</Head>
+				<p className="bg-light text-black">Forbidden</p>
+			</div>
+		);
+	}
 
 	const submitHandler = async (event) => {
 		event.preventDefault();
@@ -212,6 +233,9 @@ export default function({ status, user }) {
 
 	return (
 		<section className="vh-100" style={{backgroundColor: '#eee'}}>
+			<Head>
+				<title>Edit profile</title>
+			</Head>
 			<EditToasts
 				showError={showError}
 				setShowError={setShowError}
@@ -278,7 +302,7 @@ export async function getServerSideProps(context) {
 			return {
 				props: {
 					status: 404,
-					user: null
+					current_user: null
 				}
 			}
 		}
@@ -294,7 +318,7 @@ export async function getServerSideProps(context) {
 		return {
 			props: {
 				status: 200,
-				user: data.user
+				current_user: data.user
 			}
 		}
 	} catch (error) {
@@ -302,7 +326,7 @@ export async function getServerSideProps(context) {
 		return {
 			props: {
 				status: 401,
-				user: null
+				current_user: null
 			}
 		}
 	}
