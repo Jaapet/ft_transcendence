@@ -22,10 +22,15 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use('/websocket', (req, res, next) => {
+	console.log('Request received on /websocket');
+	next();
+  });
 // Exemple de route pour tester le serveur
-app.get('/', (req, res) => {
+app.get('/websocket', (req, res) => {
   res.send('Hello World!');
 });
+
 
 // Créer le serveur HTTP
 const server = http.createServer(app);
@@ -52,7 +57,7 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = `${process.env.PROJECT_PORT_ID}81`;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

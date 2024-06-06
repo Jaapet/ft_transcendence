@@ -70,10 +70,15 @@ services:
       - "my.zone=${PROJECT_NAME}"
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.priority=10"
-      - "traefik.http.routers.frontend.rule=Host(`${FQDN}`)"
+      - "traefik.http.routers.frontend.rule=Host(`${FQDN}`) && !PathPrefix=(`/websocket`)"
       - "traefik.http.routers.frontend.tls=true"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+
+      # - "traefik.http.routers.websocket.rule=Host(`${FQDN}`) && PathPrefix=(`/websocket`)"
+      # - "traefik.http.routers.websocket.tls=true"
+      # - "traefik.http.routers.websocket.entrypoints=websecure"
+      # - "traefik.http.services.websocket.loadbalancer.server.port=3001"
     env_file:
       - .env
     volumes: #Volumes binded should be changed before submiting the project

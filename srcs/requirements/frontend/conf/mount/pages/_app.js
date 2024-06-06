@@ -7,17 +7,17 @@ import io from 'socket.io-client';
 
 function MyApp({ Component, pageProps }) {
   useEffect(() => {
-    const socket = io('http://localhost:3001'); 
+	const socket = io(`https://${process.env.FQDN}:${process.env.PROJECT_PORT_ID}81`);
 
-	console.log('testttttt\n\n');
+	console.log('app.js random debug message\n\n');
 
     socket.on('connect', () => {
       console.log('Connected to server');
     });
 	if (socket.connected)
-		console.log("working\n");
+		console.log("working???!\n");
 	else
-		console.log("OSKOUR");
+		console.log("OSKOUR IT IS NOT WORKING");
 
     socket.on('messageFromServer', (message) => {
       console.log('Received from server:', message);
