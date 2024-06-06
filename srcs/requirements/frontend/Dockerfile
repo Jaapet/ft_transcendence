@@ -21,5 +21,4 @@ RUN			apk add --no-cache libc6-compat
 COPY		conf/start.sh ./
 
 EXPOSE		3000
-EXPOSE		3001
 ENTRYPOINT	["sh", "start.sh"]

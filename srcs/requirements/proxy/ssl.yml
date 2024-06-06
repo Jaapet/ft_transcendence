@@ -7,3 +7,15 @@ tls:
       keyFile: /ssl/transcendence.gmcg.fr.key
     - certFile: /ssl/localhost.crt
       keyFile: /ssl/localhost.key
+
+# http:
+#   routers:
+#     websocket:
+#       rule: Host(`transcendence.gmcg.fr`)
+#       tls: true
+#       entrypoints: websocket
+#   services:
+#     websocket:
+#       loadbalancer:
+#         servers:
+#           - url: "http://frontend:3001"

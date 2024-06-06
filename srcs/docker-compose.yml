@@ -10,6 +10,7 @@ services:
       - "--providers.docker.exposedByDefault=false"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websocket.address=:4433"
       # - "--entrypoints.websecure.asDefault=true"
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
@@ -27,6 +28,7 @@ services:
     ports:
       # - "${PROJECT_PORT_ID}80:80" #Will be 80 when submiting
       - "${PROJECT_PORT_ID}81:443" #Will be 443 when submiting
+      - "${PROJECT_PORT_ID}80:4433" #Will be 4433 when submiting
       # - "${PROJECT_PORT_ID}82:8080" #Will be 8080 when submiting, used for traefik dashboard
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock #Docker sock, should work in the school
@@ -50,8 +52,8 @@ services:
     build: ./requirements/backend
     container_name: backend_${PROJECT_NAME} #Don't change it, its important for certificates,  main_backend will receive the "main_db.cert"
     image: backend_${PROJECT_NAME}
-    ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
-      - "${PROJECT_PORT_ID}80:8000"
+    # ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
+    #   - "${PROJECT_PORT_ID}80:8000"
     env_file:
       - .env
     volumes: #Volumes binded should be changed before submiting the project
@@ -65,20 +67,15 @@ services:
     container_name: frontend_${PROJECT_NAME} #Don't change it, its important for certificates, frontend will receive the "frontend.cert"
     image: frontend_${PROJECT_NAME}
     # ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
-      # - "${PROJECT_PORT_ID}80:3000"
+    #   - "${PROJECT_PORT_ID}80:3001"
     labels: #Label used to dynamically conf traefik
       - "my.zone=${PROJECT_NAME}"
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.priority=10"
-      - "traefik.http.routers.frontend.rule=Host(`${FQDN}`) && !PathPrefix=(`/websocket`)"
+      - "traefik.http.routers.frontend.rule=Host(`${FQDN}`)"
       - "traefik.http.routers.frontend.tls=true"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
-
-      # - "traefik.http.routers.websocket.rule=Host(`${FQDN}`) && PathPrefix=(`/websocket`)"
-      # - "traefik.http.routers.websocket.tls=true"
-      # - "traefik.http.routers.websocket.entrypoints=websecure"
-      # - "traefik.http.services.websocket.loadbalancer.server.port=3001"
     env_file:
       - .env
     volumes: #Volumes binded should be changed before submiting the project
