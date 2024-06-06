@@ -15,8 +15,8 @@ const Pong = () => {
     function main() {
       const canvas = canvasRef.current;
 
-      const fov = 45;
-      const aspect = 2;
+      const fov = 42;
+      const aspect = 1.5;
       const near = 0.1;
       const far = 1000;
 
@@ -29,6 +29,8 @@ const Pong = () => {
       const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
       camera.position.set(0, 100, 10);
       camera.position.z = 10;
+
+      /// FLOOR
 
       const planeSize = 40;
       const texture2 = loader.load('games/pong/texture/dollarrachid.jpg');
@@ -43,29 +45,42 @@ const Pong = () => {
       mesh.rotation.x = Math.PI * -.5;
       scene.add(mesh);
 
+      /// ORBITAL CONTROL
+
       const controls = new OrbitControls(camera, canvas);
       controls.target.set(0, 0, 0);
       controls.update();
 
+      // LUMIERES
+
       const skyColor = 0xEEEEEE;
-      const groundColor = 0xAA5656;
+      const groundColor = 0xFFFFFF;
       const intensity2 = 0.4;
       const light2 = new THREE.HemisphereLight(skyColor, groundColor, intensity2);
       scene.add(light2);
 
       const color = 0xFFFFFF;
-      const intensity = 1.5;
+      const intensity = 6.5;
       const light = new THREE.DirectionalLight(color, intensity);
-      light.position.set(10, 2, 0);
-      light.target.position.set(0, 0, 0);
+      light.position.set(10, 2, -10);
+      light.target.position.set(0, 0, 5);
       scene.add(light);
       scene.add(light.target);
 
       const light3 = new THREE.DirectionalLight(color, intensity);
-      light3.position.set(-10, 2, 0);
-      light3.target.position.set(0, 0, 0);
+      light3.position.set(-10, 2, -10);
+      light3.target.position.set(0, 0, 5);
       scene.add(light3);
       scene.add(light3.target);
+
+      const light4 = new THREE.DirectionalLight(color, intensity);
+      light4.position.set(0, 2, -10);
+      light4.target.position.set(0, 0, 5);
+      scene.add(light4);
+      scene.add(light4.target);
+
+
+      /// OBJETS
 
       const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
       const texture3 = loader.load('games/pong/texture/dollarrachid.jpg');
@@ -157,6 +172,8 @@ const Pong = () => {
       });
 
       renderer.render(scene, camera);
+
+      /// FUNCTIONS
 
       function makeObj(geometry, map) {
         const material = new THREE.MeshBasicMaterial({ map: map });
