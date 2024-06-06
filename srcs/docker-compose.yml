@@ -36,8 +36,10 @@ services:
 
 
   db:
+    build: ./requirements/db
     container_name: db_${PROJECT_NAME} #Don't change it, its important for certificates, db will receive the "db.cert"
-    image: postgres:14.11
+    image: db_${PROJECT_NAME}
+    command: -c ssl=on -c ssl_cert_file=/ssl/db_${PROJECT_NAME}.crt -c ssl_key_file=/ssl/db_${PROJECT_NAME}.key
     env_file:
       - .env
     volumes: #Volumes binded should be changed before submiting the project
@@ -57,7 +59,6 @@ services:
     depends_on:
       - db
     restart: unless-stopped
-
 
   frontend:
     build: ./requirements/frontend

@@ -16,10 +16,10 @@ As we are not required to complete all modules, here is our temporary selection:
 - Advanced 3D with ThreeJS
 - A second game with user history and match-making
 - Distant players (playing on 2 different computers)
-#### Maybe
 - Multiple players (more than 2 in one game)
 - Log management (ELK)
 - 2FA + JSON Web Tokens
+#### Maybe
 - WAF or Mod Security + HashiCorp Vault
 - AI-controlled player
 - Remote authentification (OAuth 42)
@@ -28,10 +28,10 @@ As we are not required to complete all modules, here is our temporary selection:
 #### Validated
 - PostgreSQL DB in back-end
 - Bootstrap toolkit and Next.js in front-end
-- Dashboards for users and game stats
 - Multiple browser support
-#### Maybe
 - Monitoring system
+#### Maybe
+- Dashboards for users and game stats
 - RGPD compliance
 
 > 📝 Note that we will not do all of them.  
