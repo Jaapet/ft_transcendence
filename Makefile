@@ -31,6 +31,10 @@ clean:
 	@echo "Stopping services and their network, keeping volumes and images"
 	@cd srcs && docker compose -p ${PROJECT_NAME} down
 
+rmcert:
+	@./srcs/requirements/CAandCertDeletion.sh
+
+# TODO: Make this only remove images associated with ${PROJECT_NAME}
 fclean:
 	@./srcs/requirements/CAandCertDeletion.sh
 	@echo "Stopping services and their network, deleting volumes and images"
