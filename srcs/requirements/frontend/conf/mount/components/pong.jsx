@@ -18,10 +18,10 @@ const Pong = () => {
       const fov = 42;
       const aspect = 1.5;
       const near = 0.1;
-      const far = 1000;
+      const far = 10000;
 
       const loader = new THREE.TextureLoader();
-      const texture = loader.load('games/pong/texture/dollar.jpg');
+      const texture = loader.load('games/pong/texture/skybox.jpg');
       texture.colorSpace = THREE.SRGBColorSpace;
 
       const scene = new THREE.Scene();
@@ -112,25 +112,36 @@ const Pong = () => {
         sideMaterial,
         sideMaterial
       ];
-
+      
       const cube = new THREE.BoxGeometry(4, 4, 10);
       const wall = new THREE.BoxGeometry(90, 4, 2);
-
+      
       const radius = 2;
       const detail = 5;
       const ball = new THREE.IcosahedronGeometry(radius, detail);
-
+      
+      var frame = 0;
       const objects = [];
       const raquettes = [];
       const raquettesmove = [0, 0, 0, 0];
-
+      
       addball(0, 2, 4, makeObj(ball, texture));
       addraquette(-43, 2, 0, new THREE.Mesh(cube, raquettematerials));
       addraquette(43, 2, 0, new THREE.Mesh(cube, raquettematerials));
       addwall(0, 2, 22, new THREE.Mesh(wall, wallmaterials));
       addwall(0, 2, -22, new THREE.Mesh(wall, wallmaterials));
 
-      var frame = 0;
+      /// SKYBOX
+
+      const skybox = new THREE.IcosahedronGeometry(100, 50);
+
+      const skyboxMaterial = new THREE.MeshBasicMaterial({map: texture, side: THREE.BackSide });
+      
+      const skyboxMesh = new THREE.Mesh(skybox, skyboxMaterial);
+
+      scene.add(skyboxMesh);
+
+      /// CONTROLS
 
       document.addEventListener('keydown', function(event) {
         switch (event.key) {
