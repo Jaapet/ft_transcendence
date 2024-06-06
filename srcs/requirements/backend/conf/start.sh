@@ -14,6 +14,8 @@ do
 	sleep 2
 done
 
+# TODO: Health check on DB
+
 echo "Making DB migrations"
 python manage.py makemigrations
 python manage.py migrate
@@ -26,5 +28,7 @@ else
 	echo "Creating Super user"
 	python manage.py createsuperuser --noinput
 fi
+
+# TODO: announce healthiness
 
 python manage.py runserver 0.0.0.0:8000

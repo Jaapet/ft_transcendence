@@ -5,19 +5,25 @@ services:
     image: proxy_${PROJECT_NAME}
     command: #Startup traefik cmd to populate the static conf
       # - "--log.level=DEBUG"
-      - "--api.insecure=false"
-      - "--api.dashboard=false"
+      - "--api.dashboard=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedByDefault=false"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
+      # - "--entrypoints.websecure.asDefault=true"
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
       - "--providers.file.filename=/app/ssl.yml"
       - "--providers.docker.constraints=Label(`my.zone`, `${PROJECT_NAME}`)"
-    labels: #Label used to dynamically conf traefik
+    labels:
       - "my.zone=${PROJECT_NAME}"
-
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.tls=true"
+      - "traefik.http.routers.api.rule=PathPrefix(`/dashboard`)"
+      - "traefik.http.routers.api.service=api@internal"
+      - "traefik.http.routers.api.middlewares=api_auth"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.middlewares.api_auth.basicauth.users=${TRAEFIK_HTPASSWD}"
     ports:
       # - "${PROJECT_PORT_ID}80:80" #Will be 80 when submiting
       - "${PROJECT_PORT_ID}81:443" #Will be 443 when submiting
@@ -27,13 +33,17 @@ services:
     env_file:
       - .env
     restart: unless-stopped
+
+
   db:
+    build: ./requirements/db
     container_name: db_${PROJECT_NAME} #Don't change it, its important for certificates, db will receive the "db.cert"
-    image: postgres:14.11
+    image: db_${PROJECT_NAME}
+    command: -c ssl=on -c ssl_cert_file=/ssl/db_${PROJECT_NAME}.crt -c ssl_key_file=/ssl/db_${PROJECT_NAME}.key
     env_file:
       - .env
     volumes: #Volumes binded should be changed before submiting the project
-      - ./requirements/db:/var/lib/postgresql/data
+      - ./requirements/db/mount:/var/lib/postgresql/data
     restart: unless-stopped
 
   backend:
@@ -59,6 +69,7 @@ services:
     labels: #Label used to dynamically conf traefik
       - "my.zone=${PROJECT_NAME}"
       - "traefik.enable=true"
+      - "traefik.http.routers.frontend.priority=10"
       - "traefik.http.routers.frontend.rule=Host(`${FQDN}`)"
       - "traefik.http.routers.frontend.tls=true"
       - "traefik.http.routers.frontend.entrypoints=websecure"

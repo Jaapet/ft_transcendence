@@ -42,7 +42,7 @@ As we are not required to complete all modules, here is our temporary selection:
 - `make`: Builds and launches the project
 - `make f`: Build and launches the project with containers in foreground
 - `make clean`: Stops the project
-- `make fclean`: Stops the project and deletes volumes and images
+- `make fclean`: Stops the project and deletes volumes, images and certificates
 - `make re`: clean + all
 - `make fre`: clean + f
 - `make reset`: fclean + all

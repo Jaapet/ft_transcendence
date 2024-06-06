@@ -326,7 +326,7 @@ export default function UserFriendRequests({ status, current_user, requests_sent
 	}
 	*/
 
-	if (!user || !user.id || status === 401 || status === 404) {
+	if (!current_user || !current_user.id || !user || !user.id || status === 401 || status === 404) {
 		return (
 			<div className={styles.container}>
 				<Head>

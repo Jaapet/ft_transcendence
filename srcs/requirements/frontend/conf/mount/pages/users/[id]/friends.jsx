@@ -177,7 +177,7 @@ export default function UserFriends({ status, current_user, friends }) {
 	}
 	*/
 
-	if (!user || !user.id || status === 401 || status === 404) {
+	if (!current_user || !current_user.id || !user || !user.id || status === 401 || status === 404) {
 		return (
 			<div className={styles.container}>
 				<Head>
