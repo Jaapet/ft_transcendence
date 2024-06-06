@@ -3,8 +3,8 @@ const { Server } = require('socket.io');
 const express = require('express');
 const cors = require('cors');
 
+console.log("init socketssss\n\n\n\n\n\n");
 const app = express();
-
 // Configurer CORS pour permettre les requêtes depuis toutes les origines (pour le prototype seulement)
 app.use(cors({
   origin: '*',  // Permettre toutes les origines
@@ -52,7 +52,7 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
