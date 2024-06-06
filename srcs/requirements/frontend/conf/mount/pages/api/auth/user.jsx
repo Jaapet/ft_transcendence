@@ -9,15 +9,17 @@ export default async (req, res) => {
 		return res.status(405).json({ message: `Method ${req.method} is not allowed` });
 	}
 
-	if (!req.headers.cookie) {
-		throw new Error('Unauthorized');
-	}
+	let accessToken = '';
 
 	try {
+		if (!req.headers.cookie) {
+			throw new Error('Unauthorized');
+		}
+
 		// Get refresh token
 		const { refresh } = cookie.parse(req.headers.cookie);
 		if (!refresh) {
-			throw new Error('Could not fetch refresh token');
+			throw new Error('Could not get refresh token from cookie');
 		}
 
 		// Fetch access token
@@ -40,10 +42,9 @@ export default async (req, res) => {
 		if (!tokRes.ok) {
 			throw new Error(tokData.detail || 'Could not fetch access token');
 		}
-		const accessToken = tokData.access;
+		accessToken = tokData.access;
 
 		// TODO: change to https later
-		// TODO: Check if using cookie lib is really necessary
 		// Update access token cookie
 		res.setHeader('Set-Cookie', cookie.serialize('access', tokData.access, {
 			httpOnly: true,
@@ -52,7 +53,29 @@ export default async (req, res) => {
 			maxAge: 60 * 5,
 			path: '/'
 		}));
+	} catch (error) {
+		console.error('API USER:', error);
+		// TODO: change to https later
+		res.setHeader('Set-Cookie', [
+			cookie.serialize('refresh', '', {
+				httpOnly: true,
+				secure: false,
+				expires: new Date(0),
+				sameSite: 'strict',
+				path: '/'
+			}),
+			cookie.serialize('access', '', {
+				httpOnly: true,
+				secure: false,
+				expires: new Date(0),
+				sameSite: 'strict',
+				path: '/'
+			})
+		]);
+		return res.status(401).json({ message: error.message });
+	}
 
+	try {
 		// Fetch user data
 		const userRes = await fetch(`http://backend:8000/api/user/`, {
 			headers: {
