@@ -12,3 +12,5 @@ Makefile
 *.crt
 *.csr
 *.key
+*.srl
+.ssl_is_gen
