@@ -71,9 +71,9 @@ for folder in "${REQUIREMENTS_DIR}"/*/; do
 	else
 
     	# Define the file patterns to be deleted
-    	FOLDER_KEY="${REQUIREMENTS_DIR}/${folder_name}/${folder_name}_${PROJECT_NAME}.key"
-    	FOLDER_CRT="${REQUIREMENTS_DIR}/${folder_name}/${folder_name}_${PROJECT_NAME}.crt"
-    	FOLDER_CSR="${REQUIREMENTS_DIR}/${folder_name}/${folder_name}_${PROJECT_NAME}.csr"
+    	FOLDER_KEY="${REQUIREMENTS_DIR}/${folder_name}/${folder_name}.key"
+    	FOLDER_CRT="${REQUIREMENTS_DIR}/${folder_name}/${folder_name}.crt"
+    	FOLDER_CSR="${REQUIREMENTS_DIR}/${folder_name}/${folder_name}.csr"
 		FOLDER_CA_CERT="${REQUIREMENTS_DIR}/${folder_name}/CA.crt"
 	fi
     if [ -f "${FOLDER_KEY}" ]; then

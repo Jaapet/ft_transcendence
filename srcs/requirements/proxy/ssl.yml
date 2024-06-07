@@ -19,3 +19,9 @@ tls:
 #       loadbalancer:
 #         servers:
 #           - url: "http://frontend:3001"
+http:
+  serversTransports:
+    transport_prometheus:
+      serverName: "prometheus"
+      rootCAs:
+        - /ssl/CA.crt
