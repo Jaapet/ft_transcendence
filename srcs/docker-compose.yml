@@ -100,31 +100,31 @@ services:
           - frontend
     restart: unless-stopped
 
-##DevOps
-  prometheus: #Prometheus is the metric collector used by Grafana
-    build: ./requirements/prometheus
-    container_name: prometheus_${PROJECT_NAME} #Don't change it, its important for certificates, frontend will receive the "frontend.cert"
-    image: prometheus_${PROJECT_NAME}
-    ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
-      - "9090:9090"
-    labels: #Label used to dynamically conf traefik
-      - "my.zone=${PROJECT_NAME}"
-      - "traefik.enable=true"
-      - "traefik.http.routers.prometheus.tls=true"
-      - "traefik.http.routers.prometheus.rule=Host(`${FQDN}`) && PathPrefix(`/prometheus`)"
-      - "traefik.http.routers.prometheus.entrypoints=websecure"
-      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
-      - "traefik.http.services.prometheus.loadbalancer.server.scheme=https" #Communicate with the service in HTTPS
-      - "traefik.http.services.prometheus.loadbalancer.serverstransport=transport_prometheus@file"
-    env_file:
-      - .env
-    volumes: #Volume not binded OK
-      - prometheus:/prometheus
-    depends_on:
-      - backend
-      - proxy
-    networks:
-      default:
-        aliases:
-          - prometheus
-    restart: unless-stopped
+# ##DevOps
+#   prometheus: #Prometheus is the metric collector used by Grafana
+#     build: ./requirements/prometheus
+#     container_name: prometheus_${PROJECT_NAME} #Don't change it, its important for certificates, frontend will receive the "frontend.cert"
+#     image: prometheus_${PROJECT_NAME}
+#     ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
+#       - "9090:9090"
+#     labels: #Label used to dynamically conf traefik
+#       - "my.zone=${PROJECT_NAME}"
+#       - "traefik.enable=true"
+#       - "traefik.http.routers.prometheus.tls=true"
+#       - "traefik.http.routers.prometheus.rule=Host(`${FQDN}`) && PathPrefix(`/prometheus`)"
+#       - "traefik.http.routers.prometheus.entrypoints=websecure"
+#       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+#       - "traefik.http.services.prometheus.loadbalancer.server.scheme=https" #Communicate with the service in HTTPS
+#       - "traefik.http.services.prometheus.loadbalancer.serverstransport=transport_prometheus@file"
+#     env_file:
+#       - .env
+#     volumes: #Volume not binded OK
+#       - prometheus:/prometheus
+#     depends_on:
+#       - backend
+#       - proxy
+#     networks:
+#       default:
+#         aliases:
+#           - prometheus
+#     restart: unless-stopped
