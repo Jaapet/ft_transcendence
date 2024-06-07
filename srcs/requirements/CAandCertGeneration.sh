@@ -1,8 +1,5 @@
 #!/bin/bash
-#For using without makefile
-: ${REQUIREMENTS_DIR:=./srcs/requirements}
-: ${PROJECT_NAME:=proxy}
-: ${FQDN:=transcendence.gmcg.fr}
+
 # Exit on error
 set -e
 

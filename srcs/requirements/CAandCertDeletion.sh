@@ -44,16 +44,10 @@ for folder in "${REQUIREMENTS_DIR}"/*/; do
     folder_name=$(basename "${folder}")
 
 	if [ "$folder_name" == "proxy" ]; then
-		FOLDER_KEY="${REQUIREMENTS_DIR}/${folder_name}/localhost.key"
-    	FOLDER_CRT="${REQUIREMENTS_DIR}/${folder_name}/localhost.crt"
-    	FOLDER_CSR="${REQUIREMENTS_DIR}/${folder_name}/localhost.csr"
-
 		#FOR DEV ENVIRONMENT PURPOSE
 		FOLDER_KEY_TEMP="${REQUIREMENTS_DIR}/${folder_name}/${FQDN}.key"
     	FOLDER_CRT_TEMP="${REQUIREMENTS_DIR}/${folder_name}/${FQDN}.crt"
     	FOLDER_CSR_TEMP="${REQUIREMENTS_DIR}/${folder_name}/${FQDN}.csr"
-
-		FOLDER_CA_CERT="${REQUIREMENTS_DIR}/${folder_name}/CA.crt"
 
 		if [ -f "${FOLDER_KEY_TEMP}" ]; then
     	    rm "${FOLDER_KEY_TEMP}"
@@ -67,15 +61,13 @@ for folder in "${REQUIREMENTS_DIR}"/*/; do
     	    rm "${FOLDER_CSR_TEMP}"
     	    echo "Deleted ${FOLDER_CSR_TEMP}"
     	fi
-
-	else
-
-    	# Define the file patterns to be deleted
-    	FOLDER_KEY="${REQUIREMENTS_DIR}/${folder_name}/${folder_name}.key"
-    	FOLDER_CRT="${REQUIREMENTS_DIR}/${folder_name}/${folder_name}.crt"
-    	FOLDER_CSR="${REQUIREMENTS_DIR}/${folder_name}/${folder_name}.csr"
-		FOLDER_CA_CERT="${REQUIREMENTS_DIR}/${folder_name}/CA.crt"
 	fi
+
+    # Define the file patterns to be deleted
+    FOLDER_KEY="${REQUIREMENTS_DIR}/${folder_name}/${folder_name}.key"
+    FOLDER_CRT="${REQUIREMENTS_DIR}/${folder_name}/${folder_name}.crt"
+    FOLDER_CSR="${REQUIREMENTS_DIR}/${folder_name}/${folder_name}.csr"
+	FOLDER_CA_CERT="${REQUIREMENTS_DIR}/${folder_name}/CA.crt"
     if [ -f "${FOLDER_KEY}" ]; then
         rm "${FOLDER_KEY}"
         echo "Deleted ${FOLDER_KEY}"
