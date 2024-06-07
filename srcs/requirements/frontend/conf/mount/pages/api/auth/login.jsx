@@ -1,5 +1,3 @@
-import cookie from 'cookie'
-
 export default async (req, res) => {
 	// Only POST allowed
 	if (req.method !== 'POST') {
@@ -31,18 +29,11 @@ export default async (req, res) => {
 			throw new Error(tokData.detail || 'Could not fetch tokens');
 		}
 
-		// TODO: change to https later
-		// TODO: Check if using cookie lib is really necessary
 		// Store refresh token in a cookie
-		res.setHeader('Set-Cookie', [
-			cookie.serialize('refresh', tokData.refresh, {
-				httpOnly: true,
-				secure: false,
-				sameSite: 'strict',
-				maxAge: 60 * 60 * 24,
-				path: '/'
-			})
-		]);
+		res.setHeader(
+			'Set-Cookie',
+			`refresh=${tokData.refresh}; HttpOnly; Secure; Max-Age=86400; SameSite=Strict; Path=/`
+		);
 
 		// Fetch user data
 		const accessToken = tokData.access;

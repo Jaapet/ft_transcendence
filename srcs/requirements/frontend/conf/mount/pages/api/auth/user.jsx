@@ -1,5 +1,4 @@
 import refreshToken from '../../../lib/refresh';
-import cookie from 'cookie';
 
 // This function is used for automatic Login Refresh (AuthContext)
 
@@ -13,18 +12,7 @@ export default async (req, res) => {
 	try {
 		const accessToken = await refreshToken(
 			req,
-			() => {
-				// TODO: change to https later
-				res.setHeader('Set-Cookie', [
-					cookie.serialize('refresh', '', {
-						httpOnly: true,
-						secure: false,
-						expires: new Date(0),
-						sameSite: 'strict',
-						path: '/'
-					})
-				]);
-			}
+			() => {res.setHeader('Set-Cookie', 'refresh=; HttpOnly; Secure; Max-Age=0; SameSite=Strict; Path=/');}
 		);
 		if (!accessToken) {
 			throw new Error('Not logged in');

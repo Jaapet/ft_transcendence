@@ -1,7 +1,19 @@
-import cookie from 'cookie';
-
 // This function is used for manual Login Refresh
 // Only use this through refreshToken (lib/refresh.jsx)
+
+function parseCookies(cookieHeader) {
+	const cookies = {};
+	cookieHeader.split(';').forEach(cookie => {
+		const parts = cookie.split('=');
+		const name = parts[0].trim();
+		// decodeURIComponent decodes URL-encoded characters into their normal versions
+		// because not every character can be in a cookie (separators, etc)
+		// This shouldn't come into play in our project but it's cleaner this way
+		const value = parts[1] ? decodeURIComponent(parts[1].trim()) : '';
+		cookies[name] = value;
+	});
+	return cookies;
+}
 
 export default async (req, res) => {
 	// Only POST allowed
@@ -11,7 +23,7 @@ export default async (req, res) => {
 	}
 
 	try {
-		const cookies = cookie.parse(req.headers.cookie || "");
+		const cookies = parseCookies(req.headers.cookie || '');
 		const refresh = cookies.refresh;
 		if (!refresh) {
 			throw new Error('No refresh token available');
