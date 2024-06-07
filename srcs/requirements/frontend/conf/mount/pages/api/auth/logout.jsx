@@ -16,13 +16,6 @@ export default async (req, res) => {
 				expires: new Date(0),
 				sameSite: 'strict',
 				path: '/'
-			}),
-			cookie.serialize('access', '', {
-				httpOnly: true,
-				secure: false,
-				expires: new Date(0),
-				sameSite: 'strict',
-				path: '/'
 			})
 		]);
 

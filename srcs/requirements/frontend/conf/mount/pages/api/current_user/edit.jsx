@@ -1,3 +1,4 @@
+import refreshToken from '../../../lib/refresh';
 import cookie from 'cookie';
 import { IncomingForm } from 'formidable';
 import fs from 'fs';
@@ -28,13 +29,23 @@ export default async (req, res) => {
 	}
 
 	try {
-		if (!req.headers.cookie) {
-			throw new Error('Unauthorized');
-		}
-		const { access } = cookie.parse(req.headers.cookie);
+		const access = await refreshToken(
+			req,
+			() => {
+				// TODO: change to https later
+				res.setHeader('Set-Cookie', [
+					cookie.serialize('refresh', '', {
+						httpOnly: true,
+						secure: false,
+						expires: new Date(0),
+						sameSite: 'strict',
+						path: '/'
+					})
+				]);
+			}
+		);
 		if (!access) {
-			// TODO: make a refresh function
-			throw new Error('Could not fetch access token');
+			throw new Error('Not logged in');
 		}
 
 		let formData = null;

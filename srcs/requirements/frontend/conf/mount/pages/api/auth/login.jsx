@@ -31,8 +31,6 @@ export default async (req, res) => {
 			throw new Error(tokData.detail || 'Could not fetch tokens');
 		}
 
-		const accessToken = tokData.access;
-
 		// TODO: change to https later
 		// TODO: Check if using cookie lib is really necessary
 		// Store refresh token in a cookie
@@ -43,17 +41,11 @@ export default async (req, res) => {
 				sameSite: 'strict',
 				maxAge: 60 * 60 * 24,
 				path: '/'
-			}),
-			cookie.serialize('access', tokData.access, {
-				httpOnly: true,
-				secure: false,
-				sameSite: 'strict',
-				maxAge: 60 * 5,
-				path: '/'
 			})
 		]);
 
 		// Fetch user data
+		const accessToken = tokData.access;
 		const userRes = await fetch(`http://backend:8000/api/user/`, {
 			headers: {
 				'Authorization': 'Bearer ' + accessToken
