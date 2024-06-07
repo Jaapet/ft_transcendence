@@ -45,7 +45,7 @@ services:
     build: ./requirements/db
     container_name: db_${PROJECT_NAME} #Don't change it, its important for certificates, db will receive the "db.cert"
     image: db_${PROJECT_NAME}
-    command: -c ssl=on -c ssl_cert_file=/ssl/db_${PROJECT_NAME}.crt -c ssl_key_file=/ssl/db_${PROJECT_NAME}.key
+        command: -c ssl=on -c ssl_cert_file=/ssl/db.crt -c ssl_key_file=/ssl/db.key
     env_file:
       - .env
     volumes: #Volumes binded should be changed before submiting the project
