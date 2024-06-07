@@ -6,12 +6,13 @@ services:
     container_name: proxy_${PROJECT_NAME} #Proxy will get the "localhost.cert"
     image: proxy_${PROJECT_NAME}
     command: #Startup traefik cmd to populate the static conf
-      - "--log.level=DEBUG" #Mode dispo : RACE, DEBUG, INFO, WARN, ERROR, FATAL, and PANIC
+      - "--log.level=INFO" #Mode dispo : RACE, DEBUG, INFO, WARN, ERROR, FATAL, and PANIC
       - "--api.dashboard=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedByDefault=false"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websocket.address=:4433"
       # - "--entrypoints.websecure.asDefault=true"
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
@@ -29,6 +30,7 @@ services:
     ports:
       # - "${PROJECT_PORT_ID}80:80" #Will be 80 when submiting
       - "${PROJECT_PORT_ID}81:443" #Will be 443 when submiting
+      - "${PROJECT_PORT_ID}80:4433" #Will be 4433 when submiting
       # - "${PROJECT_PORT_ID}82:8080" #Will be 8080 when submiting, used for traefik dashboard
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock #Docker sock, should work in the school
@@ -42,8 +44,10 @@ services:
 
 
   db:
+    build: ./requirements/db
     container_name: db_${PROJECT_NAME} #Don't change it, its important for certificates, db will receive the "db.cert"
-    image: postgres:14.11
+    image: db_${PROJECT_NAME}
+    command: -c ssl=on -c ssl_cert_file=/ssl/db_${PROJECT_NAME}.crt -c ssl_key_file=/ssl/db_${PROJECT_NAME}.key
     env_file:
       - .env
     volumes: #Volumes binded should be changed before submiting the project
@@ -58,8 +62,8 @@ services:
     build: ./requirements/backend
     container_name: backend_${PROJECT_NAME} #Don't change it, its important for certificates,  main_backend will receive the "main_db.cert"
     image: backend_${PROJECT_NAME}
-    ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
-      - "${PROJECT_PORT_ID}80:8000"
+    # ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
+    #   - "${PROJECT_PORT_ID}80:8000"
     env_file:
       - .env
     volumes: #Volumes binded should be changed before submiting the project
@@ -72,13 +76,12 @@ services:
           - backend
     restart: unless-stopped
 
-
   frontend:
     build: ./requirements/frontend
     container_name: frontend_${PROJECT_NAME} #Don't change it, its important for certificates, frontend will receive the "frontend.cert"
     image: frontend_${PROJECT_NAME}
     # ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
-      # - "${PROJECT_PORT_ID}80:3000"
+    #   - "${PROJECT_PORT_ID}80:3001"
     labels: #Label used to dynamically conf traefik
       - "my.zone=${PROJECT_NAME}"
       - "traefik.enable=true"
