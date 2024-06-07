@@ -5,5 +5,12 @@ tls:
   certificates:
     - certFile: /ssl/transcendence.gmcg.fr.crt
       keyFile: /ssl/transcendence.gmcg.fr.key
-    - certFile: /ssl/localhost.crt
-      keyFile: /ssl/localhost.key
+    - certFile: /ssl/proxy.crt
+      keyFile: /ssl/proxy.key
+
+http:
+  serversTransports:
+    transport_prometheus:
+      serverName: "prometheus"
+      rootCAs:
+        - /ssl/CA.crt
