@@ -178,9 +178,9 @@ services:
           - prometheus #Used for inter containers communication, certs will match this fqdn
     restart: unless-stopped
 
-  grafana: #Grafana is a graph app usefull for visualizing metrics
+  grafana: #Grafana is a graph app useful for visualizing metrics
     build: ./requirements/grafana
-    container_name: grafana_${PROJECT_NAME} #Don't change it, its important for certificates, frontend will receive the "frontend.cert"
+    container_name: grafana_${PROJECT_NAME} #Don't change it, it's important for certificates, frontend will receive the "frontend.cert"
     image: grafana_${PROJECT_NAME}
     profiles:
       - devops
