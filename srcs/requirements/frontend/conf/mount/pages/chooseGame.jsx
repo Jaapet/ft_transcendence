@@ -1,5 +1,5 @@
-import Link from "next/link";
 import React from "react";
+import Link from "next/link";
 import Head from "next/head";
 import styles from '../styles/base.module.css';
 
@@ -19,10 +19,12 @@ const ChooseGame = () => {
 				</Link>
 			</div>
 			<div>
-			<img src="/images/pongicon.png" alt="Pong Icon" style={{ width: '300px', marginTop: '1rem', marginRight:'2cm' }} />
-
-			<img src="/images/crown.jpg" alt="Royal Icon" style={{ width: '200px', marginLeft:'0cm' }} />
-		</div>
+				{/*
+					<img src="/images/pongicon.png" alt="Pong Icon" style={{ width: '300px', marginTop: '1rem', marginRight:'2cm' }} />
+					<img src="/images/crown.jpg" alt="Royal Icon" style={{ width: '200px', marginLeft:'0cm' }} />
+				*/}
+				{/* 	maybe put icons or how to play things here */}
+			</div>
 		</div>
 	);
 };

@@ -1,51 +1,86 @@
 volumes:
   prometheus: {}
+
 services:
-  proxy:
+  proxy: #https://myhostname/adm/traefik/dashboard/#/ For Dasboard
     build: ./requirements/proxy
-    container_name: proxy_${PROJECT_NAME} #Proxy will get the "localhost.cert"
+    container_name: proxy_${PROJECT_NAME}
     image: proxy_${PROJECT_NAME}
+    profiles:
+      - main
     command: #Startup traefik cmd to populate the static conf
-      # - "--log.level=INFO" #Mode dispo : RACE, DEBUG, INFO, WARN, ERROR, FATAL, and PANIC
+      - "--log.level=INFO" #Mode dispo : RACE, DEBUG, INFO, WARN, ERROR, FATAL, and PANIC
+      - "--api=true" # For Dashboard
+      - "--api.insecure=false"
       - "--api.dashboard=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedByDefault=false"
+      - "--providers.docker=true" #Search in docker labels
+      - "--providers.docker.exposedByDefault=false" #Do not expose every container, need the traefik.enable=true label
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websocket.address=:4433"
       # - "--entrypoints.websecure.asDefault=true"
+      #Smooth redirection http to https
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      #Cert related dyn config
       - "--providers.file.filename=/app/ssl.yml"
+      #Constraint to avoid multiple traefik conflicts (while dev stage)
       - "--providers.docker.constraints=Label(`my.zone`, `${PROJECT_NAME}`)"
+      # Enable of prometheus metrics
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.addEntryPointsLabels=true"
+      - "--metrics.prometheus.addEntryPointsLabels=true"
+      - "--metrics.prometheus.addServicesLabels=true"
     labels:
       - "my.zone=${PROJECT_NAME}"
       - "traefik.enable=true"
+      # Basic Auth for /adm ressources
+      - "traefik.http.middlewares.adm_auth.basicauth.users=${ADM_PASSWD}"
+      # API & Dashboard
       - "traefik.http.routers.api.tls=true"
-      - "traefik.http.routers.api.rule=Host(`${FQDN}`) && PathPrefix(`/dashboard`) || Host(`${FQDN}`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.api.service=api@internal"
-      - "traefik.http.middlewares.allow_all.ipallowlist.sourcerange=0.0.0.0/0"
-      - "traefik.http.routers.api.middlewares=allow_all"
+      - "traefik.http.routers.api.rule=(Host(`${FQDN}`) && PathPrefix(`/adm/traefik`) || HeaderRegexp(`Referer`, `.*/traefik/.*`))"
+      - "traefik.http.routers.api.middlewares=adm_auth, traefik_stripe"
+      - "traefik.http.middlewares.traefik_stripe.stripprefix.prefixes=/adm/traefik"
       - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.service=api@internal"
+      # Metrics configuration -- for prometheus
+      - "traefik.http.routers.metrics.tls=true"
+      - "traefik.http.routers.metrics.rule=Host(`proxy`) && PathPrefix(`/adm/metrics`)"
+      - "traefik.http.routers.metrics.service=prometheus@internal"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.metrics.service=prometheus@internal"
     ports:
       # - "${PROJECT_PORT_ID}80:80" #Will be 80 when submiting
-      - "${PROJECT_PORT_ID}81:443" #Will be 443 when submiting
+      - "${FRONT_PORT}:443" #Will be 443 when submiting
+      - "${WEBSOCKET_PORT}:4433" #Will be 4433 when submiting
       # - "${PROJECT_PORT_ID}82:8080" #Will be 8080 when submiting, used for traefik dashboard
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock #Docker sock, should work in the school
     env_file:
       - .env
+    depends_on:
+      - frontend
+    # healthcheck:
+    #   # Run traefik healthcheck command
+    #   # https://doc.traefik.io/traefik/operations/cli/#healthcheck
+    #   test: ["CMD", "traefik", "healthcheck", "--ping"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 3
+    #   start_period: 5s
     networks:
       default:
         aliases:
-          - proxy
+          - proxy #Used for inter containers communication, certs will match this fqdn
     restart: unless-stopped
-
 
   db:
     build: ./requirements/db
     container_name: db_${PROJECT_NAME} #Don't change it, its important for certificates, db will receive the "db.cert"
     image: db_${PROJECT_NAME}
-        command: -c ssl=on -c ssl_cert_file=/ssl/db.crt -c ssl_key_file=/ssl/db.key
+    profiles:
+      - main
+    command: -c ssl=on -c ssl_cert_file=/ssl/db.crt -c ssl_key_file=/ssl/db.key
     env_file:
       - .env
     volumes: #Volumes binded should be changed before submiting the project
@@ -58,73 +93,115 @@ services:
 
   backend:
     build: ./requirements/backend
-    container_name: backend_${PROJECT_NAME} #Don't change it, its important for certificates,  main_backend will receive the "main_db.cert"
+    container_name: backend_${PROJECT_NAME} 
     image: backend_${PROJECT_NAME}
-    ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
-      - "${PROJECT_PORT_ID}80:8000"
+    profiles:
+      - main
+    # ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
+    #   - "${PROJECT_PORT_ID}80:8000"
     env_file:
       - .env
-    volumes: #Volumes binded should be changed before submiting the project
+    volumes: #TODO Volumes binded should be changed before submiting the project
       - ./requirements/backend/conf/mount:/usr/app
     depends_on:
       - db
     networks:
       default:
         aliases:
-          - backend
+          - backend #Used for inter containers communication, certs will match this fqdn
     restart: unless-stopped
 
   frontend:
     build: ./requirements/frontend
-    container_name: frontend_${PROJECT_NAME} #Don't change it, its important for certificates, frontend will receive the "frontend.cert"
+    container_name: frontend_${PROJECT_NAME}
     image: frontend_${PROJECT_NAME}
-    # ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
-      # - "${PROJECT_PORT_ID}80:3000"
+    profiles:
+      - main
     labels: #Label used to dynamically conf traefik
       - "my.zone=${PROJECT_NAME}"
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`${FQDN}`) && !PathPrefix(`/api{regex:/.*}`) && !PathPrefix(`/prometheus`)" #Do not trigger if its only /api... without any other /, to avoid trigger traefik api
+
+      # front
+      - "traefik.http.routers.frontend.rule=Host(`${FQDN}`)"
       - "traefik.http.routers.frontend.tls=true"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+      - "traefik.http.routers.frontend.service=frontend@docker"
+
+      # websockets
+      - "traefik.http.routers.websocket.rule=Host(`${FQDN}`)"
+      - "traefik.http.routers.websocket.tls=true"
+      - "traefik.http.routers.websocket.entrypoints=websocket"
+      - "traefik.http.services.websocket.loadbalancer.server.port=3001"
+      - "traefik.http.routers.websocket.service=websocket@docker"
     env_file:
       - .env
-    volumes: #Volumes binded should be changed before submiting the project
+    volumes: #TODO Volumes binded should be changed before submiting the project
       - ./requirements/frontend/conf/mount:/app/src
+    depends_on:
+      - backend
+    networks:
+      default:
+        aliases:
+          - frontend #Used for inter containers communication, certs will match this fqdn
+    restart: unless-stopped
+
+##DevOps
+  prometheus: #Prometheus is the metric collector used by Grafana
+    build: ./requirements/prometheus
+    container_name: prometheus_${PROJECT_NAME}
+    image: prometheus_${PROJECT_NAME}
+    profiles:
+      - devops
+    labels: #Label used to dynamically conf traefik
+      - "my.zone=${PROJECT_NAME}"
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.tls=true"
+      - "traefik.http.routers.prometheus.rule=Host(`${FQDN}`) && PathPrefix(`/adm/prometheus`)" #TODO Add a midleware soon
+      - "traefik.http.routers.prometheus.entrypoints=websecure"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+      # TLS Proxy to service
+      - "traefik.http.services.prometheus.loadbalancer.server.scheme=https" #Communicate with the service in HTTPS
+      - "traefik.http.services.prometheus.loadbalancer.serverstransport=transport_prometheus@file"
+      # Auth
+      - "traefik.http.routers.prometheus.middlewares=adm_auth"
+    env_file:
+      - .env
+    volumes: #Volume not binded OK
+      - prometheus:/prometheus
     depends_on:
       - backend
       - proxy
     networks:
       default:
         aliases:
-          - frontend
+          - prometheus #Used for inter containers communication, certs will match this fqdn
     restart: unless-stopped
 
-# ##DevOps
-#   prometheus: #Prometheus is the metric collector used by Grafana
-#     build: ./requirements/prometheus
-#     container_name: prometheus_${PROJECT_NAME} #Don't change it, its important for certificates, frontend will receive the "frontend.cert"
-#     image: prometheus_${PROJECT_NAME}
-#     ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
-#       - "9090:9090"
-#     labels: #Label used to dynamically conf traefik
-#       - "my.zone=${PROJECT_NAME}"
-#       - "traefik.enable=true"
-#       - "traefik.http.routers.prometheus.tls=true"
-#       - "traefik.http.routers.prometheus.rule=Host(`${FQDN}`) && PathPrefix(`/prometheus`)"
-#       - "traefik.http.routers.prometheus.entrypoints=websecure"
-#       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
-#       - "traefik.http.services.prometheus.loadbalancer.server.scheme=https" #Communicate with the service in HTTPS
-#       - "traefik.http.services.prometheus.loadbalancer.serverstransport=transport_prometheus@file"
-#     env_file:
-#       - .env
-#     volumes: #Volume not binded OK
-#       - prometheus:/prometheus
-#     depends_on:
-#       - backend
-#       - proxy
-#     networks:
-#       default:
-#         aliases:
-#           - prometheus
-#     restart: unless-stopped
+  grafana: #Grafana is a graph app usefull for visualizing metrics
+    build: ./requirements/grafana
+    container_name: grafana_${PROJECT_NAME} #Don't change it, its important for certificates, frontend will receive the "frontend.cert"
+    image: grafana_${PROJECT_NAME}
+    profiles:
+      - devops
+    labels: #Label used to dynamically conf traefik
+      - "my.zone=${PROJECT_NAME}"
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.tls=true"
+      - "traefik.http.routers.grafana.rule=Host(`${FQDN}`) && PathPrefix(`/adm/grafana`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+      # TLS Proxy to service
+      - "traefik.http.services.grafana.loadbalancer.server.scheme=https" #Communicate with the service in HTTPS
+      - "traefik.http.services.grafana.loadbalancer.serverstransport=transport_grafana@file"
+      # Auth
+      - "traefik.http.routers.grafana.middlewares=adm_auth"
+    env_file:
+      - .env
+    # volumes: #Volume not binded OK
+    #   - grafana:/var/lib/grafana
+    networks:
+      default:
+        aliases:
+          - grafana
+    restart: unless-stopped

@@ -34,9 +34,12 @@ ENTRYPOINT /usr/local/bin/prometheus \
             --web.console.libraries=/usr/share/prometheus/console_libraries \
             --web.console.templates=/usr/share/prometheus/consoles \
 			--web.config.file=/etc/prometheus/web-config.yml \
-			--web.external-url=/prometheus
+			--web.external-url=/adm/prometheus
 
 # From this its home made ##################################################################
+
+LABEL		author="ggualerz@student.42nice.fr"
+
 # Copy Prometheus configuration file
 ADD prometheus.yml /etc/prometheus/
 ADD web-config.yml /etc/prometheus/
@@ -49,6 +52,7 @@ COPY CA.crt /usr/local/share/ca-certificates/CA.crt
 
 # Update the certificate store
 RUN update-ca-certificates
+
 
 #Add my keys
 RUN mkdir /ssl

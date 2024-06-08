@@ -8,9 +8,24 @@ tls:
     - certFile: /ssl/proxy.crt
       keyFile: /ssl/proxy.key
 
+# http:
+#   routers:
+#     websocket:
+#       rule: Host(`transcendence.gmcg.fr`)
+#       tls: true
+#       entrypoints: websocket
+#   services:
+#     websocket:
+#       loadbalancer:
+#         servers:
+#           - url: "http://frontend:3001"
 http:
   serversTransports:
     transport_prometheus:
       serverName: "prometheus"
+      rootCAs:
+        - /ssl/CA.crt
+    transport_grafana:
+      serverName: "grafana"
       rootCAs:
         - /ssl/CA.crt
