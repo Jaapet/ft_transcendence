@@ -35,7 +35,6 @@ ENTRYPOINT /usr/local/bin/prometheus \
             --web.console.templates=/usr/share/prometheus/consoles \
 			--web.config.file=/etc/prometheus/web-config.yml \
 			--web.external-url=/adm/prometheus
-
 # From this its home made ##################################################################
 
 LABEL		author="ggualerz@student.42nice.fr"
@@ -62,3 +61,7 @@ COPY *.key /ssl/
 
 RUN chmod -R 744 /ssl
 EXPOSE 9090
+
+#Token backend :)))))))))
+
+COPY token_backend /etc/prometheus/token_backend
