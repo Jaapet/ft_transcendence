@@ -218,8 +218,6 @@ class MatchViewSet(viewsets.ModelViewSet):
 
 class PrometheusAuthentication(BaseAuthentication):
 	def authenticate(self, request):
-		print("Request Method:", request.method)
-		print("Headers:", request.headers)
 		# Check if the request contains the expected header
 		if 'Authorization' not in request.headers:
 			return None
