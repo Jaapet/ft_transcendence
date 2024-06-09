@@ -31,4 +31,5 @@ fi
 
 # TODO: announce healthiness
 
+#python manage.py runsslserver 0.0.0.0:8000 --certificate /ssl/backend.crt --key /ssl/backend.key
 python manage.py runserver 0.0.0.0:8000
