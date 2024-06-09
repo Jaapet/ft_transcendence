@@ -287,9 +287,6 @@ export default function Profile({ status, user, last_matches }) {
 		return (<p>Something went wrong...</p>);
 	}
 
-	// TODO: if (user === currently logged in user) then allow editing profile
-	// Maybe make it replace the Add Friend button?
-
 	return (
 			<div className={styles.container}>
 				<ProfileToasts
