@@ -8,7 +8,7 @@ import io from 'socket.io-client';
 function MyApp({ Component, pageProps }) {
   useEffect(() => {
 	// Voir pour mettre une variable d'environement $FQDN && $PROJECT_PORT
-	const socket = io(`https://transcendence.gmcg.fr:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`); 
+	const socket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`); 
 
 	console.log('app.js random debug message\n\n');
 

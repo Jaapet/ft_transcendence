@@ -14,6 +14,7 @@
 }
 
 
+
 .container {
 	display: flex;
 	flex-direction:column;
@@ -21,14 +22,15 @@
 	text-align: center;
 	background-color: #38255f;
 	background-image: url('../public/images/doodleBack.jpg'); 
-    background-size: 20%;
+    background-size: cover;
     background-repeat:repeat;
     background-position: center;
     background-blend-mode: overlay; 
     opacity: 0.95; 
 	font-size: 2em;
-	min-height: calc(100vh - 78px);
-	margin-top: 78px;
+	min-height: calc(100vh - 72px);
+	min-width: calc(100vw - 20px);
+	margin-top: 72px;
 	font-family: 'random little things';
 }
 
@@ -112,6 +114,21 @@
 	transform: scale(1.05);
 
     box-shadow: 0 20px 20px rgba(217, 248, 38, 0.4);
+}
+
+.minorbutton {
+	position: relative;
+	left: 1cm;
+    display:inline-block;
+	font-size: 28px;
+    color: #000000;
+    background: #379391;
+    border: none;
+	border-radius: 10%;
+    padding: 5px 20px;
+    text-decoration: none;
+    margin: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 @keyframes gradientAnimation {

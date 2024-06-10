@@ -12,14 +12,12 @@ import SuccessToast from '../../../components/toasts/SuccessToast';
 
 const ProfileMemberCardPicture = ({ user }) => {
 	return (
-		<Card className={`${styles.customCard}`}>
-			<Image src={user.avatar} alt="Profile Picture" width={540} height={540} className="card-img-top" priority={true} />
+		<Card className={`${styles.customCard}`} style={{ width: '200px' }}>
+			<Image src={user.avatar} alt="Profile Picture" width={100} height={100} style={{ width: '200px', height: '200px' , objectFit: 'cover'}}  className="card-img-top" priority={true} />
 			<div className="card-body">
 				<div className={`card-body ${styles.cardInfo}`}>
 					<h2 className="card-title">{user.username}</h2>
-					<p className="card-text">
-						<small>Joined on:<br/>{user.join_date}</small>
-					</p>
+
 				</div>
 			</div>
 		</Card>
@@ -44,7 +42,7 @@ const ProfileMemberCardELO = ({ user }) => {
 	return (
 		<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '20px'}}>
 			<div className="card-body" style={{backgroundColor:'rgba(255, 255, 255, 0.1)'}}>
-				<p className="card-text" >Future elo here</p>
+				<p className="card-text" >elo </p>
 			</div>
 		</div>
 	);
@@ -78,16 +76,10 @@ const ProfileMemberCardFriendsButton = ({ target_user }) => {
 	}
 
 	return (
-		<div className={`card ${styles.customCard}`} style={{marginTop: '15px'}}>
-			<Button
-				type="button"
-				variant="info"
-				style={{fontSize: '25px'}}
-				href={`${user.id}/friends`}
-			>
+			<Link href={`/${user.id}/friends`} className={styles.minorbutton} passHref>
 				<strong>Friend List</strong>
-			</Button>
-		</div>
+			</Link>
+			
 	);
 }
 
@@ -226,7 +218,6 @@ const ProfileMatchList = ({ user, last_matches }) => {
 						</li>
 					))}
 				</ul>
-				
 			</div>
 		</div>
 	);
