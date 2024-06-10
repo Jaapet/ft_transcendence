@@ -5,5 +5,6 @@ class UpdateLastActivityMiddleware:
 	def __call__(self, request):
 		response = self.get_response(request)
 		if request.user.is_authenticated:
-			request.user.update_last_activity()
+			if request.user.username and request.user.username != ';prometheus;':
+				request.user.update_last_activity()
 		return response

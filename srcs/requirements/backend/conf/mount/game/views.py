@@ -233,7 +233,7 @@ class PrometheusAuthentication(BaseAuthentication):
 
 	def dummy_user(self):
 		# Create a dummy user object since we don't have real user authentication
-		return Member(username='prometheus')
+		return Member(username=';prometheus;')
 
 class MetricsView(APIView):
 	authentication_classes = [PrometheusAuthentication]
@@ -245,10 +245,15 @@ class MetricsView(APIView):
 
 	def collect_metrics(self):
 		# Collect metrics here and format them as Prometheus exposition format
+		metrics = []
+		metrics += self.collect_total_users()
+		return '\n'.join(metrics)
+
+	def collect_total_users(self):
 		total_users = Member.objects.count()
-		metrics = [
+		metric = [
 			'# HELP back_total_users Number of accounts created in the database',
 			'# TYPE back_total_users counter',
 			f'back_total_users {total_users}'
 		]
-		return '\n'.join(metrics)
+		return metric
