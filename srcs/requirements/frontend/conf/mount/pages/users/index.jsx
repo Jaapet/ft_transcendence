@@ -10,6 +10,7 @@ const UserTableHead = () => {
 				<th scope="col">Avatar</th>
 				<th scope="col">ID</th>
 				<th scope="col">Username</th>
+				<th scope="col">Online?</th>
 				<th scope="col">Email</th>
 				<th scope="col">Join date</th>
 				<th scope="col">Role</th>
@@ -37,6 +38,7 @@ const UserTableRow = ({ user }) => {
 					{user.username}
 				</Link>
 			</th>
+			<th>{user.is_online ? 'Active' : 'Inactive'}</th>
 			<td>{user.email}</td>
 			<td>{user.join_date}</td>
 			<td>{user.is_admin ? 'Admin' : 'User'}</td>

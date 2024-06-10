@@ -12,6 +12,8 @@ def validate_file_size(file):
 # Declaring the fields I want by hand to avoid problems with
 # permission-detail and lookup_field
 class MemberSerializer(serializers.HyperlinkedModelSerializer):
+	is_online = serializers.ReadOnlyField()
+
 	class Meta:
 		model = Member
 		fields = [
@@ -24,7 +26,8 @@ class MemberSerializer(serializers.HyperlinkedModelSerializer):
 			'join_date',
 			'friends',
 			'is_superuser',
-			'is_admin'
+			'is_admin',
+			'is_online'
 		]
 
 # Serializes sent data for Member registration
@@ -96,6 +99,8 @@ class UpdateMemberSerializer(serializers.HyperlinkedModelSerializer):
 		}
 
 class FriendSerializer(serializers.ModelSerializer):
+	is_online = serializers.ReadOnlyField()
+
 	class Meta:
 		model = Member
 		fields = [
@@ -104,7 +109,8 @@ class FriendSerializer(serializers.ModelSerializer):
 			'username',
 			'email',
 			'avatar',
-			'join_date'
+			'join_date',
+			'is_online'
 		]
 
 class SendFriendRequestSerializer(serializers.Serializer):

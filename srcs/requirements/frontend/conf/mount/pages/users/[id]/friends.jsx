@@ -61,6 +61,9 @@ const UserFriendListFriend = ({ myFriends, setMyFriends, friend }) => {
 						{friend.username}
 					</Link>
 				</div>
+				<div> {/* TODO: Make this better later */}
+					{friend.is_online ? 'Active' : 'Inactive'}
+				</div>
 				<div>
 					<RemoveFriendButton
 						myFriends={myFriends}
