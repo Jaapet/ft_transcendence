@@ -22,6 +22,7 @@ from .serializers import (
 	MatchSerializer
 )
 
+# TODO: Check if this uses the index
 # Queries all members ordered by username
 # Requires authentication
 class MemberViewSet(viewsets.ModelViewSet):

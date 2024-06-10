@@ -1,4 +1,5 @@
 from django.db import models, transaction
+from django.utils import timezone
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 
@@ -34,12 +35,13 @@ class MemberManager(BaseUserManager):
 		return self._create_user(username, email, True, password, **extra_fields)
 
 # Member objects contain:
-# - username	(CharField)
-# - email			(EmailField)
-# - avatar		(ImageField)
-# - join_date	(DateField)
-# - is_admin	(BooleanField)
-# - friends		(ManyToManyField Member)
+# - username			(CharField)
+# - email					(EmailField)
+# - avatar				(ImageField)
+# - join_date			(DateField)
+# - is_admin			(BooleanField)
+# - last_activity	(DateTimeField)
+# - friends				(ManyToManyField Member)
 # - everything else is from AbstractBaseUser
 #
 # From Match objects:
@@ -48,6 +50,7 @@ class MemberManager(BaseUserManager):
 #
 # Indexed on:
 # - username
+# - last_activity
 # - join_date + username
 # - DESC join_date + username
 class Member(AbstractBaseUser, PermissionsMixin):
@@ -88,6 +91,12 @@ class Member(AbstractBaseUser, PermissionsMixin):
 		verbose_name="Admin status"
 	)
 
+	last_activity = models.DateTimeField(
+		null=True,
+		blank=True,
+		verbose_name="Last Activity"
+	)
+
 	friends = models.ManyToManyField(
 		"Member",
 		blank=True,
@@ -107,6 +116,7 @@ class Member(AbstractBaseUser, PermissionsMixin):
 		verbose_name_plural = "members"
 		indexes = [
 			models.Index(fields=["username"], name="member_username_idx"),
+			models.Index(fields=["last_activity"], name="member_last_activity_idx"),
 			models.Index(fields=["join_date", "username"], name="member_join_date_idx"),
 			models.Index(fields=["-join_date", "username"], name="member_join_date_rev_idx")
 		]
@@ -117,6 +127,16 @@ class Member(AbstractBaseUser, PermissionsMixin):
 	@property
 	def is_staff(self):
 		return self.is_admin
+
+	@property
+	def is_online(self):
+		# Right now - 5 minutes
+		threshold = timezone.now() - timezone.timedelta(minutes=5)
+		return self.last_activity and self.last_activity > threshold
+
+	def update_last_activity(self):
+		self.last_activity = timezone.now()
+		self.save(update_fields=['last_activity'])
 
 	def send_friend_request(self, target):
 		try:
