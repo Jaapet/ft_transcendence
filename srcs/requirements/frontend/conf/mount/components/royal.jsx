@@ -18,32 +18,38 @@ const Royal = () => {
 
 
     const loader = new THREE.TextureLoader();
-    const texture = loader.load( 'games/royal/texture/dollar.jpg' );
+    const texture = loader.load( 'games/royal/texture/cityfutur.jpg' );
     texture.colorSpace = THREE.SRGBColorSpace;
+
+    const texture4 = loader.load( 'games/royal/texture/toit.jpg' );
+    texture4.colorSpace = THREE.SRGBColorSpace;
+    texture4.wrapS = THREE.RepeatWrapping;
+    texture4.wrapT = THREE.RepeatWrapping;
+    texture4.repeat.set( 1, 8 );
 
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x111111);
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     /// possibiliter de tourner chaque user de son coter
-    camera.position.set(0, 50, 10);
-    camera.position.z = 50;
+    camera.position.set(0, 150, 10);
+    camera.position.z = 150;
 
 
 
     /// FLOOR
 
-    const planeSize = 50;
+    const planeSize = 80;
   
-    const loader2 = new THREE.TextureLoader();
-    const texture2 = loader2.load('games/royal/texture/dollar.jpg');
+    const texture2 = loader.load('games/royal/texture/toit.jpg');
     texture2.colorSpace = THREE.SRGBColorSpace;
 
     const planeGeo = new THREE.PlaneGeometry(planeSize, planeSize);
     const planeMat = new THREE.MeshPhongMaterial({
       map: texture2,
-      side: THREE.DoubleSide
-
+      side: THREE.DoubleSide,
+      fog: true,
+      shininess: 100,
     });
     const mesh = new THREE.Mesh(planeGeo, planeMat);
     mesh.rotation.x = Math.PI * -.5;
@@ -52,21 +58,23 @@ const Royal = () => {
 
       /// FLOOR 2
 
-      const floorSize = 400;
+      const floorSize = 950;
   
-      const loader3 = new THREE.TextureLoader();
-      const texture3 = loader3.load('games/royal/texture/dollar.jpg');
+      const texture3 = loader.load('games/royal/texture/floor.png');
       texture3.colorSpace = THREE.SRGBColorSpace;
     
       const floorGeo = new THREE.PlaneGeometry(floorSize, floorSize);
       const floorMat = new THREE.MeshPhongMaterial({
         map: texture3,
-        side: THREE.DoubleSide
-    
+        side: THREE.DoubleSide,
+        fog: true,
+        shininess: 1000,
+        
       });
       const mesh2 = new THREE.Mesh(floorGeo, floorMat);
       mesh2.rotation.x = Math.PI * -.5;
-      mesh2.position.y = -150;
+      mesh2.position.y = -600;
+      mesh2.position.z = 29.5;
       scene.add(mesh2);
 
 
@@ -89,30 +97,33 @@ const Royal = () => {
     const color = 0xFFFFFF;
     const intensity = 8.8;
     const light = new THREE.DirectionalLight(color, intensity);
-    light.position.set(-15, 10, -15);
-    light.target.position.set(15, 0, 15);
+    light.position.set(-5, 4, -5);
+    light.target.position.set(10, -5, 10);
     scene.add(light);
     scene.add(light.target);
       
 
     const light3 = new THREE.DirectionalLight(color, intensity);
-    light3.position.set(15, 10, -15);
-    light3.target.position.set(-15, 0, 15);
+    light3.position.set(5, 4, -5);
+    light3.target.position.set(-10, -5, 10);
     scene.add(light3);
     scene.add(light3.target);
+
+    const light4 = new THREE.DirectionalLight(color, intensity);
+    light4.position.set(0, 4, 10);
+    light4.target.position.set(0, -5, -10);
+    scene.add(light4);
+    scene.add(light4.target);
 
     /// OBJECTS
 
     const renderer = new THREE.WebGLRenderer({antialias: true, canvas});
     
     
-
-    
-    // BALL
     const radius =  2;  
     const detail = 5;  
     const ball = new THREE.IcosahedronGeometry( radius, detail );
-    const wall = new THREE.BoxGeometry(50, 150, 50);
+    const wall = new THREE.BoxGeometry(80, 600, 80);
 
     
 
@@ -132,7 +143,22 @@ const Royal = () => {
     addball(0, 2, 4, makeObj(ball, texture));
     addball(10, 2, 4, makeObj(ball, texture));
     addball(-10, 2, 4, makeObj(ball, texture));
-    addwall(0, -75.1, 0, makeObj(wall, texture));
+    addwall(0, -300.5, 0, makeObj(wall, texture4));
+
+
+    /// SKYBOX
+
+    /// SKYBOX
+
+    const skybox = new THREE.IcosahedronGeometry(800,50);
+
+    const skyboxMaterial = new THREE.MeshBasicMaterial({map: texture, side: THREE.BackSide});
+
+    const skyboxMesh = new THREE.Mesh(skybox, skyboxMaterial);
+    skyboxMesh.position.z = 29.5;
+
+    scene.add(skyboxMesh);
+
 
 
       
@@ -281,7 +307,7 @@ const Royal = () => {
         // si la balle est en chute libre
         if (objtab[3] == 1)
         {
-          if (obj.position.y > -148)
+          if (obj.position.y > -600)
             obj.position.y = obj.position.y - 1.2;
         }
         else
@@ -319,13 +345,13 @@ const Royal = () => {
 
         // en cas de sortie de la balle du terrain
         // activer le mode de chute
-        if (obj.position.z < -26)
+        if (obj.position.z < -41)
           objtab[3] = 1;
-        else if (obj.position.z > 26)
+        else if (obj.position.z > 41)
           objtab[3] = 1;
-        else if (obj.position.x < -26)
+        else if (obj.position.x < -41)
           objtab[3] = 1;
-        else if (obj.position.x > 26)
+        else if (obj.position.x > 41)
           objtab[3] = 1;
 
         // GESTION COLLISION AVEC LES AUTRES BALLES

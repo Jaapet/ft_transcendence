@@ -21,7 +21,7 @@ const Pong = () => {
       const far = 10000;
 
       const loader = new THREE.TextureLoader();
-      const texture = loader.load('games/pong/texture/skybox.jpg');
+      const texture = loader.load('games/pong/texture/cityfutur.jpg');
       texture.colorSpace = THREE.SRGBColorSpace;
 
       const scene = new THREE.Scene();
@@ -133,11 +133,12 @@ const Pong = () => {
 
       /// SKYBOX
 
-      const skybox = new THREE.IcosahedronGeometry(100, 50);
+      const skybox = new THREE.IcosahedronGeometry(500,50);
 
       const skyboxMaterial = new THREE.MeshBasicMaterial({map: texture, side: THREE.BackSide });
-      
+
       const skyboxMesh = new THREE.Mesh(skybox, skyboxMaterial);
+      skyboxMesh.position.y = 100;
 
       scene.add(skyboxMesh);
 
