@@ -23,12 +23,13 @@
 	background-color: #38255f;
 	background-image: url('../public/images/doodleBack.jpg'); 
     background-size: cover;
-    background-repeat:repeat-y;
+    background-repeat:repeat;
     background-position: center;
     background-blend-mode: overlay; 
     opacity: 0.95; 
 	font-size: 2em;
 	min-height: calc(100vh - 72px);
+	min-width: calc(100vw - 20px);
 	margin-top: 72px;
 	font-family: 'random little things';
 }
