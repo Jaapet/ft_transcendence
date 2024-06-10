@@ -356,6 +356,7 @@ export default function UserFriendRequests({ status, current_user, requests_sent
 		<div
 			className={styles.container}
 			style={{
+				height: 'calc(100vh - 72px)',
 				display: 'flex',
 				justifyContent: 'center',
 				alignItems: 'center',

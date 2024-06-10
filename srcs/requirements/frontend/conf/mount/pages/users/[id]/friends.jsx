@@ -204,6 +204,7 @@ export default function UserFriends({ status, current_user, friends }) {
 		<div
 			className={styles.container}
 			style={{
+				height: 'calc(100vh - 72px)',
 				display: 'flex',
 				justifyContent: 'center',
 				alignItems: 'center',
