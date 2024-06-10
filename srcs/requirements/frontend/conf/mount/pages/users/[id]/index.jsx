@@ -4,7 +4,7 @@ import Image from 'next/image';
 import styles from '../../../styles/base.module.css';
 import Link from 'next/link';
 import { useAuth } from '../../../context/AuthenticationContext';
-import { Button } from 'react-bootstrap';
+import { Card, Button } from 'react-bootstrap';
 import FriendButton from '../../../components/FriendButton';
 import ToastList from '../../../components/toasts/ToastList';
 import ErrorToast from '../../../components/toasts/ErrorToast';
@@ -12,8 +12,8 @@ import SuccessToast from '../../../components/toasts/SuccessToast';
 
 const ProfileMemberCardPicture = ({ user }) => {
 	return (
-		<div className={`card ${styles.customCard}`}>
-			<Image src={user.avatar} alt="Profile Picture" width={540} height={540} className="card-img-top" />
+		<Card className={`${styles.customCard}`}>
+			<Image src={user.avatar} alt="Profile Picture" width={540} height={540} className="card-img-top" priority={true} />
 			<div className="card-body">
 				<div className={`card-body ${styles.cardInfo}`}>
 					<h2 className="card-title">{user.username}</h2>
@@ -22,9 +22,23 @@ const ProfileMemberCardPicture = ({ user }) => {
 					</p>
 				</div>
 			</div>
-		</div>
+		</Card>
 	);
 }
+
+/*
+    <Card style={{ width: '18rem' }}>
+      <Card.Img variant="top" src="holder.js/100px180" />
+      <Card.Body>
+        <Card.Title>Card Title</Card.Title>
+        <Card.Text>
+          Some quick example text to build on the card title and make up the
+          bulk of the card's content.
+        </Card.Text>
+        <Button variant="primary">Go somewhere</Button>
+      </Card.Body>
+    </Card>
+*/
 
 const ProfileMemberCardELO = ({ user }) => {
 	return (
@@ -128,17 +142,19 @@ const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg
 
 const ProfileMatchPlayerLink = ({ id, username }) => {
 	if (id === null) {
-	  return (<span>{username}</span>);
+		return (<span>{username}</span>);
 	}
-  
+
 	return (
-	  <Link href={`/users/${id}`} passHref>
-		<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-		  {username}
-		</a>
-	  </Link>
+		<Link
+			href={`/users/${id}`}
+			passHref
+			className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
+		>
+			{username}
+		</Link>
 	);
-  }
+}
 
 const ProfileMatchPlayers = ({ user, match }) => {
 	if (match.winner_id === user.id) {
@@ -222,10 +238,12 @@ const ProfileSideInfo = ({ user, last_matches }) => {
 			<h5 className="card-text">Last Matches</h5>
 			<ProfileMatchList user={user} last_matches={last_matches} />
 			<p>
-				<Link href={`/users/${user.id}/match_history`} passHref>
-					<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-						See {user.username}'s full match history
-					</a>
+				<Link
+					href={`/users/${user.id}/match_history`}
+					passHref
+					className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
+				>
+					See{user.username}'s full match history
 				</Link>
 			</p>
 		</div>
@@ -268,9 +286,6 @@ export default function Profile({ status, user, last_matches }) {
 	if (status === 401 || status === 404 || !user) {
 		return (<p>Something went wrong...</p>);
 	}
-
-	// TODO: if (user === currently logged in user) then allow editing profile
-	// Maybe make it replace the Add Friend button?
 
 	return (
 			<div className={styles.container}>

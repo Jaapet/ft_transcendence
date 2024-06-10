@@ -54,6 +54,7 @@ RUN			apk add --no-cache \
 				django-cors-headers \
 				psycopg2 \
 				pillow
+#				django-sslserver
 
 # psycopg2 if for postgres
 # pillow is required for ImageField to work

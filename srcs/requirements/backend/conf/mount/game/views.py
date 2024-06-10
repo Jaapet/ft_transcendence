@@ -1,5 +1,9 @@
+import os
 from .models import Member, FriendRequest, Match
 from django.db.models import Q
+from django.http import HttpResponse
+from rest_framework.authentication import BaseAuthentication
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework import viewsets, permissions, status
 from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
@@ -211,3 +215,39 @@ class MatchViewSet(viewsets.ModelViewSet):
 		player_matches = Match.objects.filter(Q(winner_id=player_id) | Q(loser_id=player_id)).select_related("winner", "loser").order_by('-end_datetime')[:3]
 		serializer = self.get_serializer(player_matches, many=True)
 		return Response(serializer.data)
+
+class PrometheusAuthentication(BaseAuthentication):
+	def authenticate(self, request):
+		# Check if the request contains the expected header
+		if 'Authorization' not in request.headers:
+			return None
+
+		# Validate the value of the header (you can implement your own logic here)
+		auth_token = request.headers['Authorization']
+		if auth_token != 'Bearer ' + os.environ.get('METRICS_TOKEN_BACKEND'):
+			raise AuthenticationFailed('Invalid token')
+
+		# If the token is valid, return a dummy user object
+		return (self.dummy_user(), None)
+
+	def dummy_user(self):
+		# Create a dummy user object since we don't have real user authentication
+		return Member(username='prometheus')
+
+class MetricsView(APIView):
+	authentication_classes = [PrometheusAuthentication]
+	permission_classes = [permissions.IsAuthenticated]
+
+	def get(self, request):
+		metrics = self.collect_metrics()
+		return HttpResponse(metrics, content_type='text/plain')
+
+	def collect_metrics(self):
+		# Collect metrics here and format them as Prometheus exposition format
+		total_users = Member.objects.count()
+		metrics = [
+			'# HELP back_total_users Number of accounts created in the database',
+			'# TYPE back_total_users counter',
+			f'back_total_users {total_users}'
+		]
+		return '\n'.join(metrics)

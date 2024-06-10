@@ -1,5 +1,6 @@
 import { IncomingForm } from 'formidable';
 import fs from 'fs';
+// TODO: Check if we can skip using formidable
 
 export const config = {
 	api: {

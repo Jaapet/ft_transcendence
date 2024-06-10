@@ -1,0 +1,15 @@
+# HELP traefik_service_responses_bytes_total The total size of responses in bytes returned by a service, partitioned by status code, protocol, and method.
+# TYPE traefik_service_responses_bytes_total counter
+traefik_service_responses_bytes_total{code="0",method="GET",protocol="websocket",service="frontend@docker"} 0
+traefik_service_responses_bytes_total{code="200",method="GET",protocol="http",service="frontend@docker"} 1.1310611e+07
+traefik_service_responses_bytes_total{code="200",method="GET",protocol="http",service="prometheus@docker"} 2.764894e+06
+traefik_service_responses_bytes_total{code="200",method="POST",protocol="http",service="frontend@docker"} 1746
+traefik_service_responses_bytes_total{code="301",method="GET",protocol="http",service="prometheus@docker"} 51
+traefik_service_responses_bytes_total{code="302",method="GET",protocol="http",service="prometheus@docker"} 44
+traefik_service_responses_bytes_total{code="304",method="GET",protocol="http",service="frontend@docker"} 0
+traefik_service_responses_bytes_total{code="307",method="GET",protocol="http",service="frontend@docker"} 70
+traefik_service_responses_bytes_total{code="308",method="GET",protocol="http",service="frontend@docker"} 572
+traefik_service_responses_bytes_total{code="401",method="POST",protocol="http",service="frontend@docker"} 54
+traefik_service_responses_bytes_total{code="404",method="GET",protocol="http",service="frontend@docker"} 14574
+traefik_service_responses_bytes_total{code="499",method="GET",protocol="http",service="frontend@docker"} 21
+traefik_service_responses_bytes_total{code="502",method="GET",protocol="websocket",service="frontend@docker"} 11

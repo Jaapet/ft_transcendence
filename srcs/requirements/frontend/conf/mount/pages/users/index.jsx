@@ -23,29 +23,25 @@ const UserTableRow = ({ user }) => {
 		<tr key={user.id}>
 			<td>
 				<Link href={`/users/${user.id}`} passHref>
-					<a>
-						<Image
-							src={user.avatar}
-							alt={`${user.username}'s avatar`}
-							width={40}
-							height={40}
-						/>
-					</a>
+					<Image
+						src={user.avatar}
+						alt={`${user.username}'s avatar`}
+						width={40}
+						height={40}
+					/>
 				</Link>
 			</td>
 			<th>{user.id}</th>
 			<th>
 				<Link href={`/users/${user.id}`} passHref>
-					<a>
-						{user.username}
-					</a>
+					{user.username}
 				</Link>
 			</th>
 			<td>{user.email}</td>
 			<td>{user.join_date}</td>
 			<td>{user.is_admin ? 'Admin' : 'User'}</td>
 		</tr>
-	)
+	);
 }
 
 const UserTable = ({ users }) => {
