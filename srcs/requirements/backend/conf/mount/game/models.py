@@ -34,6 +34,9 @@ class MemberManager(BaseUserManager):
 			raise ValueError('Failed to create super user: Super user must have is_superuser=True.')
 		return self._create_user(username, email, True, password, **extra_fields)
 
+	def get_online_users(self):
+		return self.filter(last_activity__gte=timezone.now() - timezone.timedelta(minutes=5))
+
 # Member objects contain:
 # - username			(CharField)
 # - email					(EmailField)
@@ -132,7 +135,7 @@ class Member(AbstractBaseUser, PermissionsMixin):
 	def is_online(self):
 		# Right now - 5 minutes
 		threshold = timezone.now() - timezone.timedelta(minutes=5)
-		return self.last_activity and self.last_activity > threshold
+		return self.last_activity and self.last_activity >= threshold
 
 	def update_last_activity(self):
 		self.last_activity = timezone.now()

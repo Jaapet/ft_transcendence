@@ -247,6 +247,9 @@ class MetricsView(APIView):
 		# Collect metrics here and format them as Prometheus exposition format
 		metrics = []
 		metrics += self.collect_total_users()
+		metrics += self.collect_online_users()
+		metrics += self.collect_total_friend_requests()
+		metrics += self.collect_total_pong_matches()
 		return '\n'.join(metrics)
 
 	def collect_total_users(self):
@@ -255,5 +258,32 @@ class MetricsView(APIView):
 			'# HELP back_total_users Number of accounts created in the database',
 			'# TYPE back_total_users counter',
 			f'back_total_users {total_users}'
+		]
+		return metric
+
+	def collect_online_users(self):
+		online_users = Member.objects.get_online_users().count()
+		metric = [
+			'# HELP back_online_users Number of currently online users',
+			'# TYPE back_online_users counter',
+			f'back_online_users {online_users}'
+		]
+		return metric
+
+	def collect_total_friend_requests(self):
+		total_friend_requests = FriendRequest.objects.count()
+		metric = [
+			'# HELP back_total_friend_requests Number of pending friend requests',
+			'# TYPE back_total_friend_requests counter',
+			f'back_total_friend_requests {total_friend_requests}'
+		]
+		return metric
+
+	def collect_total_pong_matches(self):
+		total_pong_matches = Match.objects.count()
+		metric = [
+			'# HELP back_total_pong_matches Number of played pong matches',
+			'# TYPE back_total_pong_matches counter',
+			f'back_total_pong_matches {total_pong_matches}'
 		]
 		return metric
