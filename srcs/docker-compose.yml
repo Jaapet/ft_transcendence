@@ -1,5 +1,6 @@
 volumes:
   prometheus: {}
+
 services:
   proxy: #https://myhostname/adm/traefik/dashboard/#/ For Dasboard
     build: ./requirements/proxy
@@ -42,7 +43,6 @@ services:
       - "traefik.http.middlewares.traefik_stripe.stripprefix.prefixes=/adm/traefik"
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.service=api@internal"
-
       # Metrics configuration -- for prometheus
       - "traefik.http.routers.metrics.tls=true"
       - "traefik.http.routers.metrics.rule=Host(`proxy`) && PathPrefix(`/adm/metrics`)"
@@ -74,7 +74,6 @@ services:
           - proxy #Used for inter containers communication, certs will match this fqdn
     #TODO HEALTHCHECK
     restart: unless-stopped
-
 
   db:
     build: ./requirements/db
@@ -125,12 +124,14 @@ services:
       - "my.zone=${PROJECT_NAME}"
       - "traefik.enable=true"
 
+      # front
       - "traefik.http.routers.frontend.rule=Host(`${FQDN}`)"
       - "traefik.http.routers.frontend.tls=true"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
       - "traefik.http.routers.frontend.service=frontend@docker"
 
+      # websockets
       - "traefik.http.routers.websocket.rule=Host(`${FQDN}`)"
       - "traefik.http.routers.websocket.tls=true"
       - "traefik.http.routers.websocket.entrypoints=websocket"
@@ -181,10 +182,11 @@ services:
           - prometheus #Used for inter containers communication, certs will match this fqdn
       #TODO HEALTHCHECK
     restart: unless-stopped
-  grafana: #Grafana is a graph app usefull for visualizing metrics
+
+  grafana: #Grafana is a graph app useful for visualizing metrics
     build: ./requirements/grafana
-    container_name: grafana_${PROJECT_NAME} #Don't change it, its important for certificates, frontend will receive the "frontend.cert"
-    image: grafana_${PROJECT_NAME} #TODO Remove before submiting
+    container_name: grafana_${PROJECT_NAME} #Don't change it, it's important for certificates, frontend will receive the "frontend.cert"
+    image: grafana_${PROJECT_NAME}
     profiles:
       - devops
     labels: #Label used to dynamically conf traefik
@@ -205,5 +207,4 @@ services:
       default:
         aliases:
           - grafana
-    #TODO HEALTHCHECK
     restart: unless-stopped

@@ -13,7 +13,8 @@ from .views import (
 	AcceptFriendRequestAPIView,
 	DeclineFriendRequestAPIView,
 	RemoveFriendAPIView,
-	MatchViewSet
+	MatchViewSet,
+	MetricsView
 )
 from rest_framework_simplejwt import views as jwt_views
 
@@ -38,5 +39,6 @@ urlpatterns = [
 	path('friend_request/decline', DeclineFriendRequestAPIView.as_view(), name='decline_friend_request'),
 	path('friends/', FriendListAPIView.as_view(), name="friend_list"),
 	path('friends/remove', RemoveFriendAPIView.as_view(), name='remove_friend'),
-	path('friends/friendship_status', CheckFriendshipStatusAPIView.as_view(), name='friendship_status')
+	path('friends/friendship_status', CheckFriendshipStatusAPIView.as_view(), name='friendship_status'),
+	path('metrics', MetricsView.as_view(), name='metrics')
 ]

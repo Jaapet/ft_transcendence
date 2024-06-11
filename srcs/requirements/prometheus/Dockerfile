@@ -70,7 +70,7 @@ RUN mkdir /ssl
 COPY *.crt /ssl/
 COPY *.key /ssl/
 RUN chmod -R 744 /ssl
+COPY token_backend /etc/prometheus/token_backend
 
 EXPOSE 9090
 EXPOSE 9093
-

@@ -124,8 +124,8 @@ const LoginForm = () => {
 										/>
 										<p className="text-center text-muted mt-5 mb-0">
 											Don't have an account?&nbsp;
-											<Link href="/account/register">
-												<a className="fw-bold text-body"><u>Sign up here</u></a>
+											<Link href="/account/register" className="fw-bold text-body">
+												<u>Sign up here</u>
 											</Link>
 										</p>
 

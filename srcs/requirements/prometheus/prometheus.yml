@@ -12,3 +12,11 @@ scrape_configs:
     metrics_path: /adm/metrics
     static_configs:
       - targets: ['proxy:443']
+  - job_name: 'backend'
+    scheme: http
+    metrics_path: /api/metrics
+    static_configs:
+      - targets: ['backend:8000']
+    authorization:
+      type: Bearer
+      credentials_file: "/etc/prometheus/token_backend"

@@ -267,8 +267,8 @@ export default function EditPage({ status, current_user }) {
 										/>
 
 										<p className="text-center text-muted mt-0 mb-0">
-											<Link href={`/users/${user.id}`}>
-												<a className="fw-bold text-body"><u>Back to profile</u></a>
+											<Link href={`/users/${user.id}`} className="fw-bold text-body">
+												<u>Back to profile</u>
 											</Link>
 										</p>
 									</div>
