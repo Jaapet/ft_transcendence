@@ -1,0 +1,19 @@
+groups:
+- name: traefik
+  rules:
+  - alert: TraefikError5XX
+    expr: sum(increase(traefik_service_requests_total{code=~"5.."}[1m])) > 1
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      title: 'Traefik returned an error 5XX'
+      description: 'The rate of 5XX responses is above 1 per second for more than 5 minutes.'
+  - alert: TraefikHigh4XX
+    expr: sum(rate(traefik_service_requests_total{code=~"4.."}[1m])) > 1
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      title: 'High 4xx responses by traefil'
+      description: 'The rate of 4XX responses is above 1 per second for more than 1 minutes.'
