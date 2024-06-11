@@ -1,337 +1,336 @@
 {
-  "annotations": {
-    "list": [
-      {
-        "builtIn": 1,
-        "datasource": {
-          "type": "grafana",
-          "uid": "-- Grafana --"
-        },
-        "enable": true,
-        "hide": true,
-        "iconColor": "rgba(0, 211, 255, 1)",
-        "name": "Annotations & Alerts",
-        "type": "dashboard"
-      }
-    ]
-  },
-  "editable": true,
-  "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
-  "id": 1,
-  "links": [],
-  "panels": [
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
-      "id": 2,
-      "panels": [],
-      "title": "Proxy specific",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "description": "All request to proxy",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
-          "mappings": []
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 11,
-        "w": 6,
-        "x": 0,
-        "y": 1
-      },
-      "id": 1,
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "pieType": "pie",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "traefik_service_requests_total",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "{{service}}",
-          "range": true,
-          "refId": "A",
-          "useBackend": false
-        }
-      ],
-      "title": "Proxy Requests",
-      "type": "piechart"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "description": "Activity of:\nWeb (HTTP:80) port\nWebsecure (HTTPS:443) port\nWebsocket(HTTPS:4433) port",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
-          "mappings": []
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 11,
-        "w": 6,
-        "x": 6,
-        "y": 1
-      },
-      "id": 3,
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "pieType": "pie",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "traefik_open_connections{entrypoint!=\"traefik\"}",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "{{entrypoint}}",
-          "range": true,
-          "refId": "A",
-          "useBackend": false
-        }
-      ],
-      "title": "Connections to entrypoints",
-      "type": "piechart"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "continuous-YlBl"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "dark-blue",
-                "value": null
-              }
-            ]
-          },
-          "unit": "m"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 3,
-        "x": 12,
-        "y": 1
-      },
-      "id": 5,
-      "options": {
-        "minVizHeight": 75,
-        "minVizWidth": 75,
-        "orientation": "vertical",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "sizing": "auto",
-        "text": {}
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "disableTextWrap": false,
-          "editorMode": "code",
-          "expr": "sum_over_time(up[1d]) * 100 / (1 * 24 * 60)\r\n",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A",
-          "useBackend": false
-        }
-      ],
-      "title": "Uptime",
-      "type": "gauge"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "decbytes"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 24,
-        "x": 0,
-        "y": 12
-      },
-      "id": 4,
-      "options": {
-        "displayMode": "basic",
-        "maxVizHeight": 24,
-        "minVizHeight": 16,
-        "minVizWidth": 8,
-        "namePlacement": "left",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showUnfilled": true,
-        "sizing": "manual",
-        "text": {},
-        "valueMode": "text"
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "exemplar": false,
-          "expr": "sum by(service) (traefik_service_requests_bytes_total)",
-          "format": "time_series",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "{{service}}",
-          "range": true,
-          "refId": "A",
-          "useBackend": false
-        }
-      ],
-      "title": "Total Requested",
-      "type": "bargauge"
-    }
-  ],
-  "schemaVersion": 39,
-  "tags": [],
-  "templating": {
-    "list": []
-  },
-  "time": {
-    "from": "now-5m",
-    "to": "now"
-  },
-  "timeRangeUpdatedDuringEditOrView": false,
-  "timepicker": {},
-  "timezone": "browser",
-  "title": "Main",
-  "uid": "fdo3pxs4k0utcd",
-  "version": 1,
-  "weekStart": ""
-}
+	"annotations": {
+	  "list": [
+		{
+		  "builtIn": 1,
+		  "datasource": {
+			"type": "grafana",
+			"uid": "-- Grafana --"
+		  },
+		  "enable": true,
+		  "hide": true,
+		  "iconColor": "rgba(0, 211, 255, 1)",
+		  "name": "Annotations & Alerts",
+		  "type": "dashboard"
+		}
+	  ]
+	},
+	"editable": true,
+	"fiscalYearStartMonth": 0,
+	"graphTooltip": 0,
+	"links": [],
+	"panels": [
+	  {
+		"collapsed": false,
+		"gridPos": {
+		  "h": 1,
+		  "w": 24,
+		  "x": 0,
+		  "y": 0
+		},
+		"id": 2,
+		"panels": [],
+		"title": "Proxy specific",
+		"type": "row"
+	  },
+	  {
+		"datasource": {
+		  "type": "prometheus",
+		  "uid": "PBFA97CFB590B2093"
+		},
+		"description": "All request to proxy",
+		"fieldConfig": {
+		  "defaults": {
+			"color": {
+			  "mode": "palette-classic"
+			},
+			"custom": {
+			  "hideFrom": {
+				"legend": false,
+				"tooltip": false,
+				"viz": false
+			  }
+			},
+			"mappings": []
+		  },
+		  "overrides": []
+		},
+		"gridPos": {
+		  "h": 11,
+		  "w": 6,
+		  "x": 0,
+		  "y": 1
+		},
+		"id": 1,
+		"options": {
+		  "legend": {
+			"displayMode": "list",
+			"placement": "bottom",
+			"showLegend": true
+		  },
+		  "pieType": "pie",
+		  "reduceOptions": {
+			"calcs": [
+			  "lastNotNull"
+			],
+			"fields": "",
+			"values": false
+		  },
+		  "tooltip": {
+			"maxHeight": 600,
+			"mode": "single",
+			"sort": "none"
+		  }
+		},
+		"targets": [
+		  {
+			"datasource": {
+			  "type": "prometheus",
+			  "uid": "PBFA97CFB590B2093"
+			},
+			"disableTextWrap": false,
+			"editorMode": "builder",
+			"expr": "sum by(service) (traefik_service_requests_total)",
+			"fullMetaSearch": false,
+			"includeNullMetadata": true,
+			"instant": false,
+			"legendFormat": "{{service}}",
+			"range": true,
+			"refId": "A",
+			"useBackend": false
+		  }
+		],
+		"title": "Proxy Requests",
+		"type": "piechart"
+	  },
+	  {
+		"datasource": {
+		  "type": "prometheus",
+		  "uid": "PBFA97CFB590B2093"
+		},
+		"description": "Activity of:\nWeb (HTTP:80) port\nWebsecure (HTTPS:443) port\nWebsocket(HTTPS:4433) port",
+		"fieldConfig": {
+		  "defaults": {
+			"color": {
+			  "mode": "palette-classic"
+			},
+			"custom": {
+			  "hideFrom": {
+				"legend": false,
+				"tooltip": false,
+				"viz": false
+			  }
+			},
+			"mappings": []
+		  },
+		  "overrides": []
+		},
+		"gridPos": {
+		  "h": 11,
+		  "w": 6,
+		  "x": 6,
+		  "y": 1
+		},
+		"id": 3,
+		"options": {
+		  "legend": {
+			"displayMode": "list",
+			"placement": "bottom",
+			"showLegend": true
+		  },
+		  "pieType": "pie",
+		  "reduceOptions": {
+			"calcs": [
+			  "lastNotNull"
+			],
+			"fields": "",
+			"values": false
+		  },
+		  "tooltip": {
+			"maxHeight": 600,
+			"mode": "single",
+			"sort": "none"
+		  }
+		},
+		"targets": [
+		  {
+			"datasource": {
+			  "type": "prometheus",
+			  "uid": "PBFA97CFB590B2093"
+			},
+			"disableTextWrap": false,
+			"editorMode": "builder",
+			"expr": "traefik_open_connections{entrypoint!=\"traefik\"}",
+			"fullMetaSearch": false,
+			"includeNullMetadata": true,
+			"instant": false,
+			"legendFormat": "{{entrypoint}}",
+			"range": true,
+			"refId": "A",
+			"useBackend": false
+		  }
+		],
+		"title": "Connections to entrypoints",
+		"type": "piechart"
+	  },
+	  {
+		"datasource": {
+		  "type": "prometheus",
+		  "uid": "PBFA97CFB590B2093"
+		},
+		"fieldConfig": {
+		  "defaults": {
+			"color": {
+			  "mode": "continuous-YlBl"
+			},
+			"mappings": [],
+			"thresholds": {
+			  "mode": "absolute",
+			  "steps": [
+				{
+				  "color": "dark-blue",
+				  "value": null
+				}
+			  ]
+			},
+			"unit": "m"
+		  },
+		  "overrides": []
+		},
+		"gridPos": {
+		  "h": 6,
+		  "w": 3,
+		  "x": 12,
+		  "y": 1
+		},
+		"id": 5,
+		"options": {
+		  "minVizHeight": 75,
+		  "minVizWidth": 75,
+		  "orientation": "vertical",
+		  "reduceOptions": {
+			"calcs": [
+			  "lastNotNull"
+			],
+			"fields": "",
+			"values": false
+		  },
+		  "showThresholdLabels": false,
+		  "showThresholdMarkers": true,
+		  "sizing": "auto",
+		  "text": {}
+		},
+		"pluginVersion": "11.0.0",
+		"targets": [
+		  {
+			"datasource": {
+			  "type": "prometheus",
+			  "uid": "PBFA97CFB590B2093"
+			},
+			"disableTextWrap": false,
+			"editorMode": "code",
+			"expr": "sum_over_time(up[1d]) * 100 / (1 * 24 * 60)\r\n",
+			"fullMetaSearch": false,
+			"includeNullMetadata": true,
+			"instant": false,
+			"legendFormat": "__auto",
+			"range": true,
+			"refId": "A",
+			"useBackend": false
+		  }
+		],
+		"title": "Uptime",
+		"type": "gauge"
+	  },
+	  {
+		"datasource": {
+		  "type": "prometheus",
+		  "uid": "PBFA97CFB590B2093"
+		},
+		"fieldConfig": {
+		  "defaults": {
+			"color": {
+			  "mode": "thresholds"
+			},
+			"mappings": [],
+			"thresholds": {
+			  "mode": "absolute",
+			  "steps": [
+				{
+				  "color": "green",
+				  "value": null
+				}
+			  ]
+			},
+			"unit": "decbytes"
+		  },
+		  "overrides": []
+		},
+		"gridPos": {
+		  "h": 9,
+		  "w": 24,
+		  "x": 0,
+		  "y": 12
+		},
+		"id": 4,
+		"options": {
+		  "displayMode": "basic",
+		  "maxVizHeight": 24,
+		  "minVizHeight": 16,
+		  "minVizWidth": 8,
+		  "namePlacement": "left",
+		  "orientation": "horizontal",
+		  "reduceOptions": {
+			"calcs": [
+			  "lastNotNull"
+			],
+			"fields": "",
+			"values": false
+		  },
+		  "showUnfilled": true,
+		  "sizing": "manual",
+		  "text": {},
+		  "valueMode": "text"
+		},
+		"pluginVersion": "11.0.0",
+		"targets": [
+		  {
+			"datasource": {
+			  "type": "prometheus",
+			  "uid": "PBFA97CFB590B2093"
+			},
+			"disableTextWrap": false,
+			"editorMode": "builder",
+			"exemplar": false,
+			"expr": "sum by(service) (traefik_service_requests_bytes_total)",
+			"format": "time_series",
+			"fullMetaSearch": false,
+			"includeNullMetadata": true,
+			"instant": false,
+			"legendFormat": "{{service}}",
+			"range": true,
+			"refId": "A",
+			"useBackend": false
+		  }
+		],
+		"title": "Total Requested",
+		"type": "bargauge"
+	  }
+	],
+	"schemaVersion": 39,
+	"tags": [],
+	"templating": {
+	  "list": []
+	},
+	"time": {
+	  "from": "now-5m",
+	  "to": "now"
+	},
+	"timeRangeUpdatedDuringEditOrView": false,
+	"timepicker": {},
+	"timezone": "browser",
+	"title": "Main",
+	"uid": "fdo3pxs4k0utcd",
+	"version": 1,
+	"weekStart": ""
+  }
