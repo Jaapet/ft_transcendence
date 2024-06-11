@@ -200,6 +200,7 @@ services:
       - "traefik.http.services.grafana.loadbalancer.server.scheme=https" #Communicate with the service in HTTPS
       - "traefik.http.services.grafana.loadbalancer.serverstransport=transport_grafana@file"
       # Auth
+      #Add a whitelist who only allow current ip (access from localhost)
       - "traefik.http.routers.grafana.middlewares=adm_auth"
     env_file:
       - .env
@@ -208,3 +209,16 @@ services:
         aliases:
           - grafana
     restart: unless-stopped
+  postgres-exporter:
+    build: ./requirements/postgres-exporter
+    container_name: postgres-exporter_${PROJECT_NAME} #Don't change it, it's important for certificates, frontend will receive the "frontend.cert"
+    image: postgres-exporter_${PROJECT_NAME}
+    profiles:
+      - devops
+    depends_on:
+      - db
+    networks:
+      default:
+        aliases:
+          - postgres-exporter #Used for inter containers communication, certs will match this fqdn
+      #TODO HEALTHCHECK

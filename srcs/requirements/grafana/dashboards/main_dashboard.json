@@ -198,8 +198,8 @@
 		  "overrides": []
 		},
 		"gridPos": {
-		  "h": 6,
-		  "w": 3,
+		  "h": 11,
+		  "w": 12,
 		  "x": 12,
 		  "y": 1
 		},
@@ -233,13 +233,13 @@
 			"fullMetaSearch": false,
 			"includeNullMetadata": true,
 			"instant": false,
-			"legendFormat": "__auto",
+			"legendFormat": "{{job}}",
 			"range": true,
 			"refId": "A",
 			"useBackend": false
 		  }
 		],
-		"title": "Uptime",
+		"title": "Provider uptime",
 		"type": "gauge"
 	  },
 	  {

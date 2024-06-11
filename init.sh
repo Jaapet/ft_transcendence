@@ -1,20 +1,29 @@
 #!/bin/bash
+
 #Script to init a lot of config files and .env file
+ENVFILE=./srcs/.env
 if [[ $1 == "clean" ]]; then
 	make $1
 	exit 0
 fi
 if [[ $1 == "fclean" ]]; then
 	make $1
+	rm $ENVFILE
 	exit 0
 fi
 # Exit immediately if any command fails
 set -e
 #Do the env file exist ?
-ENVFILE=./srcs/.env
+
 if [ -f "$ENVFILE" ]; then
-    echo ".env $ENVFILE file found, delete it"
+
+	if [[ $1 != "freset" ]]; then
+		echo ".env file already exist, execution normally"
+		make $1
+		exit 0
+	fi
 	rm $ENVFILE
+	echo "freset mode, deletion of the .env"	
 fi
 
 #Devops or not devops build
@@ -79,15 +88,16 @@ fi
 	echo "POSTGRES_DB=transcendence" >> $ENVFILE
 	USERNAME="rachid"
 	# PASSWORD=$(openssl rand -base64 12 | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
-	PASSWORD="jadorelargent"
+	PASSWORD="jadorelargent" #TODO SET IN AUTO WHEN SUBMITING THE PROJECT
 	echo -e "\e[0;32m\n[SECRET]\tAccess to postrgesql\nUsername: ${USERNAME}\nPassword: ${PASSWORD}\n(Acccess to postgresql)\e[0m"
 	echo "POSTGRES_USER=${USERNAME}" >> $ENVFILE
 	echo "POSTGRES_PASSWORD=${PASSWORD}" >> $ENVFILE
-
+			#For postgres-exporter
+	echo "DATA_SOURCE_NAME=postgresql://${USERNAME}:${PASSWORD}@db:5432/shop?sslmode=enable" >> $ENVFILE
 	#DJANGO User Admin
 	USERNAME="backchid"
 	# PASSWORD=$(openssl rand -base64 12 | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
-	PASSWORD=LeFricDeChristianEstrosi
+	PASSWORD=LeFricDeChristianEstrosi #TODO SET IN AUTO WHEN SUBMITING THE PROJECT
 	echo -e "\e[0;32m\n[SECRET]\tAdministrative access to transcendence\nUsername: ${USERNAME}\nPassword: ${PASSWORD}\n(Access to https://${FQDN}/login)\e[0m"
 	echo "DJANGO_SUPERUSER_USERNAME=${USERNAME}" >> $ENVFILE
 	echo "DJANGO_SUPERUSER_PASSWORD=${PASSWORD}" >> $ENVFILE
@@ -100,6 +110,7 @@ fi
 	#Traefik adm midleware
 	USERNAME="admin"
 	PASSWORD=$(openssl rand -base64 12 | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
+	echo "TO_REMOVE_FOR_PROD_TODO=${PASSWORD}" >> $ENVFILE
 	echo -e "\e[0;32m\n[SECRET]\tAdministrative access to devops midleware\nUsername: ${USERNAME}\nPassword: ${PASSWORD}\n(Access to https://${FQDN}/adm/*)\e[0m\n"
 	HTPASSWD_OUTPUT=$(htpasswd -bn ${USERNAME} "${PASSWORD}" | sed 's/\$/\$\$/g')
 	echo "ADM_PASSWD=${HTPASSWD_OUTPUT}" >> $ENVFILE
@@ -109,14 +120,13 @@ fi
 
 	#Prometheus
 	echo "PROMETHEUS_WEB_HOOK_DISCORD_URL='https://discord.com/api/webhooks/1250123017044885555/xD8TUCvv0eNTZWKigjm78aXL4htSNmYo5WxxzQaNMMeVH7-sMwMH4gQuMB5RSR-Lkf95'" >> $ENVFILE
-
+	TOKEN=$(openssl rand -base64 12 | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
+	echo "METRICS_TOKEN_BACKEND=${TOKEN}" >> $ENVFILE
+	echo $TOKEN > ./srcs/requirements/prometheus/token_backend
 
 #Source the .env file for this file and export it for the Makefile
 source $ENVFILE
 export $(cut -d= -f1 ./srcs/.env)
-
-#Commands
-
 
 #Template to config file
 

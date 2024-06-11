@@ -45,8 +45,8 @@ VOLUME /etc/prometheus
 VOLUME /var/lib/prometheus
 VOLUME /etc/alertmanager
 VOLUME /var/lib/alertmanager
-
-ENTRYPOINT ["/bin/sh", "-c", "prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.console.libraries=/usr/share/prometheus/console_libraries --web.console.templates=/usr/share/prometheus/consoles --web.config.file=/etc/prometheus/web-config.yml --web.external-url=/adm/prometheus & alertmanager --config.file=/etc/alertmanager/alertmanager.yml"]
+# --storage.tsdb.retention.time=1d for 1d retention policy, its not possible to define multiple retention policy per services
+ENTRYPOINT ["/bin/sh", "-c", "prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.console.libraries=/usr/share/prometheus/console_libraries --web.console.templates=/usr/share/prometheus/consoles --web.config.file=/etc/prometheus/web-config.yml --web.external-url=/adm/prometheus --storage.tsdb.retention.time=1d & alertmanager --config.file=/etc/alertmanager/alertmanager.yml"]
 
 # Copy Prometheus and Alertmanager configuration files
 COPY prometheus.yml /etc/prometheus/
