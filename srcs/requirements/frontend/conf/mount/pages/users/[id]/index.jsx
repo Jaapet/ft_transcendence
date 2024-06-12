@@ -76,7 +76,7 @@ const ProfileMemberCardFriendsButton = ({ target_user }) => {
 	}
 
 	return (
-			<Link href={`/${user.id}/friends`} className={styles.minorbutton} passHref>
+			<Link href={`${user.id}/friends`} className={styles.minorbutton} passHref>
 				<strong>Friend List</strong>
 			</Link>
 			
@@ -89,18 +89,12 @@ const ProfileMemberCardEditButton = ({ target_user }) => {
 	if (!user || !target_user || !user.id || !target_user.id || user.id !== target_user.id) {
 		return ;
 	}
+	
 
 	return (
-		<div className={`card ${styles.customCard}`} style={{marginTop: '15px'}}>
-			<Button
-				type="button"
-				variant="warning"
-				style={{fontSize: '25px'}}
-				href={`${user.id}/edit`}
-			>
-				<strong>Edit</strong>
-			</Button>
-		</div>
+		<Link href={`${user.id}/edit`} className={styles.minorbutton} passHref>
+			<strong>Edit</strong>
+		</Link>
 	);
 }
 

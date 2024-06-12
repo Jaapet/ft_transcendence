@@ -38,3 +38,14 @@
 	filter: brightness(0.8);
 }
 
+  
+
+.dropdown-content {
+	position: fixed;
+	right: 100;
+	white-space: nowrap;
+	background-color: rgb(196, 99, 99);
+	border: 1px solid #dddddd;
+	z-index: 1000;
+  }
+

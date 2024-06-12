@@ -21,7 +21,7 @@ const ProfileNavPicture = () => {
 			height={40}
 			style={{
 				borderRadius: '50%',
-				marginLeft: '10px'
+				right: '2cm'
 			}}
 		/>
 	);
@@ -37,6 +37,7 @@ const ProfileNavLog = () => {
 			await logout();
 		}
 
+		//profile picture dropdown content
 		return (
 			<>
 				<NavDropdown.ItemText>{user.username}</NavDropdown.ItemText>
@@ -67,20 +68,28 @@ const ProfileNavLog = () => {
 		</>
 	);
 }
-
+// first button to dropdown then dropdown content
 const ProfileNav = () => {
 	return (
-		<Nav className="mr-auto">
-			<NavDropdown title={<ProfileNavPicture />} id="basic-nav-dropdown">
-				<ProfileNavLog />
-				<NavDropdown.Divider />
-				<Link href="/special-thanks" passHref legacyBehavior>
-					<NavDropdown.Item as="a">Special thanks</NavDropdown.Item>
-				</Link>
-			</NavDropdown>
-		</Nav>
+	  <Nav className="mr-auto">
+		<NavDropdown
+		  title={<ProfileNavPicture />}
+		  style={{ position: 'fixed', right: '10px', top: '10px' }}
+		  id="basic-nav-dropdown"
+		>
+
+			<div className="dropdown-content">
+			  <ProfileNavLog />
+			  <NavDropdown.Divider />
+			  <Link href="/special-thanks" passHref legacyBehavior>
+				<NavDropdown.Item as="a">Special thanks</NavDropdown.Item>
+			  </Link>
+			</div>
+		</NavDropdown>
+	  </Nav>
 	);
-}
+  };
+  
 
 // TODO: Align ProfileNav to the right?
 const Header = () => {
