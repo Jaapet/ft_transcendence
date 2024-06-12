@@ -14,6 +14,22 @@ FROM		python:3.8-alpine
 
 LABEL		author="thepaqui@student.42nice.fr"
 
+##CA & Cert######################
+# Install CA certificates package
+RUN apk update && apk add ca-certificates && update-ca-certificates
+
+# Copy your custom CA
+COPY CA.crt /usr/local/share/ca-certificates/CA.crt
+
+# Update the certificate store
+RUN update-ca-certificates
+
+# Add srv cert
+RUN mkdir /ssl
+COPY *.crt /ssl/
+COPY *.key /ssl/
+#################################
+
 ENV			PIP_DISABLE_PIP_VERSION_CHECK 1
 
 ENV			PYTHONDONTWRITEBYTECODE 1
@@ -38,6 +54,7 @@ RUN			apk add --no-cache \
 				django-cors-headers \
 				psycopg2 \
 				pillow
+#				django-sslserver
 
 # psycopg2 if for postgres
 # pillow is required for ImageField to work

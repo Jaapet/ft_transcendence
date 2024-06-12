@@ -1,6 +1,7 @@
-import cookie from 'cookie';
+import refreshToken from '../../../lib/refresh';
 import { IncomingForm } from 'formidable';
 import fs from 'fs';
+// TODO: Check if we can skip using formidable
 
 export const config = {
 	api: {
@@ -28,13 +29,12 @@ export default async (req, res) => {
 	}
 
 	try {
-		if (!req.headers.cookie) {
-			throw new Error('Unauthorized');
-		}
-		const { access } = cookie.parse(req.headers.cookie);
+		const access = await refreshToken(
+			req,
+			() => {res.setHeader('Set-Cookie', 'refresh=; HttpOnly; Secure; Max-Age=0; SameSite=Strict; Path=/');}
+		);
 		if (!access) {
-			// TODO: make a refresh function
-			throw new Error('Could not fetch access token');
+			throw new Error('Not logged in');
 		}
 
 		let formData = null;

@@ -14,6 +14,8 @@ do
 	sleep 2
 done
 
+# TODO: Health check on DB
+
 echo "Making DB migrations"
 python manage.py makemigrations
 python manage.py migrate
@@ -27,4 +29,7 @@ else
 	python manage.py createsuperuser --noinput
 fi
 
+# TODO: announce healthiness
+
+#python manage.py runsslserver 0.0.0.0:8000 --certificate /ssl/backend.crt --key /ssl/backend.key
 python manage.py runserver 0.0.0.0:8000

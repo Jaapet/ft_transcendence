@@ -6,11 +6,16 @@
 __pycache__
 .next
 node_modules
+srcs/requirements/backend/conf/mount/backend/media
+!srcs/requirements/backend/conf/mount/backend/media/default.png
 srcs/requirements/db/mount
 Makefile
 .env
 *.crt
 *.csr
 *.key
-.ssl_is_gen
 *.srl
+.ssl_is_gen
+openssl.cnf
+.env
+token_backendt

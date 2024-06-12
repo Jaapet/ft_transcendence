@@ -150,6 +150,7 @@ export const AuthenticationProvider = ({ children }) => {
 		} catch (error) {
 			console.error('CONTEXT LOGIN REFRESH:', error);
 			// We don't set user error here cause not being logged in is not an error
+			router.push('/account/login');
 		}
 	}
 
