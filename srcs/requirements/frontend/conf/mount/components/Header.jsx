@@ -103,10 +103,10 @@ const Header = () => {
 			</Link>
 			</Navbar.Brand>
 				<Nav className="mr-auto">
-					<Nav.Link href="#leaderboard">Leaderboard</Nav.Link>
-					<Nav.Link href="/users">Users</Nav.Link>
-					<Nav.Link href="#how-to-play">How to play</Nav.Link>
-					<Nav.Link href="#credits">Credits</Nav.Link>
+					<Nav.Link as={Link} href="#leaderboard">Leaderboard</Nav.Link>
+					<Nav.Link as={Link} href="/users">Users</Nav.Link>
+					<Nav.Link as={Link} href="#how-to-play">How to play</Nav.Link>
+					<Nav.Link as={Link} href="#credits">Credits</Nav.Link>
 				</Nav>
 				<ProfileNav />
 			</Navbar>
