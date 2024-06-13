@@ -68,23 +68,26 @@ const ProfileNavLog = () => {
 		</>
 	);
 }
+const dropdownMenuStyle = {
+	transform: 'translateX(-50px)' // Ajustez cette valeur selon vos besoins
+};
+
+
 // first button to dropdown then dropdown content
 const ProfileNav = () => {
 	return (
 	  <Nav className="mr-auto">
 		<NavDropdown
 		  title={<ProfileNavPicture />}
-		  style={{ position: 'fixed', right: '10px', top: '10px' }}
+		  style={{ position: 'relative'}}
 		  id="basic-nav-dropdown"
 		>
 
-			<div className="dropdown-content">
-			  <ProfileNavLog />
-			  <NavDropdown.Divider />
-			  <Link href="/special-thanks" passHref legacyBehavior>
-				<NavDropdown.Item as="a">Special thanks</NavDropdown.Item>
-			  </Link>
-			</div>
+					<ProfileNavLog />
+					<NavDropdown.Divider />
+					<Link href="/special-thanks" passHref legacyBehavior>
+						<NavDropdown.Item as="a">Special thanks</NavDropdown.Item>
+					</Link>
 		</NavDropdown>
 	  </Nav>
 	);

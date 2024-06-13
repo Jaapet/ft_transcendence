@@ -19,33 +19,10 @@
 	animation: glow 10s infinite;
 }
 
-
-.settingIcon {
-    width: 35px;
-    height: 35px;
-    margin-right: 5px;
-}
-
 .header {
     position: fixed;
 	top: 0pt;
 	width: 100%;
 	z-index: 1000;
 }
-
-
-.menuOpen{
-	filter: brightness(0.8);
-}
-
-  
-
-.dropdown-content {
-	position: fixed;
-	right: 100;
-	white-space: nowrap;
-	background-color: rgb(196, 99, 99);
-	border: 1px solid #dddddd;
-	z-index: 1000;
-  }
 
