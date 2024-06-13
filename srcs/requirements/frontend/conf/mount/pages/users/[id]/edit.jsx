@@ -23,6 +23,13 @@ const EditFormUsernameField = ({ username, setUsername }) => {
 					className="form-control"
 					onChange={e => setUsername(e.target.value)}
 					value={username}
+					style={{
+                        backgroundColor: '#909099',			
+                        color: '#000000',
+                        border: '1px solid #666686',
+                        borderRadius: '5px',
+                        padding: '10px'
+                    }}
 				/>
 			</div>
 		</div>
@@ -42,6 +49,13 @@ const EditFormEmailField = ({ email, setEmail }) => {
 					className="form-control"
 					onChange={e => setEmail(e.target.value)}
 					value={email}
+					style={{
+                        backgroundColor: '#909099',			
+                        color: '#000000',
+                        border: '1px solid #666686',
+                        borderRadius: '5px',
+                        padding: '10px'
+                    }}
 				/>
 			</div>
 		</div>
@@ -60,8 +74,15 @@ const EditFormPasswordField = ({ password, setPassword }) => {
 					autoComplete="new-password"
 					className="form-control"
 					onChange={e => setPassword(e.target.value)}
-					value={password}
-				/>
+                    value={password}
+                    style={{
+                        backgroundColor: '#909099',			
+                        color: '#000000',
+                        border: '1px solid #666686',
+                        borderRadius: '5px',
+                        padding: '10px'
+                    }}
+                />
 			</div>
 		</div>
 	);
@@ -80,6 +101,13 @@ const EditFormPasswordRepeatField = ({ password, setPassword }) => {
 					className="form-control"
 					onChange={e => setPassword(e.target.value)}
 					value={password}
+					style={{
+                        backgroundColor: '#909099',			
+                        color: '#000000',
+                        border: '1px solid #666686',
+                        borderRadius: '5px',
+                        padding: '10px'
+                    }}
 				/>
 			</div>
 		</div>
@@ -126,6 +154,7 @@ const EditFormFields = ({
 	avatar, setAvatar,
 	submitHandler,
 	setUserError
+	
 }) => {
 	return (
 		<form className="mx-1 mx-md-4" onSubmit={submitHandler}>
@@ -259,7 +288,7 @@ export default function EditPage({ status, current_user }) {
 
 										<p className="text-center h1 fw-bold mb-1 mx-1 mx-md-4 mt-5">Edit your profile</p>
 										<p className="text-center fw-bold mb-3 mx-1 mx-md-4 mt-2">You can leave fields blank if you don't want to edit them</p>
-										<EditFormFields
+										<EditFormFields 
 											username={username} setUsername={setUsername}
 											email={email} setEmail={setEmail}
 											password={password} setPassword={setPassword}
@@ -269,7 +298,7 @@ export default function EditPage({ status, current_user }) {
 											setUserError={setUserError}
 										/>
 
-										<p className="text-center text-muted mt-0 mb-0">
+										<p className="text-center text-muted mt-0 mb-0" >
 											<Link href={`/users/${user.id}`} className="fw-bold text-body">
 												<u>Back to profile</u>
 											</Link>
