@@ -107,7 +107,7 @@ Match objects contain:
 					passHref
 					className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}
 				>
-					Back to{user.username}'s profile
+					Back to {user.username}'s profile
 				</Link>
 			</p>
 		</div>
