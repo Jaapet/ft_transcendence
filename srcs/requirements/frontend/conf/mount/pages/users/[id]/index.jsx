@@ -148,7 +148,7 @@ const ProfileMatchPlayers = ({ user, match }) => {
 	if (match.winner_id === user.id) {
 		return (
 			<p className="fs-2 mb-0">
-				<strong style={{color: '#00B300'}}>
+				<strong style={{color: '#006300'}}>
 					{match.winner_username}
 				</strong>
 				&nbsp;vs&nbsp;

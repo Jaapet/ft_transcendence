@@ -133,7 +133,7 @@
 	margin-left: 2cm;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 	display: block; /* big button */
-	width:auto; /* same button size */
+	width:fit-content; /* same button size */
   }
 
 .buttonVerticalContainer {
