@@ -113,11 +113,13 @@ const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg
 				setMsg={setMsg}
 			/>
 
+		<div className='buttonVerticalContainer'>
 			{/* Edit button */}
 			<ProfileMemberCardEditButton target_user={user} />
 
 			{/* Friends button */}
 			<ProfileMemberCardFriendsButton target_user={user} />
+		</div>
 
 			{/* elo */}
 			<ProfileMemberCardELO user={user} />
