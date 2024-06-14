@@ -21,7 +21,7 @@ const Royal = () => {
     const texture = loader.load( 'games/royal/texture/cityfutur.jpg' );
     texture.colorSpace = THREE.SRGBColorSpace;
 
-    const texture4 = loader.load( 'games/royal/texture/toit.jpg' );
+    const texture4 = loader.load( 'games/royal/texture/wall.png' );
     texture4.colorSpace = THREE.SRGBColorSpace;
     texture4.wrapS = THREE.RepeatWrapping;
     texture4.wrapT = THREE.RepeatWrapping;
