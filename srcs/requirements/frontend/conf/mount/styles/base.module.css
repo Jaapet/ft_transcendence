@@ -29,7 +29,7 @@
     opacity: 0.95; 
 	font-size: 2em;
 	min-height: calc(100vh - 68px);
-	min-width: 100vw;
+	min-width: max-content;
 	margin-top: 68px;
 	font-family: 'random little things';
 }

@@ -222,7 +222,7 @@ export default function UserFriends({ status, current_user, friends }) {
 				display: 'flex',
 				justifyContent: 'center',
 				alignItems: 'center',
-				minHeight: 'calc(100vh - 72px)',
+				minHeight: 'calc(100vh - 68px)',
 				flexDirection: 'column',
 				textAlign: 'center',
 			}}
