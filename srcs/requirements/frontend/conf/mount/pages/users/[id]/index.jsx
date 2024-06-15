@@ -77,7 +77,7 @@ const ProfileMemberCardFriendsButton = ({ target_user }) => {
 	}
 
 	return (
-			<Link href={`/${user.id}/friends`} className={styles.minorbutton} passHref>
+			<Link href={`${user.id}/friends`} className={styles.minorbutton} passHref>
 				<strong>Friend List</strong>
 			</Link>
 			
@@ -90,18 +90,12 @@ const ProfileMemberCardEditButton = ({ target_user }) => {
 	if (!user || !target_user || !user.id || !target_user.id || user.id !== target_user.id) {
 		return ;
 	}
+	
 
 	return (
-		<div className={`card ${styles.customCard}`} style={{marginTop: '15px'}}>
-			<Button
-				type="button"
-				variant="warning"
-				style={{fontSize: '25px'}}
-				href={`${user.id}/edit`}
-			>
-				<strong>Edit</strong>
-			</Button>
-		</div>
+		<Link href={`${user.id}/edit`} className={styles.minorbutton} passHref>
+			<strong>Edit</strong>
+		</Link>
 	);
 }
 
@@ -170,6 +164,7 @@ const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg
 				setMsg={setMsg}
 			/>
 
+		<div className='buttonVerticalContainer'>
 			{/* Edit button */}
 			<ProfileMemberCardEditButton target_user={user} />
 
@@ -184,6 +179,7 @@ const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg
 
 			{/* Friends button */}
 			<ProfileMemberCardFriendsButton target_user={user} />
+		</div>
 
 			{/* elo */}
 			<ProfileMemberCardELO user={user} />
@@ -212,7 +208,7 @@ const ProfileMatchPlayers = ({ user, match }) => {
 	if (match.winner_id === user.id) {
 		return (
 			<p className="fs-2 mb-0">
-				<strong style={{color: '#00B300'}}>
+				<strong style={{color: '#006300'}}>
 					{match.winner_username}
 				</strong>
 				&nbsp;vs&nbsp;

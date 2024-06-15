@@ -38,7 +38,22 @@ const UserTableRow = ({ user }) => {
 					{user.username}
 				</Link>
 			</th>
-			<th>{user.is_online ? 'Active' : 'Inactive'}</th>
+
+			{/* status colored dot */}
+			<td>
+				<span
+					style={{
+						display: 'inline-block',
+						width: '15px',
+						height: '15px',
+						borderRadius: '50%',
+						backgroundColor: user.is_online ? 'green' : 'red',
+						marginRight: '5px',
+						verticalAlign: 'middle'
+					}}
+       			></span>
+			</td>
+			
 			<td>{user.email}</td>
 			<td>{user.join_date}</td>
 			<td>{user.is_admin ? 'Admin' : 'User'}</td>

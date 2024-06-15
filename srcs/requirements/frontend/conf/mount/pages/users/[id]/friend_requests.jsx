@@ -359,7 +359,7 @@ export default function UserFriendRequests({ status, current_user, requests_sent
 				display: 'flex',
 				justifyContent: 'center',
 				alignItems: 'center',
-				minHeight: 'calc(100vh - 72px)',
+				minHeight: 'calc(100vh - 68px)',
 				flexDirection: 'column',
 				textAlign: 'center',
 			}}
