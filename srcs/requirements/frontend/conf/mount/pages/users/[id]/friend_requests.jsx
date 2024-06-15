@@ -77,10 +77,12 @@ const UserFriendRequestSent = ({ requests, setReqs, request, setShowError, setEr
 			<div className="ms-2 me-auto text-start" style={{ display: 'flex', flexDirection: 'column' }}>
 				<div style={{ fontSize: 'max(min(2vw, 30px), 20px)' }}>
 					You invited&nbsp;
-					<Link href={`/users/${request.recipient_id}`} passHref>
-						<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-							{request.recipient_username}
-						</a>
+					<Link
+						href={`/users/${request.recipient_id}`}
+						passHref
+						className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
+					>
+						{request.recipient_username}
 					</Link>
 				</div>
 				<div style={{ fontSize: 'max(min(1.4vw, 21px), 14px)' }}>
@@ -105,7 +107,7 @@ const UserFriendRequestsTableBodySent = ({ requests, setReqs, setShowError, setE
 		return (
 			<div>
 			<Card.Text>Don't you want to socialize?</Card.Text>
-				<img src="/images/andrewtate.png" alt="gaymen" style={{ width: '20%', height: 'auto' }}></img>
+				<img src="/images/lonelyguy.png" style={{ width: '20%', height: 'auto' }} priority={true}></img>
 			</div>
 		);
 	}
@@ -141,10 +143,12 @@ const UserFriendRequestReceived = ({ requests, setReqs, request, setShowError, s
 		>
 			<div className="ms-2 me-auto text-start" style={{ display: 'flex', flexDirection: 'column' }}>
 				<div style={{ fontSize: 'max(min(2vw, 30px), 20px)' }}>
-					<Link href={`/users/${request.sender_id}`} passHref>
-						<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-							{request.sender_username}
-						</a>
+					<Link
+						href={`/users/${request.sender_id}`}
+						passHref
+						className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
+					>
+						{request.sender_username}
 					</Link>
 					&nbsp;invited you
 				</div>
@@ -179,7 +183,7 @@ const UserFriendRequestsTableBodyReceived = ({ requests, setReqs, setShowError, 
 		return (
 			<div>
 			<Card.Text>You're not interesting anyone...</Card.Text>
-				<img src="/images/noonelovesme.png" alt="lonelynessssss" style={{ width: '20%', height: 'auto' }}></img>
+				<img src="/images/aloneguy.png" style={{ width: '20%', height: 'auto' }} priority={true}></img>
 			</div>
 		);
 	}
@@ -355,7 +359,7 @@ export default function UserFriendRequests({ status, current_user, requests_sent
 				display: 'flex',
 				justifyContent: 'center',
 				alignItems: 'center',
-				minHeight: '91vh',
+				minHeight: 'calc(100vh - 68px)',
 				flexDirection: 'column',
 				textAlign: 'center',
 			}}
@@ -386,23 +390,23 @@ export default function UserFriendRequests({ status, current_user, requests_sent
 				setMsg={setMsg}
 			/>
 			<p>
-				<Link href={`/users/${user.id}/friends`} passHref>
-					<a
-						className={styles.cardInfo}
-						style={{ fontWeight: 'bold' }}
-					>
-						Go to friend list
-					</a>
+				<Link
+					href={`/users/${user.id}/friends`}
+					passHref
+					className={styles.cardInfo}
+					style={{ fontWeight: 'bold' }}
+				>
+					Go to friend list
 				</Link>
 			</p>
 			<p>
-				<Link href={`/users/${user.id}`} passHref>
-					<a
-						className={styles.cardInfo}
-						style={{ fontWeight: 'bold' }}
-					>
-						Back to profile
-					</a>
+				<Link
+					href={`/users/${user.id}`}
+					passHref
+					className={styles.cardInfo}
+					style={{ fontWeight: 'bold' }}
+				>
+					Back to profile
 				</Link>
 			</p>
 		</div>

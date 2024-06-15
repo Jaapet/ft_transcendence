@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
 
-// TODO: Make login refresh HERE
-
 export function middleware(req) {
 	const { nextUrl, cookies } = req;
 	const isLoginPage = req.url.includes('/login') || req.url.includes('/register');

@@ -1,5 +1,3 @@
-import cookie from 'cookie'
-
 export default async (req, res) => {
 	// Only POST allowed
 	if (req.method !== 'POST') {
@@ -31,29 +29,18 @@ export default async (req, res) => {
 			throw new Error(tokData.detail || 'Could not fetch tokens');
 		}
 
-		const accessToken = tokData.access;
+		if (tokData.requires_2fa && tokData.user_id) {
+			return res.status(200).json({ requires_2fa: tokData.requires_2fa, user_id: tokData.user_id });
+		}
 
-		// TODO: change to https later
-		// TODO: Check if using cookie lib is really necessary
 		// Store refresh token in a cookie
-		res.setHeader('Set-Cookie', [
-			cookie.serialize('refresh', tokData.refresh, {
-				httpOnly: true,
-				secure: false,
-				sameSite: 'strict',
-				maxAge: 60 * 60 * 24,
-				path: '/'
-			}),
-			cookie.serialize('access', tokData.access, {
-				httpOnly: true,
-				secure: false,
-				sameSite: 'strict',
-				maxAge: 60 * 5,
-				path: '/'
-			})
-		]);
+		res.setHeader(
+			'Set-Cookie',
+			`refresh=${tokData.refresh}; HttpOnly; Secure; Max-Age=86400; SameSite=Strict; Path=/`
+		);
 
 		// Fetch user data
+		const accessToken = tokData.access;
 		const userRes = await fetch(`http://backend:8000/api/user/`, {
 			headers: {
 				'Authorization': 'Bearer ' + accessToken

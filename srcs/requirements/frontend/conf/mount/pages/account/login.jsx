@@ -43,6 +43,25 @@ const LoginFormPasswordField = ({ password, setPassword }) => {
 	);
 }
 
+const LoginFormOTPField = ({ otp, setOtp }) => {
+	return (
+		<div className="d-flex flex-row align-items-center mb-4">
+			<i className="fas fa-key fa-lg me-3 fa-fw"></i>
+			<div data-mdb-input-init className="form-outline flex-fill mb-0">
+				<label className="form-label" htmlFor="otp">One-Time Password (OTP)</label>
+				<input
+					type="text"
+					id="otp"
+					autoComplete="one-time-code"
+					className="form-control"
+					onChange={e => setOtp(e.target.value)}
+					value={otp}
+					required />
+			</div>
+		</div>
+	);
+}
+
 const LoginFormFields = ({
 	username, setUsername,
 	password, setPassword,
@@ -59,6 +78,26 @@ const LoginFormFields = ({
 			</div>
 
 		</form>
+	);
+}
+
+const LoginForm2FA = ({
+	otp, setOtp,
+	submitHandler
+}) => {
+	return (
+		<>
+			<p className="text-center h4 fw-bold mb-4">Check you authenticator app<br/>for your 6-digit code</p>
+			<form className="mx-1 mx-md-4" onSubmit={submitHandler}>
+
+				<LoginFormOTPField otp={otp} setOtp={setOtp} />
+
+				<div className="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
+					<button type="submit" data-mdb-button-init data-mdb-ripple-init className="btn btn-primary btn-lg">Login with 2FA</button>
+				</div>
+
+			</form>
+		</>
 	);
 }
 
@@ -79,10 +118,13 @@ const LoginToasts = ({ showError, setShowError, errorMessage, setErrorMessage })
 const LoginForm = () => {
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
+	const [otp, setOtp] = useState('');
+	const [show2FA, setShow2FA] = useState(false);
+	const [userId, setUserId] = useState(null);
 	const [showError, setShowError] = useState(false);
 	const [errorMessage, setErrorMessage] = useState('');
 
-	const { login, error, clearError } = useAuth();
+	const { login, login2FA, error, clearError } = useAuth();
 
 	useEffect(() => {
 		if (error) {
@@ -92,12 +134,21 @@ const LoginForm = () => {
 			clearError();
 			setUsername('');
 			setPassword('');
+			setOtp('');
 		}
 	}, [error]);
 
 	const submitHandler = async (event) => {
 		event.preventDefault();
-		login({username, password});
+		if (show2FA) {
+			login2FA({ user_id: userId, otp });
+		} else {
+			const response = await login({ username, password });
+			if (response && response.requires_2fa) {
+				setShow2FA(true);
+				setUserId(response.user_id);
+			}
+		}
 	}
 
 	return (
@@ -117,15 +168,22 @@ const LoginForm = () => {
 									<div className="col-md-10 col-lg-6 col-xl-5 order-2 order-lg-1">
 
 										<p className="text-center h1 fw-bold mb-5 mx-1 mx-md-4 mt-4">Login</p>
-										<LoginFormFields
-											username={username} setUsername={setUsername}
-											password={password} setPassword={setPassword}
-											submitHandler={submitHandler}
-										/>
+										{show2FA ? (
+											<LoginForm2FA
+												otp={otp} setOtp={setOtp}
+												submitHandler={submitHandler}
+											/>
+										) : (
+											<LoginFormFields
+												username={username} setUsername={setUsername}
+												password={password} setPassword={setPassword}
+												submitHandler={submitHandler}
+											/>
+										)}
 										<p className="text-center text-muted mt-5 mb-0">
 											Don't have an account?&nbsp;
-											<Link href="/account/register">
-												<a className="fw-bold text-body"><u>Sign up here</u></a>
+											<Link href="/account/register" className="fw-bold text-body">
+												<u>Sign up here</u>
 											</Link>
 										</p>
 

@@ -4,7 +4,8 @@ import Image from 'next/image';
 import styles from '../../../styles/base.module.css';
 import Link from 'next/link';
 import { useAuth } from '../../../context/AuthenticationContext';
-import { Button } from 'react-bootstrap';
+import { useUser } from '../../../context/UserContext';
+import { Card, Button } from 'react-bootstrap';
 import FriendButton from '../../../components/FriendButton';
 import ToastList from '../../../components/toasts/ToastList';
 import ErrorToast from '../../../components/toasts/ErrorToast';
@@ -12,25 +13,37 @@ import SuccessToast from '../../../components/toasts/SuccessToast';
 
 const ProfileMemberCardPicture = ({ user }) => {
 	return (
-		<div className={`card ${styles.customCard}`}>
-			<Image src={user.avatar} alt="Profile Picture" width={540} height={540} className="card-img-top" />
+		<Card className={`${styles.customCard}`} style={{ width: '200px' }}>
+			<Image src={user.avatar} alt="Profile Picture" width={100} height={100} style={{ width: '200px', height: '200px' , objectFit: 'cover'}}  className="card-img-top" priority={true} />
 			<div className="card-body">
 				<div className={`card-body ${styles.cardInfo}`}>
 					<h2 className="card-title">{user.username}</h2>
-					<p className="card-text">
-						<small>Joined on:<br/>{user.join_date}</small>
-					</p>
+
 				</div>
 			</div>
-		</div>
+		</Card>
 	);
 }
+
+/*
+    <Card style={{ width: '18rem' }}>
+      <Card.Img variant="top" src="holder.js/100px180" />
+      <Card.Body>
+        <Card.Title>Card Title</Card.Title>
+        <Card.Text>
+          Some quick example text to build on the card title and make up the
+          bulk of the card's content.
+        </Card.Text>
+        <Button variant="primary">Go somewhere</Button>
+      </Card.Body>
+    </Card>
+*/
 
 const ProfileMemberCardELO = ({ user }) => {
 	return (
 		<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '20px'}}>
 			<div className="card-body" style={{backgroundColor:'rgba(255, 255, 255, 0.1)'}}>
-				<p className="card-text" >Future elo here</p>
+				<p className="card-text" >elo </p>
 			</div>
 		</div>
 	);
@@ -64,16 +77,10 @@ const ProfileMemberCardFriendsButton = ({ target_user }) => {
 	}
 
 	return (
-		<div className={`card ${styles.customCard}`} style={{marginTop: '15px'}}>
-			<Button
-				type="button"
-				variant="info"
-				style={{fontSize: '25px'}}
-				href={`${user.id}/friends`}
-			>
+			<Link href={`${user.id}/friends`} className={styles.minorbutton} passHref>
 				<strong>Friend List</strong>
-			</Button>
-		</div>
+			</Link>
+			
 	);
 }
 
@@ -83,16 +90,60 @@ const ProfileMemberCardEditButton = ({ target_user }) => {
 	if (!user || !target_user || !user.id || !target_user.id || user.id !== target_user.id) {
 		return ;
 	}
+	
+
+	return (
+		<Link href={`${user.id}/edit`} className={styles.minorbutton} passHref>
+			<strong>Edit</strong>
+		</Link>
+	);
+}
+
+// TODO: check if 2FA is already enabled and ask if user wants to disable it
+const ProfileMemberCard2FAButton = ({ target_user, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
+	const { user } = useAuth();
+	const { enable2FA } = useUser();
+	const [secretKey, setSecretKey] = useState('');
+	const [qrUrl, setQrUrl] = useState('');
+
+	if (!user || !target_user || !user.id || !target_user.id || user.id !== target_user.id) {
+		return ;
+	}
+
+	const handleClick = async (event) => {
+		event.preventDefault();
+		const data = await enable2FA();
+		if (data) {
+			setSecretKey(data.secret_key);
+			setQrUrl('http://backend:8000' + data.qr_code_url);
+		}
+	}
+
+	if (secretKey !== '' && qrUrl !== '') {
+		return (
+			<div className={`card ${styles.customCard}`} style={{marginTop: '15px'}}>
+				<Image
+					src={qrUrl}
+					alt={`Your 2FA secret key is ${secretKey}`}
+					width={100}
+					height={100}
+					style={{ width: '200px', height: '200px' , objectFit: 'cover'}}
+					className="card-img-top"
+					priority={true}
+				/>
+			</div>
+		);
+	}
 
 	return (
 		<div className={`card ${styles.customCard}`} style={{marginTop: '15px'}}>
 			<Button
 				type="button"
-				variant="warning"
+				variant="danger-outline"
 				style={{fontSize: '25px'}}
-				href={`${user.id}/edit`}
+				onClick={handleClick}
 			>
-				<strong>Edit</strong>
+				<strong>Enable 2FA</strong>
 			</Button>
 		</div>
 	);
@@ -113,11 +164,22 @@ const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg
 				setMsg={setMsg}
 			/>
 
+		<div className='buttonVerticalContainer'>
 			{/* Edit button */}
 			<ProfileMemberCardEditButton target_user={user} />
 
+			{/* 2FA button */}
+			<ProfileMemberCard2FAButton
+				target_user={user}
+				setShowError={setShowError}
+				setErrorMsg={setErrorMsg}
+				setShowMsg={setShowMsg}
+				setMsg={setMsg}
+			/>
+
 			{/* Friends button */}
 			<ProfileMemberCardFriendsButton target_user={user} />
+		</div>
 
 			{/* elo */}
 			<ProfileMemberCardELO user={user} />
@@ -128,23 +190,25 @@ const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg
 
 const ProfileMatchPlayerLink = ({ id, username }) => {
 	if (id === null) {
-	  return (<span>{username}</span>);
+		return (<span>{username}</span>);
 	}
-  
+
 	return (
-	  <Link href={`/users/${id}`} passHref>
-		<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-		  {username}
-		</a>
-	  </Link>
+		<Link
+			href={`/users/${id}`}
+			passHref
+			className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
+		>
+			{username}
+		</Link>
 	);
-  }
+}
 
 const ProfileMatchPlayers = ({ user, match }) => {
 	if (match.winner_id === user.id) {
 		return (
 			<p className="fs-2 mb-0">
-				<strong style={{color: '#00B300'}}>
+				<strong style={{color: '#006300'}}>
 					{match.winner_username}
 				</strong>
 				&nbsp;vs&nbsp;
@@ -210,7 +274,6 @@ const ProfileMatchList = ({ user, last_matches }) => {
 						</li>
 					))}
 				</ul>
-				
 			</div>
 		</div>
 	);
@@ -222,10 +285,12 @@ const ProfileSideInfo = ({ user, last_matches }) => {
 			<h5 className="card-text">Last Matches</h5>
 			<ProfileMatchList user={user} last_matches={last_matches} />
 			<p>
-				<Link href={`/users/${user.id}/match_history`} passHref>
-					<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-						See {user.username}'s full match history
-					</a>
+				<Link
+					href={`/users/${user.id}/match_history`}
+					passHref
+					className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
+				>
+					See {user.username}'s full match history
 				</Link>
 			</p>
 		</div>
@@ -258,6 +323,7 @@ export default function Profile({ status, user, last_matches }) {
 	const [errorMsg, setErrorMsg] = useState('');
 	const [showMsg, setShowMsg] = useState(false);
 	const [msg, setMsg] = useState('');
+	const { enable2FA } = useUser();
 
 	/* TODO: Implement redirect here
 	if (status === 404) {
@@ -268,9 +334,6 @@ export default function Profile({ status, user, last_matches }) {
 	if (status === 401 || status === 404 || !user) {
 		return (<p>Something went wrong...</p>);
 	}
-
-	// TODO: if (user === currently logged in user) then allow editing profile
-	// Maybe make it replace the Add Friend button?
 
 	return (
 			<div className={styles.container}>

@@ -14,5 +14,8 @@ Makefile
 *.crt
 *.csr
 *.key
-.ssl_is_gen
 *.srl
+.ssl_is_gen
+openssl.cnf
+.env
+token_backend
