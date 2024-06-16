@@ -39,10 +39,10 @@ const HowToPlay = () => {
       <Row>
         <Col className="text-center">
           <p>Select a game to view the instructions:</p>
-		  <Button variant="info" className="m-4" onClick={() => setSelectedGame('game1')}>
+		  <Button variant="info" className="m-4" style={{fontSize: '48px'}} onClick={() => setSelectedGame('game1') }>
             Classic pong
           </Button>
-          <Button variant="info" className="m-4" onClick={() => setSelectedGame('game2')}>
+          <Button variant="info" className="m-4" style={{fontSize: '48px'}}onClick={() => setSelectedGame('game2')}>
             Pong Royale
           </Button>
         </Col>
