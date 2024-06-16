@@ -107,6 +107,14 @@ class Member(AbstractBaseUser, PermissionsMixin):
 		verbose_name="Friends list"
 	)
 
+	elo_pong = models.IntegerField(
+		default=1000,
+		null=False,
+		blank=False,
+		db_comment="ELO rating for the pong game",
+		verbose_name="Pong ELO rating"
+	)
+
 	objects = MemberManager()
 
 	# Required for extending AbstractBaseUser
