@@ -65,10 +65,10 @@ io.on('connection', socket => {
 	});
 
 	// JOIN HANDLER
-	socket.on('join', ({ gameType, userId, userAvatar }) => {
+	socket.on('join', ({ gameType, userId, userELO, userAvatar }) => {
 		// Join existing room or create a new one
 		const room = findOrCreateRoom(gameType);
-		addPlayerToRoom(room, socket, userId, userAvatar);
+		addPlayerToRoom(room, socket, userId, userELO, userAvatar);
 
 		// DEBUG
 		io.to(socket.id).emit('info', { message: `You joined room ${room.id} [${gameType}]` });
@@ -129,12 +129,13 @@ io.on('connection', socket => {
 
 	// Adds a player to a room
 	// Does nothing if either room or socket does not exist
-	function addPlayerToRoom(room, socket, userId, userAvatar) {
+	function addPlayerToRoom(room, socket, userId, userELO, userAvatar) {
 		if (room && socket) {
 			socket.join(room.id);
 			room.players[socket.id] = {
 				id: userId,
 				ready: false,
+				elo: userELO,
 				avatar: userAvatar
 			};
 		}
@@ -238,7 +239,7 @@ io.on('connection', socket => {
 	// Does nothing if there are less than ROYAL_MIN_PLAYERS in the room
 	// Does nothing if room does not exist, is already launched, or if its players are not ready
 	function startRoyalGame(room) {
-		if (!room || isRoomLaunched(gameType, room.id) || !allPlayersReady(room.players)) {
+		if (!room || room.launched || !allPlayersReady(room.players)) {
 			return ;
 		}
 
@@ -262,7 +263,7 @@ io.on('connection', socket => {
 	// Sends a gameStart message to all players in the room and sets launched to true
 	// Does nothing if room does not exist, is already launched, or if its players are not ready
 	function launchGame(room) {
-		if (!room || isRoomLaunched(gameType, room.id) || !allPlayersReady(room.players)) {
+		if (!room || room.launched || !allPlayersReady(room.players)) {
 			return ;
 		}
 

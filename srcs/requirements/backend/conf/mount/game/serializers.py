@@ -42,6 +42,7 @@ class MemberSerializer(serializers.HyperlinkedModelSerializer):
 			'email',
 			'avatar',
 			'join_date',
+			'elo_pong',
 			'friends',
 			'is_superuser',
 			'is_admin',
@@ -127,6 +128,7 @@ class FriendSerializer(serializers.ModelSerializer):
 			'username',
 			'email',
 			'avatar',
+			'elo_pong',
 			'join_date',
 			'is_online'
 		]
