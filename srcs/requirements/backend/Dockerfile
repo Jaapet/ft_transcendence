@@ -51,9 +51,12 @@ RUN			apk add --no-cache \
 				django \
 				djangorestframework \
 				djangorestframework_simplejwt \
+				django-otp \
+				qrcode \
 				django-cors-headers \
 				psycopg2 \
 				pillow
+#				django-sslserver
 
 # psycopg2 if for postgres
 # pillow is required for ImageField to work

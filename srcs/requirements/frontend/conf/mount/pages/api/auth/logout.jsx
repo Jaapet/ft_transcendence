@@ -1,4 +1,3 @@
-import cookie from 'cookie'
 
 export default async (req, res) => {
 	// Only POST allowed
@@ -8,23 +7,11 @@ export default async (req, res) => {
 	}
 
 	try {
-		// TODO: change to https later
-		res.setHeader('Set-Cookie', [
-			cookie.serialize('refresh', '', {
-				httpOnly: true,
-				secure: false,
-				expires: new Date(0),
-				sameSite: 'strict',
-				path: '/'
-			}),
-			cookie.serialize('access', '', {
-				httpOnly: true,
-				secure: false,
-				expires: new Date(0),
-				sameSite: 'strict',
-				path: '/'
-			})
-		]);
+		// remove refresh cookie
+		res.setHeader(
+			'Set-Cookie',
+			'refresh=; HttpOnly; Secure; Max-Age=0; SameSite=Strict; Path=/'
+		);
 
 		return res.status(200).json({message: 'User has been logged out'});
 

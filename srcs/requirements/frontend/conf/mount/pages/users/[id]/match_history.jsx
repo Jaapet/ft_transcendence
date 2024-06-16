@@ -9,10 +9,12 @@ const UserMatchHistoryMatchPlayerLink = ({ id, username }) => {
 	}
 
 	return (
-		<Link href={`/users/${id}`} passHref>
-			<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-				{username}
-			</a>
+		<Link
+			href={`/users/${id}`}
+			passHref
+			className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
+		>
+			{username}
 		</Link>
 	);
 }
@@ -21,7 +23,7 @@ const UserMatchHistoryMatchPlayers = ({ user, match }) => {
 	if (match.winner_id === user.id) {
 		return (
 			<p className="fs-2 mb-0">
-				<strong style={{color: '#00B300'}}>
+				<strong style={{color: '#006300'}}>
 					{match.winner_username}
 				</strong>
 				&nbsp;vs&nbsp;
@@ -70,10 +72,12 @@ Match objects contain:
 					<div className="card-body">
 						<h5 className="card-title mb-0">No matches to display :/</h5>
 						<p>
-							<Link href={`/users/${user.id}`} passHref>
-								<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-									Back to {user.username}'s profile
-								</a>
+							<Link
+								href={`/users/${user.id}`}
+								passHref
+								className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
+							>
+								Back to {user.username}'s profile
 							</Link>
 						</p>
 					</div>
@@ -98,10 +102,12 @@ Match objects contain:
 				</div>
 			</div>
 			<p>
-				<Link href={`/users/${user.id}`} passHref>
-					<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
-						Back to {user.username}'s profile
-					</a>
+				<Link
+					href={`/users/${user.id}`}
+					passHref
+					className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}
+				>
+					Back to {user.username}'s profile
 				</Link>
 			</p>
 		</div>

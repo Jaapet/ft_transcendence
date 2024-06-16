@@ -24,7 +24,7 @@ const RemoveFriendButton = ({ myFriends, setMyFriends, target_id }) => {
 
 	// TODO: Make this a bootstrap button!
 	return (
-		<Button variant="danger" onClick={handleClick} style={{ fontSize: '15px' }} >
+		<Button variant="danger" onClick={handleClick} style={{ fontSize: '15px', marginTop: '10px' }} >
 			Remove friend
 		</Button>
 	);
@@ -41,25 +41,39 @@ const UserFriendListFriend = ({ myFriends, setMyFriends, friend }) => {
 				text-white
 			`}
 		>
-			<div className="ms-1 me-auto text-start" style={{ display: 'flex', flexDirection: 'row' }}>
+			<div className="ms-1 me-auto text-start" style={{ display: 'flex', flexDirection: 'row', padding: '5px', fontSize: '1.2em' }}>
 				<div className="mt-2 mb-0 ml-0 mr-1">
 					<Link href={`/users/${friend.id}`} passHref>
-						<a>
-							<Image
-								src={friend.avatar}
-								alt={`${friend.username}'s avatar`}
-								width={40}
-								height={40}
-							/>
-						</a>
+						<Image style={{marginBottom: '5px'}}
+							src={friend.avatar}
+							alt={`${friend.username}'s avatar`}
+							width={45}
+							height={45}
+						/>
 					</Link>
 				</div>
 				<div className="mx-2 my-2">
-					<Link href={`/users/${friend.id}`} passHref>
-						<a className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-							{friend.username}
-						</a>
+					<Link
+						href={`/users/${friend.id}`}
+						passHref
+						className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
+					>
+						{friend.username}
 					</Link>
+				</div>
+				<div>
+				<span
+					style={{
+						display: 'inline-block',
+						width: '10px',
+						height: '10px',
+						borderRadius: '50%',
+						backgroundColor: friend.is_online ? 'green' : 'red',
+						marginRight: '10px',
+						marginTop:'18px',
+						verticalAlign: 'middle'
+					}}
+       			></span>
 				</div>
 				<div>
 					<RemoveFriendButton
@@ -204,10 +218,11 @@ export default function UserFriends({ status, current_user, friends }) {
 		<div
 			className={styles.container}
 			style={{
+
 				display: 'flex',
 				justifyContent: 'center',
 				alignItems: 'center',
-				minHeight: '91vh',
+				minHeight: 'calc(100vh - 68px)',
 				flexDirection: 'column',
 				textAlign: 'center',
 			}}
@@ -231,17 +246,21 @@ export default function UserFriends({ status, current_user, friends }) {
 			<div className={`card ${styles.backCard}`}>
 				<UserFriendList user={user} myFriends={myFriends} setMyFriends={setMyFriends} />
 				<p>
-					<Link href={`/users/${user.id}/friend_requests`} passHref>
-						<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
-							Go to friend requests inbox
-						</a>
+					<Link
+						href={`/users/${user.id}/friend_requests`}
+						passHref
+						className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}
+					>
+						Go to friend requests inbox
 					</Link>
 				</p>
 				<p>
-					<Link href={`/users/${user.id}`} passHref>
-						<a className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}>
-							Back to profile
-						</a>
+					<Link
+						href={`/users/${user.id}`}
+						passHref
+						className={`link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover`}
+					>
+						Back to profile
 					</Link>
 				</p>
 			</div>

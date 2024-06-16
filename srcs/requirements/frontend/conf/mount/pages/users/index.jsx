@@ -10,6 +10,7 @@ const UserTableHead = () => {
 				<th scope="col">Avatar</th>
 				<th scope="col">ID</th>
 				<th scope="col">Username</th>
+				<th scope="col">Online?</th>
 				<th scope="col">Email</th>
 				<th scope="col">Join date</th>
 				<th scope="col">Role</th>
@@ -23,29 +24,41 @@ const UserTableRow = ({ user }) => {
 		<tr key={user.id}>
 			<td>
 				<Link href={`/users/${user.id}`} passHref>
-					<a>
-						<Image
-							src={user.avatar}
-							alt={`${user.username}'s avatar`}
-							width={40}
-							height={40}
-						/>
-					</a>
+					<Image
+						src={user.avatar}
+						alt={`${user.username}'s avatar`}
+						width={40}
+						height={40}
+					/>
 				</Link>
 			</td>
 			<th>{user.id}</th>
 			<th>
 				<Link href={`/users/${user.id}`} passHref>
-					<a>
-						{user.username}
-					</a>
+					{user.username}
 				</Link>
 			</th>
+
+			{/* status colored dot */}
+			<td>
+				<span
+					style={{
+						display: 'inline-block',
+						width: '15px',
+						height: '15px',
+						borderRadius: '50%',
+						backgroundColor: user.is_online ? 'green' : 'red',
+						marginRight: '5px',
+						verticalAlign: 'middle'
+					}}
+       			></span>
+			</td>
+			
 			<td>{user.email}</td>
 			<td>{user.join_date}</td>
 			<td>{user.is_admin ? 'Admin' : 'User'}</td>
 		</tr>
-	)
+	);
 }
 
 const UserTable = ({ users }) => {

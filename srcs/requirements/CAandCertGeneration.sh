@@ -1,13 +1,11 @@
 #!/bin/bash
-: ${REQUIREMENTS_DIR:=./srcs/requirements}
-: ${PROJECT_NAME:=proxy}
-: ${FQDN:=transcendence.gmcg.fr}
+
 # Exit on error
 set -e
 
 if [ -f ".ssl_is_gen" ]; then
     # If the file exists, exit with status code 0
-	echo "Certs already generated"
+    echo "Certs already generated"
     exit 0
 fi
 
@@ -43,42 +41,45 @@ fi
 for folder in "${REQUIREMENTS_DIR}"/*/; do
     folder_name=$(basename "${folder}")
     if [ "$folder_name" == "proxy" ]; then
-		FOLDER_KEY="${REQUIREMENTS_DIR}/${folder_name}/localhost.key"
-    	FOLDER_CSR="${REQUIREMENTS_DIR}/${folder_name}/localhost.csr"
-    	FOLDER_CERT="${REQUIREMENTS_DIR}/${folder_name}/localhost.crt"
+        TMP_FOLDER_KEY="${REQUIREMENTS_DIR}/${folder_name}/${FQDN}.key"
+        TMP_FOLDER_CSR="${REQUIREMENTS_DIR}/${folder_name}/${FQDN}.csr"
+        TMP_FOLDER_CERT="${REQUIREMENTS_DIR}/${folder_name}/${FQDN}.crt"
 
-		TMP_FOLDER_KEY="${REQUIREMENTS_DIR}/${folder_name}/${FQDN}.key"
-    	TMP_FOLDER_CSR="${REQUIREMENTS_DIR}/${folder_name}/${FQDN}.csr"
-    	TMP_FOLDER_CERT="${REQUIREMENTS_DIR}/${folder_name}/${FQDN}.crt"
+        echo "Generating key and certificate for ${FQDN}..."
+		cat > openssl.cnf <<EOF
+[req]
+req_extensions = v3_req
+[v3_req]
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = ${FQDN}
+EOF
 
-		echo "Generating key and certificate for ${folder_name}..."
-    	openssl genpkey -algorithm RSA -out "${FOLDER_KEY}" -pkeyopt rsa_keygen_bits:2048
-    	openssl req -new -key "${FOLDER_KEY}" -out "${FOLDER_CSR}" -subj "${CRT_TEMPLATE}localhost"
-    	openssl x509 -req -in "${FOLDER_CSR}" -CA "${CA_CERT}" -CAkey "${CA_KEY}" -CAcreateserial -out "${FOLDER_CERT}" -days 365
-		#FOR DEV ENVIRONMENT PURPOSE
-		openssl genpkey -algorithm RSA -out "${TMP_FOLDER_KEY}" -pkeyopt rsa_keygen_bits:2048
-    	openssl req -new -key "${TMP_FOLDER_KEY}" -out "${TMP_FOLDER_CSR}" -subj "${CRT_TEMPLATE}${FQDN}"
-    	openssl x509 -req -in "${TMP_FOLDER_CSR}" -CA "${CA_CERT}" -CAkey "${CA_KEY}" -CAcreateserial -out "${TMP_FOLDER_CERT}" -days 365
-    	
-		cp $CA_CERT ${REQUIREMENTS_DIR}/${folder_name}/CA.crt
-	else
-    	# Generate a private key for the folder
-    	FOLDER_KEY="${REQUIREMENTS_DIR}/${folder_name}/${folder_name}_${PROJECT_NAME}.key"
-    	FOLDER_CSR="${REQUIREMENTS_DIR}/${folder_name}/${folder_name}_${PROJECT_NAME}.csr"
-    	FOLDER_CERT="${REQUIREMENTS_DIR}/${folder_name}/${folder_name}_${PROJECT_NAME}.crt"
+        openssl genpkey -algorithm RSA -out "${TMP_FOLDER_KEY}" -pkeyopt rsa_keygen_bits:2048
+        openssl req -new -key "${TMP_FOLDER_KEY}" -out "${TMP_FOLDER_CSR}" -subj "${CRT_TEMPLATE}${FQDN}" -addext "subjectAltName = DNS:${FQDN}"
+        openssl x509 -req -in "${TMP_FOLDER_CSR}" -CA "${CA_CERT}" -CAkey "${CA_KEY}" -CAcreateserial -out "${TMP_FOLDER_CERT}" -days 365 -extfile openssl.cnf -extensions v3_req
+    fi
+    # Generate a private key for the folder
+    FOLDER_KEY="${REQUIREMENTS_DIR}/${folder_name}/${folder_name}.key"
+    FOLDER_CSR="${REQUIREMENTS_DIR}/${folder_name}/${folder_name}.csr"
+    FOLDER_CERT="${REQUIREMENTS_DIR}/${folder_name}/${folder_name}.crt"
+    echo "Generating key and certificate for ${folder_name}..."
+    openssl genpkey -algorithm RSA -out "${FOLDER_KEY}" -pkeyopt rsa_keygen_bits:2048
+    openssl req -new -key "${FOLDER_KEY}" -out "${FOLDER_CSR}" -subj "${CRT_TEMPLATE}${folder_name}" -addext "subjectAltName = DNS:${folder_name}"
+	cat > openssl.cnf <<EOF
+[req]
+req_extensions = v3_req
+[v3_req]
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = ${folder_name}
+EOF
 
-
-    	echo "Generating key and certificate for ${folder_name}..."
-    	openssl genpkey -algorithm RSA -out "${FOLDER_KEY}" -pkeyopt rsa_keygen_bits:2048
-    	openssl req -new -key "${FOLDER_KEY}" -out "${FOLDER_CSR}" -subj "${CRT_TEMPLATE}${folder_name}_${PROJECT_NAME}"
-    	openssl x509 -req -in "${FOLDER_CSR}" -CA "${CA_CERT}" -CAkey "${CA_KEY}" -CAcreateserial -out "${FOLDER_CERT}" -days 365
-    	cp $CA_CERT ${REQUIREMENTS_DIR}/${folder_name}/CA.crt
-    	# Clean up the CSR
-    	rm "${FOLDER_CSR}"
-	fi
-    
+    openssl x509 -req -in "${FOLDER_CSR}" -CA "${CA_CERT}" -CAkey "${CA_KEY}" -CAcreateserial -out "${FOLDER_CERT}" -days 365 -extfile openssl.cnf -extensions v3_req
+    cp $CA_CERT ${REQUIREMENTS_DIR}/${folder_name}/CA.crt
+    # Clean up the CSR
     echo "Certificate and key for ${folder_name} generated."
 done
-
+rm openssl.cnf
 touch .ssl_is_gen
 echo "All certificates and keys have been generated."

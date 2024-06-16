@@ -1,11 +1,12 @@
 import { IncomingForm } from 'formidable';
 import fs from 'fs';
+// TODO: Check if we can skip using formidable
 
 export const config = {
 	api: {
 		bodyParser: false, // Disable Next.js built-in body parser
 	},
-};
+}
 
 const parseForm = (req) =>
 	new Promise((resolve, reject) => {

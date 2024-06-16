@@ -1,6 +1,6 @@
-import cookie from 'cookie';
+import refreshToken from '../../../lib/refresh';
 
-// This function is used for Login Refresh
+// This function is used for automatic Login Refresh (AuthContext)
 
 export default async (req, res) => {
 	// Only POST allowed
@@ -8,50 +8,15 @@ export default async (req, res) => {
 		res.setHeader('Allow', ['POST']);
 		return res.status(405).json({ message: `Method ${req.method} is not allowed` });
 	}
-
-	if (!req.headers.cookie) {
-		throw new Error('Unauthorized');
-	}
-
+	
 	try {
-		// Get refresh token
-		const { refresh } = cookie.parse(req.headers.cookie);
-		if (!refresh) {
-			throw new Error('Could not fetch refresh token');
+		const accessToken = await refreshToken(
+			req,
+			() => {res.setHeader('Set-Cookie', 'refresh=; HttpOnly; Secure; Max-Age=0; SameSite=Strict; Path=/');}
+		);
+		if (!accessToken) {
+			throw new Error('Not logged in');
 		}
-
-		// Fetch access token
-		const tokRes = await fetch(`http://backend:8000/api/token/refresh/`, {
-			method: 'POST',
-			headers: {
-				'Accept': 'application/json',
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({ refresh })
-		});
-		if (!tokRes) {
-			throw new Error('Could not fetch access token');
-		}
-
-		const tokData = await tokRes.json();
-		if (!tokData) {
-			throw new Error('Could not fetch access token');
-		}
-		if (!tokRes.ok) {
-			throw new Error(tokData.detail || 'Could not fetch access token');
-		}
-		const accessToken = tokData.access;
-
-		// TODO: change to https later
-		// TODO: Check if using cookie lib is really necessary
-		// Update access token cookie
-		res.setHeader('Set-Cookie', cookie.serialize('access', tokData.access, {
-			httpOnly: true,
-			secure: false,
-			sameSite: 'strict',
-			maxAge: 60 * 5,
-			path: '/'
-		}));
 
 		// Fetch user data
 		const userRes = await fetch(`http://backend:8000/api/user/`, {

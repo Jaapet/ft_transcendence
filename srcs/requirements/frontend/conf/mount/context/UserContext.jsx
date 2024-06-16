@@ -35,10 +35,41 @@ export const UserProvider = ({ children }) => {
 			if (!response.ok)
 				throw new Error(data.message || 'Edit failed');
 
-			setUserMsg(data.message);
+			setUserMsg(data.message || 'Edit failed');
 		} catch (error) {
 			console.error('CONTEXT EDIT:', error);
 			setUserError(error.message);
+		}
+	}
+
+	// Enable 2FA
+	const enable2FA = async () => {
+		try {
+			const response = await fetch(`/api/current_user/enable_2fa`, {
+				method: 'POST',
+				headers: {
+					'Accept': 'application/json',
+					'Content-Type': 'application/json'
+				}
+			});
+			if (!response) {
+				throw new Error('Enabling 2FA failed');
+			}
+
+			const data = await response.json();
+			if (!data) {
+				throw new Error('Enabling 2FA failed');
+			}
+			if (!response.ok) {
+				throw new Error(data.message || 'Enabling 2FA failed');
+			}
+
+			setUserMsg(data.message || '2FA is now enabled');
+			return data;
+		} catch (error) {
+			console.error('CONTEXT ENABLE 2FA:', error);
+			setUserError(error.message);
+			return null;
 		}
 	}
 
@@ -101,7 +132,7 @@ export const UserProvider = ({ children }) => {
 				throw new Error(data.message || 'Failed to send friend request');
 			}
 
-			setUserMsg(data.message);
+			setUserMsg(data.message || 'Failed to send friend request');
 		} catch (error) {
 			console.error('ADD FRIEND:', error);
 			setUserError(error.message);
@@ -134,7 +165,7 @@ export const UserProvider = ({ children }) => {
 				throw new Error(data.message || 'Failed to remove friend');
 			}
 
-			setUserMsg(data.message);
+			setUserMsg(data.message || 'Failed to remove friend');
 			return true;
 		} catch (error) {
 			console.error('REMOVE FRIEND:', error);
@@ -169,7 +200,7 @@ export const UserProvider = ({ children }) => {
 				throw new Error(data.message || `Failed to accept friend request`);
 			}
 
-			setUserMsg(data.message);
+			setUserMsg(data.message || `Failed to accept friend request`);
 			return true;
 		} catch (error) {
 			console.error('ACCEPT FRIEND REQUEST:', error);
@@ -204,7 +235,7 @@ export const UserProvider = ({ children }) => {
 				throw new Error(data.message || `Failed to decline friend request`);
 			}
 
-			setUserMsg(data.message);
+			setUserMsg(data.message || `Failed to decline friend request`);
 			return true;
 		} catch (error) {
 			console.error('DECLINE FRIEND REQUEST:', error);
@@ -239,7 +270,7 @@ export const UserProvider = ({ children }) => {
 				throw new Error(data.message || `Failed to delete friend request`);
 			}
 
-			setUserMsg(data.message);
+			setUserMsg(data.message || `Failed to delete friend request`);
 			return true;
 		} catch (error) {
 			console.error('DELETE FRIEND REQUEST:', error);
@@ -260,7 +291,7 @@ export const UserProvider = ({ children }) => {
 		<UserContext.Provider value={{
 			userError, setUserError, clearUserError,
 			userMsg, setUserMsg, clearUserMsg,
-			edit,
+			edit, enable2FA,
 			isFriends, addFriend, removeFriend,
 			acceptFriendRequest, declineFriendRequest, deleteFriendRequest
 		}}>

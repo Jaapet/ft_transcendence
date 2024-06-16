@@ -1,12 +1,24 @@
+import os
 from .models import Member, FriendRequest, Match
+from django.conf import settings
+from django.utils import timezone
 from django.db.models import Q
+from django.http import HttpResponse, JsonResponse
+from rest_framework.authentication import BaseAuthentication
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework import viewsets, permissions, status
 from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from rest_framework.parsers import MultiPartParser
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
+from django_otp.plugins.otp_totp.models import TOTPDevice
+import qrcode
+from io import BytesIO
 from .serializers import (
+	CustomTokenObtainPairSerializer,
 	MemberSerializer,
 	RegisterMemberSerializer,
 	UpdateMemberSerializer,
@@ -18,6 +30,54 @@ from .serializers import (
 	MatchSerializer
 )
 
+class Enable2FAView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def post(self, request, *args, **kwargs):
+		user = request.user
+
+		# Create or Get the user's TOTP device
+		device, created = TOTPDevice.objects.get_or_create(user=user, confirmed=True)
+		secret = device.config_url
+		print(f'device config url: {secret}') # debug
+
+		# Generate a QR code for the TOTP secret
+		qr_img = qrcode.make(secret)
+		buffer = BytesIO()
+		qr_img.save(buffer, format='PNG')
+		buffer.seek(0)
+
+		file_name = f'{user.id}_{timezone.now()}_qr.png'
+
+		file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+		with open(file_path, 'wb') as f:
+			f.write(buffer.getvalue())
+
+		file_url = os.path.join(settings.MEDIA_URL, file_name)
+
+		return JsonResponse({'secret_key': secret.split('secret=')[1].split('&')[0], 'qr_code_url': file_url},status=status.HTTP_201_CREATED)
+
+class Verify2FAView(APIView):
+	permission_classes = [permissions.AllowAny]
+
+	def post(self, request, *args, **kwargs):
+		user_id = request.data.get('user_id')
+		otp = request.data.get('otp')
+		user = Member.objects.get(id=user_id)
+		device = user.totpdevice_set.filter(confirmed=True).first()
+
+		if device and device.verify_token(otp):
+			refresh = RefreshToken.for_user(user)
+			return Response({
+				'refresh': str(refresh),
+				'access': str(refresh.access_token),
+			}, status=status.HTTP_200_OK)
+		return Response({'detail': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+	serializer_class = CustomTokenObtainPairSerializer
+
+# TODO: Check if this uses the index
 # Queries all members ordered by username
 # Requires authentication
 class MemberViewSet(viewsets.ModelViewSet):
@@ -211,3 +271,74 @@ class MatchViewSet(viewsets.ModelViewSet):
 		player_matches = Match.objects.filter(Q(winner_id=player_id) | Q(loser_id=player_id)).select_related("winner", "loser").order_by('-end_datetime')[:3]
 		serializer = self.get_serializer(player_matches, many=True)
 		return Response(serializer.data)
+
+class PrometheusAuthentication(BaseAuthentication):
+	def authenticate(self, request):
+		# Check if the request contains the expected header
+		if 'Authorization' not in request.headers:
+			return None
+
+		# Validate the value of the header (you can implement your own logic here)
+		auth_token = request.headers['Authorization']
+		if auth_token != 'Bearer ' + os.environ.get('METRICS_TOKEN_BACKEND'):
+			raise AuthenticationFailed('Invalid token')
+
+		# If the token is valid, return a dummy user object
+		return (self.dummy_user(), None)
+
+	def dummy_user(self):
+		# Create a dummy user object since we don't have real user authentication
+		return Member(username=';prometheus;')
+
+class MetricsView(APIView):
+	authentication_classes = [PrometheusAuthentication]
+	permission_classes = [permissions.IsAuthenticated]
+
+	def get(self, request):
+		metrics = self.collect_metrics()
+		return HttpResponse(metrics, content_type='text/plain')
+
+	def collect_metrics(self):
+		# Collect metrics here and format them as Prometheus exposition format
+		metrics = []
+		metrics += self.collect_total_users()
+		metrics += self.collect_online_users()
+		metrics += self.collect_total_friend_requests()
+		metrics += self.collect_total_pong_matches()
+		return '\n'.join(metrics)
+
+	def collect_total_users(self):
+		total_users = Member.objects.count()
+		metric = [
+			'# HELP back_total_users Number of accounts created in the database',
+			'# TYPE back_total_users counter',
+			f'back_total_users {total_users}'
+		]
+		return metric
+
+	def collect_online_users(self):
+		online_users = Member.objects.get_online_users().count()
+		metric = [
+			'# HELP back_online_users Number of currently online users',
+			'# TYPE back_online_users counter',
+			f'back_online_users {online_users}'
+		]
+		return metric
+
+	def collect_total_friend_requests(self):
+		total_friend_requests = FriendRequest.objects.count()
+		metric = [
+			'# HELP back_total_friend_requests Number of pending friend requests',
+			'# TYPE back_total_friend_requests counter',
+			f'back_total_friend_requests {total_friend_requests}'
+		]
+		return metric
+
+	def collect_total_pong_matches(self):
+		total_pong_matches = Match.objects.count()
+		metric = [
+			'# HELP back_total_pong_matches Number of played pong matches',
+			'# TYPE back_total_pong_matches counter',
+			f'back_total_pong_matches {total_pong_matches}'
+		]
+		return metric
