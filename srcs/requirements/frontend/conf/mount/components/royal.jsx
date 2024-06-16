@@ -185,9 +185,6 @@ const Royal = () => {
                 
                 ballmove[1] = 0.1;
                 break;
-            case " ":
-                space = 1;
-                break;
       }
     });
 
@@ -210,8 +207,6 @@ const Royal = () => {
             case "D":
                 
                 ballmove[1] = 0;
-                break;
-            case " ":
                 break;
       }
     });
@@ -290,15 +285,6 @@ const Royal = () => {
       objects.forEach(objtab => {
         // ce deplace dans une direction et s'arrete au bord et repart dans l'autre sens
         const obj = objtab[0];
-
-        if (space == 1 && obj.position.y < 10)
-          obj.position.y = obj.position.y * 1.1;
-        else if (obj.position.y > 2)
-          {
-          obj.position.y = obj.position.y - 1;
-          space = 0;
-          }
-
 
         
         ballspeed[0] = objtab[1];

@@ -23,7 +23,9 @@ const Pong = () => {
       const far = 10000;
 
       const loader = new THREE.TextureLoader();
-      const texture = loader.load('games/pong/texture/cityfutur.jpg');
+      const texture = loader.load('games/pong/texture/city.jpg');
+      texture.colorSpace = THREE.SRGBColorSpace;
+      const texturesphere = loader.load('games/pong/texture/eye2.jpg');
       texture.colorSpace = THREE.SRGBColorSpace;
 
       const scene = new THREE.Scene();
@@ -31,6 +33,8 @@ const Pong = () => {
       const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
       camera.position.set(0, 100, 10);
       camera.position.z = 10;
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
 
 
 
@@ -100,11 +104,11 @@ const Pong = () => {
 
       /// FLOOR
 
-      const planeSize = 40;
+      const planeSize = 42;
       const texture2 = loader.load('games/pong/texture/dollarrachid.jpg');
       texture2.colorSpace = THREE.SRGBColorSpace;
 
-      const planeGeo = new THREE.PlaneGeometry(planeSize * 2 + 2, planeSize + 3);
+      const planeGeo = new THREE.PlaneGeometry(planeSize * 2 + 6, planeSize + 3);
       const planeMat = new THREE.MeshPhongMaterial({
         map: texture2,
         side: THREE.DoubleSide
@@ -150,39 +154,66 @@ const Pong = () => {
 
       /// OBJETS
 
-      const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
-      const texture3 = loader.load('games/pong/texture/dollarrachid.jpg');
-      texture3.wrapS = THREE.RepeatWrapping;
-      texture3.wrapT = THREE.RepeatWrapping;
-      texture3.magFilter = THREE.NearestFilter;
-      texture3.colorSpace = THREE.SRGBColorSpace;
-      const repeats = 2;
-      texture3.repeat.set(repeats * 8, repeats);
+      const texturewater = loader.load('games/pong/texture/water.jpg');
+      const texturevitre = loader.load('games/pong/texture/vitre.jpg');
+      texturevitre.wrapS = THREE.RepeatWrapping;
+      texturevitre.wrapT = THREE.RepeatWrapping;
+      texturevitre.magFilter = THREE.NearestFilter;
+      texturevitre.colorSpace = THREE.SRGBColorSpace;
+      texturevitre.repeat.set(1, 1);
+      const textureraquette = loader.load('games/pong/texture/bouee.png');
+      const textureraquette2 = loader.load('games/pong/texture/bouee2.png');
+      const textureraquette3 = loader.load('games/pong/texture/boueeSide.png');
 
-      const wallsideMaterial = new THREE.MeshBasicMaterial({ map: texture3 });
-      const topBottomMaterial = new THREE.MeshBasicMaterial({ color: 0x003322 });
 
-      const wallmaterials = [
-        wallsideMaterial,
-        wallsideMaterial,
-        topBottomMaterial,
-        topBottomMaterial,
-        wallsideMaterial,
-        wallsideMaterial
-      ];
 
-      const sideMaterial = new THREE.MeshBasicMaterial({ map: texture2 });
+      
+      const wallmaterials = new THREE.MeshBasicMaterial({ map: texturevitre, side: THREE.DoubleSide, transparent: true, opacity: 0.2});
+      const wallmaterials2 = new THREE.MeshBasicMaterial({ map: texturevitre, side: THREE.DoubleSide, transparent: true, opacity: 0.2, wireframe: true, });
+      const water = new THREE.MeshBasicMaterial({ map: texturewater, transparent: true, opacity: 0.25, side: THREE.DoubleSide});
+      
+      const sideMaterial = new THREE.MeshBasicMaterial({ map: textureraquette });
+      const sideMaterial2 = new THREE.MeshBasicMaterial({ map: textureraquette2 });
+      const sideMaterial3 = new THREE.MeshBasicMaterial({ map: textureraquette3 });
       const raquettematerials = [
+        sideMaterial2,
         sideMaterial,
-        sideMaterial,
-        topBottomMaterial,
-        topBottomMaterial,
-        sideMaterial,
-        sideMaterial
+        sideMaterial3,
+        sideMaterial3,
+        sideMaterial3,
+        sideMaterial3
       ];
       
-      const cube = new THREE.BoxGeometry(4, 4, 10);
-      const wall = new THREE.BoxGeometry(90, 4, 2);
+      const textureImmeuble = loader.load('games/pong/texture/imeuble.jpg');
+      textureImmeuble.wrapS = THREE.RepeatWrapping;
+      textureImmeuble.wrapT = THREE.RepeatWrapping;
+      textureImmeuble.magFilter = THREE.NearestFilter;
+      textureImmeuble.colorSpace = THREE.SRGBColorSpace;
+      textureImmeuble.repeat.set(2, 4);
+
+      const texturetoit = loader.load('games/pong/texture/rock.jpg');
+      texturetoit.wrapS = THREE.RepeatWrapping;
+      texturetoit.wrapT = THREE.RepeatWrapping;
+      texturetoit.magFilter = THREE.NearestFilter;
+      texturetoit.colorSpace = THREE.SRGBColorSpace;
+      texturetoit.repeat.set(30, 30);
+
+      const side = new THREE.MeshBasicMaterial({ map: textureImmeuble });
+      const side2 = new THREE.MeshBasicMaterial({ map: texturetoit });
+      const immeublematerials = [
+        side,
+        side,
+        side2,
+        side2,
+        side,
+        side
+      ];
+      
+      const cube = new THREE.BoxGeometry(2, 4, 10);
+      const wall = new THREE.BoxGeometry(89, 6, 0.5);
+      const wall2 = new THREE.BoxGeometry(0.5, 6, 45);
+      const watercube = new THREE.BoxGeometry(89, 4, 44);
+      const skyscrapper = new THREE.BoxGeometry(90, 400, 90);
       
       const radius = 2;
       const detail = 5;
@@ -193,26 +224,37 @@ const Pong = () => {
       const raquettes = [];
       const raquettesmove = [0, 0, 0, 0];
       
-      addball(0, 2, 4, makeObj(ball, texture));
+      addball(0, 2, 4, makeObj(ball, texturesphere));
       addraquette(-43, 2, 0, new THREE.Mesh(cube, raquettematerials));
       addraquette(43, 2, 0, new THREE.Mesh(cube, raquettematerials));
-      addwall(0, 2, 22, new THREE.Mesh(wall, wallmaterials));
-      addwall(0, 2, -22, new THREE.Mesh(wall, wallmaterials));
+      addwall(0, 3, 22.25, new THREE.Mesh(wall, wallmaterials));
+      addwall(0, 3, -22.25, new THREE.Mesh(wall, wallmaterials));
+      addwall(-44.75, 3, 0, new THREE.Mesh(wall2, wallmaterials));
+      addwall(44.75, 3, 0, new THREE.Mesh(wall2, wallmaterials));
+
+      addwall(0, 3, 22.25, new THREE.Mesh(wall, wallmaterials2));
+      addwall(0, 3, -22.25, new THREE.Mesh(wall, wallmaterials2));
+      addwall(-44.75, 3, 0, new THREE.Mesh(wall2, wallmaterials2));
+      addwall(44.75, 3, 0, new THREE.Mesh(wall2, wallmaterials2));
+      addwall(0, -200.1,  22.5, new THREE.Mesh(skyscrapper, immeublematerials));
+      addwall(0, 2.1, 0, new THREE.Mesh(watercube, water));
 
       /// SKYBOX
 
-      const skybox = new THREE.IcosahedronGeometry(500,50);
+      const skybox = new THREE.IcosahedronGeometry(400,50);
 
       const skyboxMaterial = new THREE.MeshBasicMaterial({map: texture, side: THREE.BackSide });
 
       const skyboxMesh = new THREE.Mesh(skybox, skyboxMaterial);
-      skyboxMesh.position.y = 100;
+      skyboxMesh.rotation.y = 0.5;
+      skyboxMesh.position.z = 20;
 
       scene.add(skyboxMesh);
 
       /// CONTROLS
 
-      document.addEventListener('keydown', function(event) {
+      document.addEventListener('keydown', function(event)
+      {
         switch (event.key) {
           case "w":
           case "W":
@@ -231,7 +273,8 @@ const Pong = () => {
         }
       });
 
-      document.addEventListener('keyup', function(event) {
+      document.addEventListener('keyup', function(event)
+      {
         console.log(event.key);
         switch (event.key) {
           case "w":
@@ -257,13 +300,15 @@ const Pong = () => {
 
       /// FUNCTIONS
 
-      function makeObj(geometry, map) {
+      function makeObj(geometry, map)
+      {
         const material = new THREE.MeshBasicMaterial({ map: map });
         const obj = new THREE.Mesh(geometry, material);
         return obj;
       }
 
-      function addball(x, y, z, obj) {
+      function addball(x, y, z, obj)
+      {
         obj.position.x = x;
         obj.position.y = y;
         obj.position.z = z;
@@ -272,7 +317,8 @@ const Pong = () => {
         objects.push(objtab);
       }
 
-      function addraquette(x, y, z, obj) {
+      function addraquette(x, y, z, obj)
+      {
         obj.position.x = x;
         obj.position.y = y;
         obj.position.z = z;
@@ -280,14 +326,16 @@ const Pong = () => {
         raquettes.push(obj);
       }
 
-      function addwall(x, y, z, obj) {
+      function addwall(x, y, z, obj)
+      {
         obj.position.x = x;
         obj.position.y = y;
         obj.position.z = z;
         scene.add(obj);
       }
 
-      function resizeRendererToDisplaySize(renderer) {
+      function resizeRendererToDisplaySize(renderer)
+      {
         const canvas = renderer.domElement;
         const pixelRatio = window.devicePixelRatio;
         const width = Math.floor(canvas.clientWidth * pixelRatio);
@@ -299,12 +347,14 @@ const Pong = () => {
         return needResize;
       }
 
-      function raquetteHit(ball, raquettes) {
+      function raquetteHit(ball, raquettes)
+      {
         const ballBox = new THREE.Box3().setFromObject(ball);
         var hit = 0.0;
         raquettes.forEach(raquette => {
           const raquetteBox = new THREE.Box3().setFromObject(raquette);
-          if (ballBox.intersectsBox(raquetteBox)) {
+          if (ballBox.intersectsBox(raquetteBox))
+          {
             const ballCenter = ballBox.getCenter(new THREE.Vector3());
             const raquetteCenter = raquetteBox.getCenter(new THREE.Vector3());
             const hitVector = ballCenter.clone().sub(raquetteCenter);
@@ -360,7 +410,8 @@ const Pong = () => {
       
         if (time > 7.5)
         {
-          if (resizeRendererToDisplaySize(renderer)) {
+          if (resizeRendererToDisplaySize(renderer))
+          {
             const canvas = renderer.domElement;
             camera.aspect = canvas.clientWidth / canvas.clientHeight;
             camera.updateProjectionMatrix();
@@ -382,19 +433,26 @@ const Pong = () => {
             let directionZ = objtab[2];
             let speed = 1 + frame * 0.05;
 
-            if (obj.position.x < 40 && directionX > 0) {
+            if (obj.position.x < 41 && directionX > 0)
+            {
               obj.position.x += speed * directionX;
-            } else if (obj.position.x > -40 && directionX < 0) {
+            }
+            else if (obj.position.x > -41 && directionX < 0)
+            {
               obj.position.x -= speed * Math.abs(directionX);
-            } else {
+            }
+            else
+            {
               var hit = raquetteHit(obj, raquettes);
-              if (hit !== 0.0) {
+              if (hit !== 0.0)
+              {
                 let decalage = hit * 0.1;
                 directionX = -directionX;
                 directionZ += decalage;
                 directionX -= decalage;
                 const absSum = Math.abs(directionX) + Math.abs(directionZ);
-                if (absSum !== 1) {
+                if (absSum !== 1)
+                {
                   const ratio = 1 / absSum;
                   directionX *= ratio;
                   directionZ *= ratio;
@@ -402,16 +460,19 @@ const Pong = () => {
                 obj.rotation.z = 0;
                 obj.rotation.x = 0;
                 obj.rotation.y = 0;
-              } else {
+              }
+              else
+              {
                 return;
               }
             }
 
-            if (obj.position.z < 20 && directionZ > 0) {
+            if (obj.position.z < 20 && directionZ > 0)
               obj.position.z += speed * directionZ;
-            } else if (obj.position.z > -20 && directionZ < 0) {
+            else if (obj.position.z > -20 && directionZ < 0)
               obj.position.z -= speed * Math.abs(directionZ);
-            } else {
+            else
+            {
               directionZ = -directionZ;
               obj.rotation.z = 0;
               obj.rotation.x = 0;
@@ -430,7 +491,8 @@ const Pong = () => {
               directionZ = -0.6;
 
             const absSum = Math.abs(directionX) + Math.abs(directionZ);
-            if (absSum !== 1) {
+            if (absSum !== 1)
+            {
               const ratio = 1 / absSum;
               directionX *= ratio;
               directionZ *= ratio;
