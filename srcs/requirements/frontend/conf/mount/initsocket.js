@@ -18,9 +18,9 @@ const io = socketIO(server, {
 
 In client-side code (pong/royal.jsx):
 ```
-	useEffect((user) => {
+	useEffect(() => {
 		const socket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`);
-		socket.emit('join', { gameType: 'pong2', userId: user.id, userAvatar: user.avatar });
+		socket.emit('join', { gameType: 'pong2', userId: user.id, userELO: user.elo_pong, userAvatar: user.avatar });
 
 		socket.on('connect', () => {
 			console.log('Connected to websocket server');
@@ -37,6 +37,8 @@ In client-side code (pong/royal.jsx):
 		}
 
 		// ...display code
+
+	}, [user]);
 ```
 */
 
