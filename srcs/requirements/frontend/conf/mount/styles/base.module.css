@@ -139,11 +139,10 @@
 
 /* lil profil buttons */
 .minorbutton {
-	position: flex;
+	position:flex;
 	left: 1cm;
     display:inline-block;
-
-	font-size: 28px;
+	font-size: 27px;
     color: #000000;
     background: #379391;
     border: none;

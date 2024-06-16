@@ -136,8 +136,7 @@ const ProfileMemberCard2FAButton = ({ target_user, setShowError, setErrorMsg, se
 	}
 
 	return (
-		<div className={`card ${styles.customCard}`} style={{marginTop: '15px'}}>
-			<Button
+			<Button  className={styles.minorbutton}
 				type="button"
 				variant="danger-outline"
 				style={{fontSize: '25px'}}
@@ -145,7 +144,6 @@ const ProfileMemberCard2FAButton = ({ target_user, setShowError, setErrorMsg, se
 			>
 				<strong>Enable 2FA</strong>
 			</Button>
-		</div>
 	);
 }
 
@@ -168,6 +166,9 @@ const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg
 			{/* Edit button */}
 			<ProfileMemberCardEditButton target_user={user} />
 
+
+			{/* Friends button */}
+			<ProfileMemberCardFriendsButton target_user={user} />
 			{/* 2FA button */}
 			<ProfileMemberCard2FAButton
 				target_user={user}
@@ -175,12 +176,9 @@ const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg
 				setErrorMsg={setErrorMsg}
 				setShowMsg={setShowMsg}
 				setMsg={setMsg}
-			/>
+				/>
 
-			{/* Friends button */}
-			<ProfileMemberCardFriendsButton target_user={user} />
-		</div>
-
+				</div>
 			{/* elo */}
 			<ProfileMemberCardELO user={user} />
 		</div>
