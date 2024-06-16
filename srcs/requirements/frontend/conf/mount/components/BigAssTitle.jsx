@@ -8,13 +8,13 @@ const BigTitle = () => (
 		<h1 style={{ fontSize: '5em' }}>Transcendence</h1>
 		<div className={styles.buttons}>
 		<Link href={`/users`} passHref className={styles.button}>
-				Peoples
+				Users
 			</Link>
 			<Link href="/chooseGame" passHref className={styles.button}>
-				Game
+				Play
 			</Link>
-			<Link href="/howtoplay" passHref className={styles.button}>
-				How to play?
+			 <Link href="/leaderboard" passHref className={styles.button}>
+				Leaderboard
 			</Link>
 
 			{/*				Put something useful here idk 

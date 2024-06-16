@@ -34,9 +34,9 @@
 }
 
 @keyframes glow {
-	0% { color: rgba(238, 179, 19, 0.7); }
-    50% { color: rgb(255, 238, 0); }
-    100% { color: rgba(238, 179, 19, 0.7); }
+	0% { color: rgba(102, 102, 102, 0.7); }
+    50% { color: rgb(255, 255, 255); }
+    100% { color: rgba(102, 102, 102, 0.7); }
 }
 
 @font-face {
@@ -84,7 +84,6 @@
 }
 
 .button:hover {
-    color: #eeb313;
 	animation: glow 1s infinite; 
 }
 

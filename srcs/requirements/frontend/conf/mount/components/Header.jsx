@@ -101,9 +101,9 @@ const Header = () => {
 			</Link>
 			</Navbar.Brand>
 				<Nav className="mr-auto">
-					<Nav.Link as={Link} href="#leaderboard">Leaderboard</Nav.Link>
 					<Nav.Link as={Link} href="/users">Users</Nav.Link>
-					<Nav.Link as={Link} href="#how-to-play">How to play</Nav.Link>
+					<Nav.Link as={Link} href="/howtoplay">How to play</Nav.Link>
+					<Nav.Link as={Link} href="/chooseGame">Play</Nav.Link>
 				</Nav>
 				<ProfileNav />
 			</Navbar>
