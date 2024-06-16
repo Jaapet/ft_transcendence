@@ -5,7 +5,7 @@ import BigTitle from '../components/BigAssTitle';
 const VideoBackground = () => (
   <div className={styles.videoBackground}>
     <div className={styles.videoOverlay}></div>
-    <iframe src="images/tmp_background.gif" allowFullScreen></iframe>
+    <iframe src="images/pong.webp" allowFullScreen></iframe>
   </div>
 );
 
