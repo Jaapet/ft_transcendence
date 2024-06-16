@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import styles from '../styles/home.module.css';
-import { useAuth } from '../context/AuthenticationContext';
 
 const BigTitle = () => (
 
