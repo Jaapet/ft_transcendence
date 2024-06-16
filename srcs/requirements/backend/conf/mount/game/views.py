@@ -1,5 +1,5 @@
 import os
-from .models import Member, FriendRequest, Match
+from .models import Member, FriendRequest, Match, Match3
 from django.conf import settings
 from django.utils import timezone
 from django.db.models import Q
@@ -27,7 +27,8 @@ from .serializers import (
 	SendFriendRequestSerializer,
 	InteractFriendRequestSerializer,
 	RemoveFriendSerializer,
-	MatchSerializer
+	MatchSerializer,
+	Match3Serializer
 )
 
 class Enable2FAView(APIView):
@@ -245,7 +246,7 @@ class RemoveFriendAPIView(APIView):
 		except ValueError as err:
 			return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
-# Queries all matches ordered by most recently finished
+# Queries all pong2 matches ordered by most recently finished
 # Requires authentication
 class MatchViewSet(viewsets.ModelViewSet):
 	permission_classes = [permissions.IsAuthenticated]
@@ -269,6 +270,33 @@ class MatchViewSet(viewsets.ModelViewSet):
 		if (player_id is None):
 			return Response({'error': 'Player ID is required'}, status=status.HTTP_400_BAD_REQUEST)
 		player_matches = Match.objects.filter(Q(winner_id=player_id) | Q(loser_id=player_id)).select_related("winner", "loser").order_by('-end_datetime')[:3]
+		serializer = self.get_serializer(player_matches, many=True)
+		return Response(serializer.data)
+
+# Queries all pong3 matches ordered by most recently finished
+# Requires authentication
+class Match3ViewSet(viewsets.ModelViewSet):
+	permission_classes = [permissions.IsAuthenticated]
+	serializer_class = Match3Serializer
+	queryset = Match3.objects.all().select_related("paddle1", "paddle2", "ball").order_by('-end_datetime')
+
+	# Get all matches involving 1 player
+	@action(detail=False, methods=['get'])
+	def player_matches(self, request, pk=None):
+		player_id = request.query_params.get('player_id', None)
+		if (player_id is None):
+			return Response({'error': 'Player ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+		player_matches = Match3.objects.filter(Q(paddle1_id=player_id) | Q(paddle2_id=player_id) | Q(ball_id=player_id)).select_related("paddle1", "paddle2", "ball").order_by('-end_datetime')
+		serializer = self.get_serializer(player_matches, many=True)
+		return Response(serializer.data)
+
+	# Get a player's last 3 matches
+	@action(detail=False, methods=['get'])
+	def last_player_matches(self, request, pk=None):
+		player_id = request.query_params.get('player_id', None)
+		if (player_id is None):
+			return Response({'error': 'Player ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+		player_matches = Match.objects.filter(Q(paddle1_id=player_id) | Q(paddle2_id=player_id) | Q(ball_id=player_id)).select_related("paddle1", "paddle2", "ball").order_by('-end_datetime')[:3]
 		serializer = self.get_serializer(player_matches, many=True)
 		return Response(serializer.data)
 

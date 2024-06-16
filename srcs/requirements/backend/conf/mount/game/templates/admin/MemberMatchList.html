@@ -3,7 +3,7 @@
 {% block content %}
 {{ block.super }}
 
-<h2>Matches</h2>
+<h2>Pong2 Matches</h2>
 <table>
 	<thead>
 		<tr>
@@ -15,11 +15,41 @@
 		</tr>
 	</thead>
 	<tbody>
-		{% for match in matches %}
+		{% for match in pong2_matches %}
 			<tr>
 				<td>{{ match.winner }}</td>
 				<td>{{ match.winner_score }}-{{ match.loser_score }}</td>
 				<td>{{ match.loser }}</td>
+				<td>{{ match.start_datetime }}</td>
+				<td>{{ match.end_datetime }}</td>
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+<h2>Pong3 Matches</h2>
+<table>
+	<thead>
+		<tr>
+			<th>Paddle 1</th>
+			<th>Paddle 2</th>
+			<th>Ball</th>
+			<th>Winning side</th>
+			<th>Start Date</th>
+			<th>End Date</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for match in pong3_matches %}
+			<tr>
+				<td>{{ match.paddle1 }}</td>
+				<td>{{ match.paddle2 }}</td>
+				<td>{{ match.ball }}</td>
+				{% if match.ball_won %}
+					<td>The ball won</td>
+				{% else %}
+					<td>The paddles won</td>
+				{% endif %}
 				<td>{{ match.start_datetime }}</td>
 				<td>{{ match.end_datetime }}</td>
 			</tr>

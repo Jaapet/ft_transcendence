@@ -17,6 +17,7 @@ from .views import (
 	DeclineFriendRequestAPIView,
 	RemoveFriendAPIView,
 	MatchViewSet,
+	Match3ViewSet,
 	MetricsView
 )
 from rest_framework_simplejwt import views as jwt_views
@@ -27,7 +28,8 @@ from rest_framework_simplejwt import views as jwt_views
 router = routers.DefaultRouter()
 router.register(r'members', MemberViewSet)
 router.register(r'friend_requests', FriendRequestViewSet)
-router.register(r'matches', MatchViewSet)
+router.register(r'pong2_matches', MatchViewSet)
+router.register(r'pong3_matches', Match3ViewSet)
 
 urlpatterns = [
 	path('', include(router.urls)),

@@ -11,8 +11,8 @@ Member objects contain:
 - is_admin		(booleanField)
 
 From Match objects:
-- matches_lost
-- matches_won
+- pong2_matches_lost
+- pong2_matches_won
 
 Indexed on:
 - username

@@ -1,4 +1,4 @@
-from .models import Member, FriendRequest, Match
+from .models import Member, FriendRequest, Match, Match3
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -214,6 +214,7 @@ class MatchSerializer(serializers.HyperlinkedModelSerializer):
 		fields = [
 			'url',
 			'id',
+			'type',
 			'winner',
 			'loser',
 			'winner_score',
@@ -239,3 +240,55 @@ class MatchSerializer(serializers.HyperlinkedModelSerializer):
 
 	def get_loser_id(self, obj):
 		return obj.loser.id if obj.loser else None
+
+class Match3Serializer(serializers.HyperlinkedModelSerializer):
+	paddle1_username = serializers.SerializerMethodField()
+	paddle2_username = serializers.SerializerMethodField()
+	ball_username = serializers.SerializerMethodField()
+	paddle1_id = serializers.SerializerMethodField()
+	paddle2_id = serializers.SerializerMethodField()
+	ball_id = serializers.SerializerMethodField()
+	start_date = serializers.DateTimeField(source='start_datetime', format='%B %d %Y')
+	end_date = serializers.DateTimeField(source='end_datetime', format='%B %d %Y')
+	start_time = serializers.DateTimeField(source='start_datetime', format='%H:%M')
+	end_time = serializers.DateTimeField(source='end_datetime', format='%H:%M')
+
+	class Meta:
+		model = Match3
+		fields = [
+			'url',
+			'id',
+			'type',
+			'paddle1',
+			'paddle2',
+			'ball',
+			'ball_won',
+			'start_date',
+			'end_date',
+			'start_time',
+			'end_time',
+			'paddle1_username',
+			'paddle2_username',
+			'ball_username',
+			'paddle1_id',
+			'paddle2_id',
+			'ball_id'
+		]
+
+	def get_paddle1_username(self, obj):
+		return obj.paddle1.username if obj.paddle1 else 'Deleted user'
+
+	def get_paddle2_username(self, obj):
+		return obj.paddle2.username if obj.paddle2 else 'Deleted user'
+
+	def get_ball_username(self, obj):
+		return obj.ball.username if obj.ball else 'Deleted user'
+
+	def get_paddle1_id(self, obj):
+		return obj.paddle1.id if obj.paddle1 else None
+
+	def get_paddle2_id(self, obj):
+		return obj.paddle2.id if obj.paddle2 else None
+
+	def get_ball_id(self, obj):
+		return obj.ball.id if obj.ball else None

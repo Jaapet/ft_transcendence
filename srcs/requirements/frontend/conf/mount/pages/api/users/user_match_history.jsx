@@ -45,8 +45,8 @@ export default async (req, res) => {
 			throw new Error(userData.detail || `Could not fetch data for user ${id}`);
 		}
 
-		// Fetch user's match history
-		const matchRes = await fetch(`http://backend:8000/api/matches/player_matches/?player_id=${id}`, {
+		// Fetch user's pong2 match history
+		const matchRes = await fetch(`http://backend:8000/api/pong2_matches/player_matches/?player_id=${id}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
