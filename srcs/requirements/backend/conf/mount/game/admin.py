@@ -5,7 +5,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
 from django.template.response import TemplateResponse
-from .models import Member, FriendRequest, Match
+from .models import Member, FriendRequest, Match, Match3
 
 # The content of this file is only used on Django Admin
 # You can ignore it for correction
@@ -55,7 +55,7 @@ class MemberAdmin(BaseUserAdmin):
 	list_filter = ["is_admin"]
 	fieldsets = [
 		(None, {"fields": ["username", "email", "password"]}),
-		("Other info", {"fields": ["avatar", "friends"]}),
+		("Other info", {"fields": ["avatar", "elo_pong", "friends"]}),
 		("Permissions", {"fields": ["is_superuser", "is_admin"]})
 	]
 	# add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
@@ -71,7 +71,8 @@ class MemberAdmin(BaseUserAdmin):
 	def change_view(self, request, object_id, form_url='', extra_context=None):
 		extra_context = extra_context or {}
 		member = self.get_object(request, object_id)
-		matches = Match.objects.filter(models.Q(winner=member) | models.Q(loser=member))
+		pong2_matches = Match.objects.filter(models.Q(winner=member) | models.Q(loser=member))
+		pong3_matches = Match3.objects.filter(models.Q(paddle1=member) | models.Q(paddle2=member) | models.Q(ball=member))
 
 		# Get default context from the changelist
 		ModelForm = self.get_form(request, member)
@@ -96,7 +97,8 @@ class MemberAdmin(BaseUserAdmin):
 				inline_formsets.append(inline_formset)
 
 		extra_context.update({
-			'matches': matches,
+			'pong2_matches': pong2_matches,
+			'pong3_matches': pong3_matches,
 			'opts': self.model._meta,
 			'original': member,
 			'title': 'Change member',
@@ -126,3 +128,7 @@ admin.site.register(FriendRequest, FriendRequestAdmin)
 class MatchAdmin(admin.ModelAdmin):
 	list_display = ("winner", "loser", "start_datetime", "end_datetime")
 admin.site.register(Match, MatchAdmin)
+
+class Match3Admin(admin.ModelAdmin):
+	list_display = ("paddle1", "paddle2", "ball", "ball_won", "start_datetime", "end_datetime")
+admin.site.register(Match3, Match3Admin)

@@ -1,7 +1,9 @@
 import os
-from .models import Member, FriendRequest, Match
+from .models import Member, FriendRequest, Match, Match3
+from django.conf import settings
+from django.utils import timezone
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework import viewsets, permissions, status
@@ -10,7 +12,13 @@ from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from rest_framework.parsers import MultiPartParser
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
+from django_otp.plugins.otp_totp.models import TOTPDevice
+import qrcode
+from io import BytesIO
 from .serializers import (
+	CustomTokenObtainPairSerializer,
 	MemberSerializer,
 	RegisterMemberSerializer,
 	UpdateMemberSerializer,
@@ -19,8 +27,56 @@ from .serializers import (
 	SendFriendRequestSerializer,
 	InteractFriendRequestSerializer,
 	RemoveFriendSerializer,
-	MatchSerializer
+	MatchSerializer,
+	Match3Serializer
 )
+
+class Enable2FAView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def post(self, request, *args, **kwargs):
+		user = request.user
+
+		# Create or Get the user's TOTP device
+		device, created = TOTPDevice.objects.get_or_create(user=user, confirmed=True)
+		secret = device.config_url
+		print(f'device config url: {secret}') # debug
+
+		# Generate a QR code for the TOTP secret
+		qr_img = qrcode.make(secret)
+		buffer = BytesIO()
+		qr_img.save(buffer, format='PNG')
+		buffer.seek(0)
+
+		file_name = f'{user.id}_{timezone.now()}_qr.png'
+
+		file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+		with open(file_path, 'wb') as f:
+			f.write(buffer.getvalue())
+
+		file_url = os.path.join(settings.MEDIA_URL, file_name)
+
+		return JsonResponse({'secret_key': secret.split('secret=')[1].split('&')[0], 'qr_code_url': file_url},status=status.HTTP_201_CREATED)
+
+class Verify2FAView(APIView):
+	permission_classes = [permissions.AllowAny]
+
+	def post(self, request, *args, **kwargs):
+		user_id = request.data.get('user_id')
+		otp = request.data.get('otp')
+		user = Member.objects.get(id=user_id)
+		device = user.totpdevice_set.filter(confirmed=True).first()
+
+		if device and device.verify_token(otp):
+			refresh = RefreshToken.for_user(user)
+			return Response({
+				'refresh': str(refresh),
+				'access': str(refresh.access_token),
+			}, status=status.HTTP_200_OK)
+		return Response({'detail': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+	serializer_class = CustomTokenObtainPairSerializer
 
 # TODO: Check if this uses the index
 # Queries all members ordered by username
@@ -190,7 +246,7 @@ class RemoveFriendAPIView(APIView):
 		except ValueError as err:
 			return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
-# Queries all matches ordered by most recently finished
+# Queries all pong2 matches ordered by most recently finished
 # Requires authentication
 class MatchViewSet(viewsets.ModelViewSet):
 	permission_classes = [permissions.IsAuthenticated]
@@ -214,6 +270,33 @@ class MatchViewSet(viewsets.ModelViewSet):
 		if (player_id is None):
 			return Response({'error': 'Player ID is required'}, status=status.HTTP_400_BAD_REQUEST)
 		player_matches = Match.objects.filter(Q(winner_id=player_id) | Q(loser_id=player_id)).select_related("winner", "loser").order_by('-end_datetime')[:3]
+		serializer = self.get_serializer(player_matches, many=True)
+		return Response(serializer.data)
+
+# Queries all pong3 matches ordered by most recently finished
+# Requires authentication
+class Match3ViewSet(viewsets.ModelViewSet):
+	permission_classes = [permissions.IsAuthenticated]
+	serializer_class = Match3Serializer
+	queryset = Match3.objects.all().select_related("paddle1", "paddle2", "ball").order_by('-end_datetime')
+
+	# Get all matches involving 1 player
+	@action(detail=False, methods=['get'])
+	def player_matches(self, request, pk=None):
+		player_id = request.query_params.get('player_id', None)
+		if (player_id is None):
+			return Response({'error': 'Player ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+		player_matches = Match3.objects.filter(Q(paddle1_id=player_id) | Q(paddle2_id=player_id) | Q(ball_id=player_id)).select_related("paddle1", "paddle2", "ball").order_by('-end_datetime')
+		serializer = self.get_serializer(player_matches, many=True)
+		return Response(serializer.data)
+
+	# Get a player's last 3 matches
+	@action(detail=False, methods=['get'])
+	def last_player_matches(self, request, pk=None):
+		player_id = request.query_params.get('player_id', None)
+		if (player_id is None):
+			return Response({'error': 'Player ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+		player_matches = Match.objects.filter(Q(paddle1_id=player_id) | Q(paddle2_id=player_id) | Q(ball_id=player_id)).select_related("paddle1", "paddle2", "ball").order_by('-end_datetime')[:3]
 		serializer = self.get_serializer(player_matches, many=True)
 		return Response(serializer.data)
 

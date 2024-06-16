@@ -29,6 +29,10 @@ export default async (req, res) => {
 			throw new Error(tokData.detail || 'Could not fetch tokens');
 		}
 
+		if (tokData.requires_2fa && tokData.user_id) {
+			return res.status(200).json({ requires_2fa: tokData.requires_2fa, user_id: tokData.user_id });
+		}
+
 		// Store refresh token in a cookie
 		res.setHeader(
 			'Set-Cookie',

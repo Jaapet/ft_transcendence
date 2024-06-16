@@ -63,6 +63,9 @@ INSTALLED_APPS = [
 	'rest_framework',
 	'corsheaders',
 	'game',
+	'django_otp',
+	'django_otp.plugins.otp_totp',
+	'qrcode',
 	'django.contrib.admin',
 	'django.contrib.auth',
 	'django.contrib.contenttypes',
@@ -81,6 +84,7 @@ MIDDLEWARE = [
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
 	'game.middleware.UpdateLastActivityMiddleware',
+	'django_otp.middleware.OTPMiddleware',
 ]
 
 # CORS_ALLOW_ALL_ORIGINS = True
