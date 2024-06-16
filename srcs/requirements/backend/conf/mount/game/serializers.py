@@ -1,5 +1,23 @@
 from .models import Member, FriendRequest, Match
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django_otp.plugins.otp_totp.models import TOTPDevice
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+	def validate(self, attrs):
+		data = super().validate(attrs)
+		user = self.user
+
+		device = TOTPDevice.objects.filter(user=user, confirmed=True).first()
+		print('DEVICE', device)
+
+		if device:
+			return {'requires_2fa': True, 'user_id': user.id}
+		else:
+			refresh = self.get_token(self.user)
+			data['refresh'] = str(refresh)
+			data['access'] = str(refresh.access_token)
+			return data
 
 # Limiting sizes of file uploads
 # Currently to 10MB

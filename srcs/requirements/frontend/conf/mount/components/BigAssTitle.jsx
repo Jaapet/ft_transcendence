@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import styles from '../styles/home.module.css';
+import { useAuth } from '../context/AuthenticationContext';
 
 const BigTitle = () => (
 	<div className={styles.title}>
@@ -11,9 +12,12 @@ const BigTitle = () => (
 			<Link href="/chooseGame" passHref className={styles.button}>
 				Game
 			</Link>
-			<Link href="/settings" passHref className={styles.button}>
-				Settings
+
+			{/*				Put something useful here idk 
+			<Link href={`${user.id}/friends`} passHref className={styles.button}>
+				Friends
 			</Link>
+			*/}
 		</div>
 	</div>
 );

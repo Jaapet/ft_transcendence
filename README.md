@@ -55,3 +55,4 @@ As we are not required to complete all modules, here is our temporary selection:
 - [Django + Next.js project walkthrough](https://youtube.com/playlist?list=PLPSM8rIid1a0SMqmFOfoHRbyfQ5ipQX79&si=Hx5byuBxDHRUbHmL) <-- INSANELY USEFUL!!!
 - [How to Use JWT Authentication with Django REST Framework](https://simpleisbetterthancomplex.com/tutorial/2018/12/19/how-to-use-jwt-authentication-with-django-rest-framework.html)
 - [Planning DB](https://app.diagrams.net/)
+- [Socket.IO docs](https://socket.io/docs/v3/)

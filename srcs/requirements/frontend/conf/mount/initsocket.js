@@ -1,63 +1,276 @@
-const http = require('http');
-const { Server } = require('socket.io');
+// TODO: Rename this file to server.js
 const express = require('express');
-const cors = require('cors');
+const http = require('http');
+const socketIO = require('socket.io');
 
-console.log("init socketssss\n\n\n\n\n\n");
+const PORT = 3001; // Using port 3001 for WebSocket server
+
 const app = express();
-// Configurer CORS pour permettre les requêtes depuis toutes les origines (pour le prototype seulement)
-app.use(cors({
-  origin: '*',  // Permettre toutes les origines
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true // Si nécessaire
-}));
-
-// Middleware pour définir les en-têtes CORS
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET,POST');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  next();
-});
-
-app.use('/websocket', (req, res, next) => {
-	console.log('Request received on /websocket');
-	next();
-  });
-// Exemple de route pour tester le serveur
-app.get('/websocket', (req, res) => {
-  res.send('Hello World!');
-});
-
-
-// Créer le serveur HTTP
 const server = http.createServer(app);
-
-// Initialiser Socket.io avec le serveur HTTP
-const io = new Server(server, {
-  cors: {
-    origin: '*',  // Permettre toutes les origines
-    methods: ['GET', 'POST'],
-    credentials: true // Si nécessaire
-  }
+const io = socketIO(server, {
+	cors: {
+		origin: "*",
+		methods: ["GET", "POST"]
+	}
 });
 
-io.on('connection', (socket) => {
-  console.log('A user connected');
+/* HOW TO USE
 
-  socket.on('messageFromClient', (data) => {
-    console.log('Received from client:', data);
-    socket.emit('messageFromServer', { message: 'Message received!' });
-  });
+In client-side code (pong/royal.jsx):
+```
+	useEffect((user) => {
+		const socket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`);
+		socket.emit('join', { gameType: 'pong2', userId: user.id, userAvatar: user.avatar });
 
-  socket.on('disconnect', () => {
-    console.log('User disconnected');
-  });
+		socket.on('connect', () => {
+			console.log('Connected to websocket server');
+		});
+		socket.on('connect_error', (error) => {
+			console.error('Connection error for websocket server:', error);
+		});
+		socket.on('disconnect', () => {
+			console.log('Disconnected from websocket server');
+		});
+
+		function handleInput(event) {
+			socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keydown' } });
+		}
+
+		// ...display code
+```
+*/
+
+// Will contain all of our rooms
+const rooms = {
+	pong2: {},
+	pong3: {},
+	royal: {}
+};
+
+// Constants
+const PONG2_NB_PLAYERS = 2;
+const PONG3_NB_PLAYERS = 3;
+const ROYAL_MIN_PLAYERS = 2;
+const ROYAL_MAX_PLAYERS = 8;
+const ROYAL_START_TIMEOUT = 30000; // 30 seconds
+
+// TODO: Make client send gameType and maxPlayers in new message that will set the player's room
+io.on('connection', socket => {
+	console.log(`New client connected: ${socket.id}`);
+
+	// DISCONNECT HANDLER
+	socket.on('disconnect', () => {
+		console.log(`Client disconnected: ${socket.id}`);
+		removePlayerFromRoom(socket.id);
+	});
+
+	// JOIN HANDLER
+	socket.on('join', ({ gameType, userId, userAvatar }) => {
+		// Join existing room or create a new one
+		const room = findOrCreateRoom(gameType);
+		addPlayerToRoom(room, socket, userId, userAvatar);
+
+		// DEBUG
+		io.to(socket.id).emit('info', { message: `You joined room ${room.id} [${gameType}]` });
+		if (isRoomFull(gameType, room.id)) {
+			io.to(room.id).emit('info', { message: `Room ${room.id} [${gameType}] is now full` });
+		}
+
+		// Set player as ready
+		room.players[socket.id].ready = true;
+
+		// Start game if it can be started
+		checkGameStart(room, gameType);
+	});
+
+	// INPUT HANDLER
+	// TODO: This is where the actual game logic will live :)
+	socket.on('input', ({ gameType, input }) => {
+		// Find current room of player
+		const room = findRoomByPlayerId(gameType, socket.id);
+		if (room) {
+			// Broadcast input to all players in the room
+			socket.to(room.id).emit('input', { playerId: socket.id, input });
+		}
+	});
+
+	// Finds or creates a room for the player
+	function findOrCreateRoom(gameType) {
+		// For all rooms in selected game type, return the first one that is not full
+		for (const roomId in rooms[gameType]) {
+			if (!isRoomFull(gameType, roomId) && !isRoomLaunched(gameType, roomId)) {
+				return rooms[gameType][roomId];
+			}
+		}
+
+		// If no available rooms, create a new one
+		const newRoomId = generateRoomId(gameType);
+		switch (gameType) {
+			case 'pong3':
+				rooms[gameType][newRoomId] = { id: newRoomId, launched: false, maxPlayers: PONG3_NB_PLAYERS, players: {} };
+				break ;
+			case 'royal':
+				rooms[gameType][newRoomId] = { id: newRoomId, launched: false, maxPlayers: ROYAL_MAX_PLAYERS, players: {} };
+				break ;
+			default:
+				rooms[gameType][newRoomId] = { id: newRoomId, launched: false, maxPlayers: PONG2_NB_PLAYERS, players: {} };
+		}
+		return rooms[gameType][newRoomId];
+	}
+
+	// Generates a new unique room ID
+	function generateRoomId(gameType) {
+		let newRoomId = '';
+		do {
+			newRoomId = Math.random().toString(36).substring(2, 11);
+		} while (rooms[gameType][newRoomId]);
+		return newRoomId;
+	}
+
+	// Adds a player to a room
+	// Does nothing if either room or socket does not exist
+	function addPlayerToRoom(room, socket, userId, userAvatar) {
+		if (room && socket) {
+			socket.join(room.id);
+			room.players[socket.id] = {
+				id: userId,
+				ready: false,
+				avatar: userAvatar
+			};
+		}
+	}
+
+	// Removes player from their room
+	function removePlayerFromRoom(playerId) {
+		for (const gameType in rooms) {
+			for (const roomId in rooms[gameType]) {
+				if (rooms[gameType][roomId].players[playerId]) {
+					delete rooms[gameType][roomId].players[playerId];
+					// If the room becomes empty, delete it
+					if (roomPlayerNb(gameType, roomId) === 0) {
+						delete rooms[gameType][roomId];
+					}
+					return;
+				}
+			}
+		}
+	}
+
+	// Checks if all players in a room are ready
+	function allPlayersReady(players) {
+		for (const playerId in players) {
+			if (!players[playerId].ready) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	// Returns true if a room is full or if it doesn't exist
+	// Returns false otherwise
+	function isRoomFull(gameType, roomId) {
+		const playerNb = roomPlayerNb(gameType, roomId);
+		return (playerNb === -1 || playerNb >= rooms[gameType][roomId].maxPlayers)
+	}
+
+	// Returns true if a room is launched or if it doesn't exist
+	// Returns false otherwise
+	function isRoomLaunched(gameType, roomId) {
+		if (rooms[gameType][roomId]) {
+			return rooms[gameType][roomId].launched;
+		}
+		return true;
+	}
+
+	// Returns the current number of players in a room
+	// Returns -1 if the room does not exist
+	function roomPlayerNb(gameType, roomId) {
+		if (rooms[gameType][roomId]) {
+			return Object.keys(rooms[gameType][roomId].players).length;
+		}
+		return -1
+	}
+
+	// Returns the player's current room by player ID
+	// Returns null if it can't find it
+	function findRoomByPlayerId(gameType, playerId) {
+		for (const roomId in rooms[gameType]) {
+			if (rooms[gameType][roomId].players[playerId]) {
+				return rooms[gameType][roomId];
+			}
+		}
+		return null;
+	}
+
+	// Checks if a game can be started and starts it if the answer is yes
+	// Does nothing if room does not exist, is already launched, or if its players are not ready
+	function checkGameStart(room, gameType) {
+		if (!room || isRoomLaunched(gameType, room.id) || !allPlayersReady(room.players)) {
+			return ;
+		}
+
+		switch (gameType) {
+			case 'royal':
+				startRoyalGame(room);
+				break ;
+			case 'pong2':
+			case 'pong3':
+			default:
+				startPongGame(room, gameType);
+		}
+	}
+
+	// Starts a game of pong2 (1v1)
+	// Does nothing if there are less than 2 players in the room
+	// Does nothing if room does not exist, is already launched, or if its players are not ready
+	function startPongGame(room, gameType) {
+		if (!room || isRoomLaunched(gameType, room.id) || !allPlayersReady(room.players)) {
+			return ;
+		}
+
+		// If the room is full, launch the game
+		if (isRoomFull(gameType, room.id)) {
+			launchGame(room);
+		}
+	}
+
+	// Starts a game of royal
+	// Does nothing if there are less than ROYAL_MIN_PLAYERS in the room
+	// Does nothing if room does not exist, is already launched, or if its players are not ready
+	function startRoyalGame(room) {
+		if (!room || isRoomLaunched(gameType, room.id) || !allPlayersReady(room.players)) {
+			return ;
+		}
+
+		if (roomPlayerNb('royal', room.id) >= ROYAL_MIN_PLAYERS) {
+			// If the room is full, launch the game
+			if (isRoomFull('royal', room.id)) {
+				launchGame(room);
+				return ;
+			}
+			// If the room is not full, starts timer for forced launch
+			setTimeout(() => {
+				// Need to recheck if room still exists and there are enough
+				// players in it since this could have changed in the meantime
+				if (room && !room.launched && roomPlayerNb(gameType, room.id) >= ROYAL_MIN_PLAYERS) {
+					launchGame(room);
+				}
+			}, ROYAL_START_TIMEOUT);
+		}
+	}
+
+	// Sends a gameStart message to all players in the room and sets launched to true
+	// Does nothing if room does not exist, is already launched, or if its players are not ready
+	function launchGame(room) {
+		if (!room || isRoomLaunched(gameType, room.id) || !allPlayersReady(room.players)) {
+			return ;
+		}
+
+		room.launched = true;
+		io.to(room.id).emit('gameStart', { players: room.players });
+	}
 });
 
-const PORT = `3001`;
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+	console.log(`WebSocket server running on port ${PORT}`);
 });
