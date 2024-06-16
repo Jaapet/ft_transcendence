@@ -68,7 +68,13 @@ io.on('connection', socket => {
 	socket.on('join', ({ gameType, userId, userAvatar }) => {
 		// Join existing room or create a new one
 		const room = findOrCreateRoom(gameType);
-		addPlayerToRoom(room, socket.id, userId, userAvatar);
+		addPlayerToRoom(room, socket, userId, userAvatar);
+
+		// DEBUG
+		io.to(socket.id).emit('info', { message: `You joined room ${room.id} [${gameType}]` });
+		if (isRoomFull(gameType, room.id)) {
+			io.to(room.id).emit('info', { message: `Room ${room.id} [${gameType}] is now full` });
+		}
 
 		// Set player as ready
 		room.players[socket.id].ready = true;
@@ -92,7 +98,7 @@ io.on('connection', socket => {
 	function findOrCreateRoom(gameType) {
 		// For all rooms in selected game type, return the first one that is not full
 		for (const roomId in rooms[gameType]) {
-			if (!isRoomFull(gameType, roomId)) {
+			if (!isRoomFull(gameType, roomId) && !isRoomLaunched(gameType, roomId)) {
 				return rooms[gameType][roomId];
 			}
 		}
@@ -122,9 +128,11 @@ io.on('connection', socket => {
 	}
 
 	// Adds a player to a room
-	function addPlayerToRoom(room, playerId, userId, userAvatar) {
-		if (room) {
-			room.players[playerId] = {
+	// Does nothing if either room or socket does not exist
+	function addPlayerToRoom(room, socket, userId, userAvatar) {
+		if (room && socket) {
+			socket.join(room.id);
+			room.players[socket.id] = {
 				id: userId,
 				ready: false,
 				avatar: userAvatar
@@ -139,7 +147,7 @@ io.on('connection', socket => {
 				if (rooms[gameType][roomId].players[playerId]) {
 					delete rooms[gameType][roomId].players[playerId];
 					// If the room becomes empty, delete it
-					if (Object.keys(rooms[gameType][roomId].players).length === 0) {
+					if (roomPlayerNb(gameType, roomId) === 0) {
 						delete rooms[gameType][roomId];
 					}
 					return;
@@ -165,6 +173,15 @@ io.on('connection', socket => {
 		return (playerNb === -1 || playerNb >= rooms[gameType][roomId].maxPlayers)
 	}
 
+	// Returns true if a room is launched or if it doesn't exist
+	// Returns false otherwise
+	function isRoomLaunched(gameType, roomId) {
+		if (rooms[gameType][roomId]) {
+			return rooms[gameType][roomId].launched;
+		}
+		return true;
+	}
+
 	// Returns the current number of players in a room
 	// Returns -1 if the room does not exist
 	function roomPlayerNb(gameType, roomId) {
@@ -188,7 +205,7 @@ io.on('connection', socket => {
 	// Checks if a game can be started and starts it if the answer is yes
 	// Does nothing if room does not exist, is already launched, or if its players are not ready
 	function checkGameStart(room, gameType) {
-		if (!room || room.launched || !allPlayersReady(room.players)) {
+		if (!room || isRoomLaunched(gameType, room.id) || !allPlayersReady(room.players)) {
 			return ;
 		}
 
@@ -207,7 +224,7 @@ io.on('connection', socket => {
 	// Does nothing if there are less than 2 players in the room
 	// Does nothing if room does not exist, is already launched, or if its players are not ready
 	function startPongGame(room, gameType) {
-		if (!room || room.launched || !allPlayersReady(room.players)) {
+		if (!room || isRoomLaunched(gameType, room.id) || !allPlayersReady(room.players)) {
 			return ;
 		}
 
@@ -221,7 +238,7 @@ io.on('connection', socket => {
 	// Does nothing if there are less than ROYAL_MIN_PLAYERS in the room
 	// Does nothing if room does not exist, is already launched, or if its players are not ready
 	function startRoyalGame(room) {
-		if (!room || room.launched || !allPlayersReady(room.players)) {
+		if (!room || isRoomLaunched(gameType, room.id) || !allPlayersReady(room.players)) {
 			return ;
 		}
 
@@ -229,6 +246,7 @@ io.on('connection', socket => {
 			// If the room is full, launch the game
 			if (isRoomFull('royal', room.id)) {
 				launchGame(room);
+				return ;
 			}
 			// If the room is not full, starts timer for forced launch
 			setTimeout(() => {
@@ -244,7 +262,7 @@ io.on('connection', socket => {
 	// Sends a gameStart message to all players in the room and sets launched to true
 	// Does nothing if room does not exist, is already launched, or if its players are not ready
 	function launchGame(room) {
-		if (!room || room.launched || !allPlayersReady(room.players)) {
+		if (!room || isRoomLaunched(gameType, room.id) || !allPlayersReady(room.players)) {
 			return ;
 		}
 
