@@ -1,4 +1,12 @@
 
+.container{
+	min-width: 100vw;
+    min-height: 100vh;
+	background-image: url('../public/images/stars.png'); 
+	background-size: 25%;
+	background-position: center;
+	background-repeat: repeat;
+}
 
 .videoBackground {	/* to make full gif appear*/
     position: relative;
@@ -21,11 +29,7 @@
     position: absolute;
     top: 0;
     left: 0;
-    min-width: 100vw;
-    min-height: 100vh;
-	background-image: url('../public/images/stars.png'); 
-	background-size: 40%;
-	background-repeat: repeat;
+ 
     z-index: -1; /*black is under the gif*/
 }
 
@@ -42,7 +46,7 @@
 
 @font-face {
     font-family: "buttons";
-    src: url("../public/fonts/Executive\ Boss\ Script.ttf") format("truetype");
+    src: url("../public/fonts/Doodle.ttf") format("truetype");
 }
 
 
@@ -51,13 +55,13 @@
 	position: absolute;
 	text-align: center;
     z-index: 2; 
-    top: 50%; 
+    top: 60%; 
     left: 50%; 
     transform: translate(-50%, -50%);
     
 	color:#ad5df8;
 	font-family: "title font", sans-serif;
-	font-size: 2em;
+	font-size: 3em;
 }
 
 .buttons {
@@ -71,11 +75,12 @@
 	color:transparent;
     text-decoration:none;
     margin-right: 32px;
-	position: relative; 
-	top: 4cm;
+	position: relative;
+	top: 1cm;
 	font-family: "buttons", sans-serif;
-	font-size: 2em;;
+	font-size: 2.2em;
 	transition: background-color 0.3s ease;
+	margin: 2cm;
 }
 
 .button:hover {
