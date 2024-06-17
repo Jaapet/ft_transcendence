@@ -1,9 +1,10 @@
 import os
 from .models import Member, FriendRequest, Match, Match3
 from django.conf import settings
+from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.db.models import Q
-from django.http import HttpResponse, JsonResponse
+from django.contrib.auth import get_user_model
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework import viewsets, permissions, status
@@ -31,16 +32,20 @@ from .serializers import (
 	Match3Serializer
 )
 
+# Enables 2FA for current user
 class Enable2FAView(APIView):
 	permission_classes = [permissions.IsAuthenticated]
 
 	def post(self, request, *args, **kwargs):
 		user = request.user
 
+		# Check if the user already has a TOTP device
+		if TOTPDevice.objects.filter(user=user, confirmed=True).exists():
+			return Response({'detail': '2FA is already enabled for this user'}, status=status.HTTP_400_BAD_REQUEST)
+
 		# Create or Get the user's TOTP device
-		device, created = TOTPDevice.objects.get_or_create(user=user, confirmed=True)
+		device = TOTPDevice.objects.create(user=user, confirmed=True)
 		secret = device.config_url
-		print(f'device config url: {secret}') # debug
 
 		# Generate a QR code for the TOTP secret
 		qr_img = qrcode.make(secret)
@@ -58,14 +63,24 @@ class Enable2FAView(APIView):
 
 		return JsonResponse({'secret_key': secret.split('secret=')[1].split('&')[0], 'qr_code_url': file_url},status=status.HTTP_201_CREATED)
 
+# Verifies 2FA token for user login and returns JWT
 class Verify2FAView(APIView):
 	permission_classes = [permissions.AllowAny]
 
 	def post(self, request, *args, **kwargs):
 		user_id = request.data.get('user_id')
 		otp = request.data.get('otp')
-		user = Member.objects.get(id=user_id)
+		if not user_id or not otp:
+			return Response({'detail': 'Both user_id and otp are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+		try:
+			user = get_user_model().objects.get(id=user_id)
+		except get_user_model().DoesNotExist:
+			return Response({'detail': 'Invalid user_id'}, status=status.HTTP_400_BAD_REQUEST)
+
 		device = user.totpdevice_set.filter(confirmed=True).first()
+		if not device:
+			return Response({'detail': 'User does not have 2FA enabled'}, status=status.HTTP_400_BAD_REQUEST)
 
 		if device and device.verify_token(otp):
 			refresh = RefreshToken.for_user(user)
@@ -73,8 +88,12 @@ class Verify2FAView(APIView):
 				'refresh': str(refresh),
 				'access': str(refresh.access_token),
 			}, status=status.HTTP_200_OK)
+
 		return Response({'detail': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
 
+# Checks username and password validity for login
+# Logs in directly if 2FA is disabled
+# Notifies that 2FA is required otherwise
 class CustomTokenObtainPairView(TokenObtainPairView):
 	serializer_class = CustomTokenObtainPairSerializer
 

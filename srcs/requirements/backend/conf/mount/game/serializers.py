@@ -3,13 +3,15 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
+# Checks username and password validity for login
+# Logs in directly if 2FA is disabled
+# Notifies that 2FA is required otherwise
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 	def validate(self, attrs):
 		data = super().validate(attrs)
 		user = self.user
 
 		device = TOTPDevice.objects.filter(user=user, confirmed=True).first()
-		print('DEVICE', device)
 
 		if device:
 			return {'requires_2fa': True, 'user_id': user.id}
