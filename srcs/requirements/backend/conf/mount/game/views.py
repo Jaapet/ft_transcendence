@@ -368,10 +368,21 @@ class MatchViewSet(viewsets.ModelViewSet):
 		serializer = self.get_serializer(player_matches, many=True)
 		return Response(serializer.data)
 
+# Custom permissions for Match3ViewSet
+class Match3ViewSetPermissions(permissions.BasePermission):
+	def has_permission(self, request, view):
+		# Admins have full access
+		if request.user and request.user.is_staff:
+			return True
+		# Users can only use these actions (all matches, 1 match, all matches for 1 user, 3 last matches for 1 user)
+		if request.user and view.action in ['list', 'retrieve', 'player_matches', 'last_player_matches']:
+			return True
+		return False
+
 # Queries all pong3 matches ordered by most recently finished
 # Requires authentication
 class Match3ViewSet(viewsets.ModelViewSet):
-	permission_classes = [permissions.IsAuthenticated]
+	permission_classes = [permissions.IsAuthenticated, Match3ViewSetPermissions]
 	serializer_class = Match3Serializer
 	queryset = Match3.objects.all().select_related("paddle1", "paddle2", "ball").order_by('-end_datetime')
 
