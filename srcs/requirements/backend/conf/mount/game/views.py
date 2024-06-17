@@ -86,7 +86,7 @@ class MemberViewSet(viewsets.ModelViewSet):
 	serializer_class = MemberSerializer
 	queryset = Member.objects.all().order_by('username')
 
-# Queries one member
+# Queries the currently logged-in user
 # Used for authentication
 class MemberAPIView(RetrieveAPIView):
 	permission_classes = [permissions.IsAuthenticated]
@@ -95,7 +95,7 @@ class MemberAPIView(RetrieveAPIView):
 	def get_object(self):
 		return self.request.user
 
-# Creates one member
+# Creates a user
 # Used for registration
 class RegisterMemberAPIView(APIView):
 	permission_classes = [permissions.AllowAny]
@@ -113,13 +113,14 @@ class RegisterMemberAPIView(APIView):
 		print(serializer.errors)
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# Edits the currently logged-in user
 class UpdateMemberAPIView(UpdateAPIView):
 	permission_classes = [permissions.IsAuthenticated]
 	serializer_class = UpdateMemberSerializer
 	parser_classes = [MultiPartParser]
 
 	def put(self, request, *args, **kwargs):
-		serializer = self.serializer_class(data=request.data, instance=request.user, context={'request': request})
+		serializer = self.serializer_class(data=request.data, instance=request.user, context={ 'request': request })
 		if serializer.is_valid():
 			serializer.save()
 			return Response(serializer.data, status=status.HTTP_200_OK)
@@ -128,6 +129,7 @@ class UpdateMemberAPIView(UpdateAPIView):
 		print(serializer.errors)
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# Queries the currently logged-in user's friend list
 class FriendListAPIView(APIView):
 	permission_classes = [permissions.IsAuthenticated]
 
@@ -137,10 +139,31 @@ class FriendListAPIView(APIView):
 		serializer = FriendSerializer(friends, many=True, context={'request': request})
 		return Response(serializer.data)
 
+# Custom permissions for FriendRequestViewSet
+class FriendRequestViewSetPermissions(permissions.BasePermission):
+	def has_permission(self, request, view):
+		# Admins have full access
+		if request.user and request.user.is_staff:
+			return True
+		# Users can only use these actions (1 F reqs, all F reqs by 1 user, all F reqs for 1 user)
+		if request.user and view.action in ['retrieve', 'requests_sent', 'requests_received']:
+			return True
+		return False
+
+	def has_object_permission(self, request, view, obj):
+		# Admins have full access
+		if request.user and request.user.is_staff:
+			return True
+		# Users can only access their own friend requests through retrieve
+		# For custom actions permissions, check them in FriendRequestViewSet
+		if view.action in ['retrieve']:
+			return obj.sender == request.user or obj.recipient == request.user
+		return False
+
 # Queries all friend requests ordered by most recent
 # Requires authentication
 class FriendRequestViewSet(viewsets.ModelViewSet):
-	permission_classes = [permissions.IsAuthenticated]
+	permission_classes = [permissions.IsAuthenticated, FriendRequestViewSetPermissions]
 	serializer_class = FriendRequestSerializer
 	queryset = FriendRequest.objects.all().select_related("sender", "recipient").order_by('-datetime')
 
@@ -150,6 +173,11 @@ class FriendRequestViewSet(viewsets.ModelViewSet):
 		user_id = request.query_params.get('user_id', None)
 		if (user_id is None):
 			return Response({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+		# Only allow user to see their own sent requests
+		if request.user.id != int(user_id):
+			return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+
 		user_requests = FriendRequest.objects.filter(Q(sender_id=user_id)).select_related("sender", "recipient").order_by('-datetime')
 		serializer = self.get_serializer(user_requests, many=True)
 		return Response(serializer.data)
@@ -160,6 +188,11 @@ class FriendRequestViewSet(viewsets.ModelViewSet):
 		user_id = request.query_params.get('user_id', None)
 		if (user_id is None):
 			return Response({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+		# Only allow user to see their own received requests
+		if request.user.id != int(user_id):
+			return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+
 		user_requests = FriendRequest.objects.filter(Q(recipient_id=user_id)).select_related("sender", "recipient").order_by('-datetime')
 		serializer = self.get_serializer(user_requests, many=True)
 		return Response(serializer.data)
