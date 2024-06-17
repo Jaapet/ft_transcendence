@@ -56,6 +56,7 @@ class MemberManager(BaseUserManager):
 # - last_activity
 # - join_date + username
 # - DESC join_date + username
+# - elo_pong
 class Member(AbstractBaseUser, PermissionsMixin):
 	username = models.CharField(
 		max_length=25,
@@ -129,7 +130,8 @@ class Member(AbstractBaseUser, PermissionsMixin):
 			models.Index(fields=["username"], name="member_username_idx"),
 			models.Index(fields=["last_activity"], name="member_last_activity_idx"),
 			models.Index(fields=["join_date", "username"], name="member_join_date_idx"),
-			models.Index(fields=["-join_date", "username"], name="member_join_date_rev_idx")
+			models.Index(fields=["-join_date", "username"], name="member_join_date_rev_idx"),
+			models.Index(fields=["elo_pong"], name="member_elo_pong_idx")
 		]
 
 	def __str__(self):
