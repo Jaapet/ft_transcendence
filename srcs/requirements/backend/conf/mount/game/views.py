@@ -97,11 +97,30 @@ class Verify2FAView(APIView):
 class CustomTokenObtainPairView(TokenObtainPairView):
 	serializer_class = CustomTokenObtainPairSerializer
 
-# TODO: Check if this uses the index
+# Custom permissions for MemberViewSet
+class MemberViewSetPermissions(permissions.BasePermission):
+	def has_permission(self, request, view):
+		# Admins have full access
+		if request.user and request.user.is_staff:
+			return True
+		# Users can only use these actions (all users, 1 user)
+		if request.user and view.action in ['list', 'retrieve']:
+			return True
+		return False
+
+	def has_object_permission(self, request, view, obj):
+		# Admins have full access
+		if request.user and request.user.is_staff:
+			return True
+		# Users can only access the user list, and specific users
+		if view.action in ['list', 'retrieve']:
+			return True
+		return False
+
 # Queries all members ordered by username
 # Requires authentication
 class MemberViewSet(viewsets.ModelViewSet):
-	permission_classes = [permissions.IsAuthenticated]
+	permission_classes = [permissions.IsAuthenticated, MemberViewSetPermissions]
 	serializer_class = MemberSerializer
 	queryset = Member.objects.all().order_by('username')
 

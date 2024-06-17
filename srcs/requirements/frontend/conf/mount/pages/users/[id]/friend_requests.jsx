@@ -241,6 +241,10 @@ const UserFriendRequestsTable = ({ sent, recv, setSent, setRecv, setShowError, s
 		setActiveTab(eventKey);
 	}
 
+	if (!sent || !recv) {
+		return ;
+	}
+
 	return (
 		<Card
 			className="bg-dark text-white mt-3"
