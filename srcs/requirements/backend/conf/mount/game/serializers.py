@@ -139,7 +139,7 @@ class RemoveFriendSerializer(serializers.Serializer):
 		try:
 			target = Member.objects.get(id=value)
 		except Member.DoesNotExist:
-			raise serializers.ValidationError("Recipient does not exist.")
+			raise serializers.ValidationError("This user does not exist.")
 		return target
 
 class FriendRequestSerializer(serializers.HyperlinkedModelSerializer):
