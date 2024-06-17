@@ -406,13 +406,14 @@ class Match3ViewSet(viewsets.ModelViewSet):
 		serializer = self.get_serializer(player_matches, many=True)
 		return Response(serializer.data)
 
+# Custom authentication specific to Prometheus
 class PrometheusAuthentication(BaseAuthentication):
 	def authenticate(self, request):
 		# Check if the request contains the expected header
 		if 'Authorization' not in request.headers:
 			return None
 
-		# Validate the value of the header (you can implement your own logic here)
+		# Validate the token contained in the header and the expected syntax
 		auth_token = request.headers['Authorization']
 		if auth_token != 'Bearer ' + os.environ.get('METRICS_TOKEN_BACKEND'):
 			raise AuthenticationFailed('Invalid token')
@@ -421,9 +422,11 @@ class PrometheusAuthentication(BaseAuthentication):
 		return (self.dummy_user(), None)
 
 	def dummy_user(self):
-		# Create a dummy user object since we don't have real user authentication
+		# Create a dummy user with impossible username for regular users
 		return Member(username=';prometheus;')
 
+# Queries all metrics and returns it in Prometheus format
+# Only for Prometheus, hence the custom PrometheusAuthentication class
 class MetricsView(APIView):
 	authentication_classes = [PrometheusAuthentication]
 	permission_classes = [permissions.IsAuthenticated]
@@ -433,12 +436,13 @@ class MetricsView(APIView):
 		return HttpResponse(metrics, content_type='text/plain')
 
 	def collect_metrics(self):
-		# Collect metrics here and format them as Prometheus exposition format
+		# Collect metrics here and format them with Prometheus format
 		metrics = []
 		metrics += self.collect_total_users()
 		metrics += self.collect_online_users()
 		metrics += self.collect_total_friend_requests()
-		metrics += self.collect_total_pong_matches()
+		metrics += self.collect_total_pong2_matches()
+		metrics += self.collect_total_pong3_matches()
 		return '\n'.join(metrics)
 
 	def collect_total_users(self):
@@ -468,11 +472,20 @@ class MetricsView(APIView):
 		]
 		return metric
 
-	def collect_total_pong_matches(self):
-		total_pong_matches = Match.objects.count()
+	def collect_total_pong2_matches(self):
+		total_pong2_matches = Match.objects.count()
 		metric = [
-			'# HELP back_total_pong_matches Number of played pong matches',
-			'# TYPE back_total_pong_matches counter',
-			f'back_total_pong_matches {total_pong_matches}'
+			'# HELP back_total_pong2_matches Number of played 1v1 pong matches',
+			'# TYPE back_total_pong2_matches counter',
+			f'back_total_pong2_matches {total_pong2_matches}'
+		]
+		return metric
+
+	def collect_total_pong3_matches(self):
+		total_pong3_matches = Match3.objects.count()
+		metric = [
+			'# HELP back_total_pong3_matches Number of played 1v2 pong matches',
+			'# TYPE back_total_pong3_matches counter',
+			f'back_total_pong3_matches {total_pong3_matches}'
 		]
 		return metric
