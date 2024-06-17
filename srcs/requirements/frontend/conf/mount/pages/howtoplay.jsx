@@ -1,4 +1,3 @@
-// pages/how-to-play.jsx
 import React, { useState } from 'react';
 import {Row, Col, Button, Card, Dropdown } from 'react-bootstrap';
 import styles from '../styles/base.module.css';
@@ -13,7 +12,9 @@ const HowToPlay = () => {
 		return (
 			<Card className={styles.customCard}>
 			<Card.Body>
+			  
 			  <Card.Title className={styles.cardInfo}>Classic Pong Rules</Card.Title>
+				
 				<Dropdown>
 				  <Dropdown.Toggle variant="success" id="dropdown-basic">
 					{numberOfPlayers} Players
@@ -23,6 +24,7 @@ const HowToPlay = () => {
 					<Dropdown.Item onClick={() => setNumberOfPlayers(3)}>3 Players</Dropdown.Item>
 				  </Dropdown.Menu>
 				</Dropdown>
+
 				<div className="mt-3">
             {numberOfPlayers === 2 ? (
               <p className="text-justify">
@@ -40,6 +42,7 @@ const HowToPlay = () => {
         </Card.Body>
       </Card>
     );
+
   } /* royale pong */
 	else if (selectedGame === 'game2') {
       return (
@@ -58,17 +61,30 @@ const HowToPlay = () => {
   return (
 	<div className={styles.container}>
           <h1 className={styles.background_title } style={{marginTop: '0.5cm'}}>? How to Play ?</h1>
-          <Card className={styles.backCard} style={{marginTop: '0.5cm'}}>
-      <Row>
+          
+	<Card className={styles.backCard} style={{marginTop: '0.5cm'}}>
+    	<Row>
         <Col className="text-center">
-          <p>Select a game to view the instructions:</p>
-		  <Button variant="info" className={styles.button} style={{fontSize: '38px'}} onClick={() => setSelectedGame('game1') }>
-            Classic pong
-          </Button>
-          <Button variant="info" className={styles.button} style={{fontSize: '38px'}}onClick={() => setSelectedGame('game2')}>
-            Pong Royale
-          </Button>
-        </Col>
+          	<p>Select a game to view the instructions:</p>
+		
+			  <Button
+              className={`${styles.button} ${selectedGame === 'game1' ? styles.selected : ''}`}
+              style={{ fontSize: '38px' }}
+              onClick={() => setSelectedGame('game1')}
+            >
+              Classic Pong
+            </Button>
+          
+		 
+            <Button
+              className={`${styles.button} ${selectedGame === 'game2' ? styles.selected : ''}`}
+              style={{ fontSize: '38px' }}
+              onClick={() => setSelectedGame('game2')}
+            >
+				Pong Royale
+            </Button>
+        
+		</Col>
       </Row>
       <Row className="mt-4">
         <Col>

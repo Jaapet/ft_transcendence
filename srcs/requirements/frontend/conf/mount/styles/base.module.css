@@ -137,6 +137,11 @@
     box-shadow: 0 20px 20px rgba(217, 248, 38, 0.4);
 }
 
+.button.selected {
+	background: linear-gradient(45deg, #e0e0e0, #c9c9c9, #b3b3b3, #9d9d9d, #878787, #717171, #5c5c5c, #464646, #303030, #1a1a1a, #000000);
+	color: white;
+}
+
 /* lil profil buttons */
 .minorbutton {
 	position:flex;
