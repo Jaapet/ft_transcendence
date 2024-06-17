@@ -29,25 +29,18 @@ def validate_file_size(file):
 	if (file.size > max_size):
 		raise serializers.ValidationError(f"File size must be under {megabytes} MB")
 
-# Declaring the fields I want by hand to avoid problems with
-# permission-detail and lookup_field
-class MemberSerializer(serializers.HyperlinkedModelSerializer):
+# Restricted serializer for querying users that are not the current one
+class RestrictedMemberSerializer(serializers.HyperlinkedModelSerializer):
 	is_online = serializers.ReadOnlyField()
 
 	class Meta:
 		model = Member
 		fields = [
-			'url',
 			'id',
 			'username',
-			'password',
-			'email',
 			'avatar',
 			'join_date',
 			'elo_pong',
-			'friends',
-			'is_superuser',
-			'is_admin',
 			'is_online'
 		]
 
@@ -118,22 +111,6 @@ class UpdateMemberSerializer(serializers.HyperlinkedModelSerializer):
 			'email': {'required': False},
 			'avatar': {'required': False}
 		}
-
-class FriendSerializer(serializers.ModelSerializer):
-	is_online = serializers.ReadOnlyField()
-
-	class Meta:
-		model = Member
-		fields = [
-			'url',
-			'id',
-			'username',
-			'email',
-			'avatar',
-			'elo_pong',
-			'join_date',
-			'is_online'
-		]
 
 class SendFriendRequestSerializer(serializers.Serializer):
 	target_id = serializers.IntegerField()

@@ -20,10 +20,9 @@ import qrcode
 from io import BytesIO
 from .serializers import (
 	CustomTokenObtainPairSerializer,
-	MemberSerializer,
+	RestrictedMemberSerializer,
 	RegisterMemberSerializer,
 	UpdateMemberSerializer,
-	FriendSerializer,
 	FriendRequestSerializer,
 	SendFriendRequestSerializer,
 	InteractFriendRequestSerializer,
@@ -121,18 +120,19 @@ class MemberViewSetPermissions(permissions.BasePermission):
 # Requires authentication
 class MemberViewSet(viewsets.ModelViewSet):
 	permission_classes = [permissions.IsAuthenticated, MemberViewSetPermissions]
-	serializer_class = MemberSerializer
+	serializer_class = RestrictedMemberSerializer
 	queryset = Member.objects.all().order_by('username')
 
 # Queries the currently logged-in user
 # Used for authentication
 class MemberAPIView(RetrieveAPIView):
 	permission_classes = [permissions.IsAuthenticated]
-	serializer_class = MemberSerializer
+	serializer_class = RestrictedMemberSerializer
 
 	def get_object(self):
 		return self.request.user
 
+# TODO: Better user input validation and attempts logging
 # Creates a user
 # Used for registration
 class RegisterMemberAPIView(APIView):
@@ -146,11 +146,10 @@ class RegisterMemberAPIView(APIView):
 			avatar_data = request.data.get('avatar')
 			serializer.save(avatar=avatar_data)
 			return Response(serializer.data, status=status.HTTP_201_CREATED)
-		print("Invalid Serializer:")
-		print(serializer)
-		print(serializer.errors)
-		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+		else:
+			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# TODO: Better user input validation
 # Edits the currently logged-in user
 class UpdateMemberAPIView(UpdateAPIView):
 	permission_classes = [permissions.IsAuthenticated]
@@ -162,10 +161,8 @@ class UpdateMemberAPIView(UpdateAPIView):
 		if serializer.is_valid():
 			serializer.save()
 			return Response(serializer.data, status=status.HTTP_200_OK)
-		print("Invalid Serializer:")
-		print(serializer)
-		print(serializer.errors)
-		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+		else:
+			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # Queries the currently logged-in user's friend list
 class FriendListAPIView(APIView):
@@ -174,7 +171,7 @@ class FriendListAPIView(APIView):
 	def get(self, request):
 		user = request.user
 		friends = user.friends.all()
-		serializer = FriendSerializer(friends, many=True, context={'request': request})
+		serializer = RestrictedMemberSerializer(friends, many=True, context={'request': request})
 		return Response(serializer.data)
 
 # Custom permissions for FriendRequestViewSet
