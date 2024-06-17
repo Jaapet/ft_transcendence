@@ -234,11 +234,12 @@ class FriendRequestViewSet(viewsets.ModelViewSet):
 
 # Custom permissions for CheckFriendshipStatusAPIView
 class CheckFriendshipStatusAPIViewPermissions(permissions.BasePermission):
-	def has_permission(self, request, view):
+	def has_object_permission(self, request, view, obj):
 		# Allow admins to bypass permission check
 		if request.user and request.user.is_staff:
 			return True
-		# Allow users to check their own friendship status
+
+		# Allow users to check only their own friendship status
 		user1_id = int(request.query_params.get('user1_id'))
 		user2_id = int(request.query_params.get('user2_id'))
 		user_id = request.user.id
@@ -329,10 +330,21 @@ class RemoveFriendAPIView(APIView):
 		except ValueError as err:
 			return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
+# Custom permissions for MatchViewSet
+class MatchViewSetPermissions(permissions.BasePermission):
+	def has_permission(self, request, view):
+		# Admins have full access
+		if request.user and request.user.is_staff:
+			return True
+		# Users can only use these actions (all matches, 1 match, all matches for 1 user, 3 last matches for 1 user)
+		if request.user and view.action in ['list', 'retrieve', 'player_matches', 'last_player_matches']:
+			return True
+		return False
+
 # Queries all pong2 matches ordered by most recently finished
 # Requires authentication
 class MatchViewSet(viewsets.ModelViewSet):
-	permission_classes = [permissions.IsAuthenticated]
+	permission_classes = [permissions.IsAuthenticated, MatchViewSetPermissions]
 	serializer_class = MatchSerializer
 	queryset = Match.objects.all().select_related("winner", "loser").order_by('-end_datetime')
 
