@@ -15,34 +15,8 @@ const PongPage = () => {
 		  }}
 		>
 
-		  {/* Player info */}
-		  <div
-			className={`card ${styles.customCard}`}
-			style={{
-			  width: '200px', 
-			  marginRight: 'auto',
-			}}
-		  >
-			<div className={`card-body ${styles.cardInfo}`}>
-			  <h5>Player 1</h5>
-			  {/* Put the ball texture here */}
-			</div>
-		  </div>
+{/* you can put things here if you want */}
 
-
-		  {/* Current leaderboard */}
-		  <div
-			className={`card ${styles.customCard}`}
-			style={{
-			  width: '200px', 
-			  marginLeft: 'auto', 
-			}}
-		  >
-			<div className={`card-body ${styles.cardInfo}`}>
-			  <h5>Player 2</h5>
-			  {/* Put the leaderboard here */}
-			</div>
-		  </div>
 		</div>
 
 

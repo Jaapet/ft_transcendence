@@ -20,7 +20,7 @@ const Footer = () => {
 
 		  <Col sm={6} md={4}>
             <h6>Social Media</h6>
-              <div><a href="https://youtu.be/dQw4w9WgXcQ?feature=shared" className="text-white" target="_blank" rel="noopener noreferrer">yes</a></div>
+              <div><a href="https://youtu.be/dQw4w9WgXcQ?feature=shared" className="text-white" target="_blank" rel="noopener noreferrer">Youtube</a></div>
               {/* target="_blank" and rel="noopener noreferrer" new window */}
           </Col>
 
