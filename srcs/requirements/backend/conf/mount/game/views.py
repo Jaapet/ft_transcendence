@@ -207,11 +207,11 @@ class FriendRequestViewSet(viewsets.ModelViewSet):
 	def requests_sent(self, request, pk=None):
 		user_id = request.query_params.get('user_id', None)
 		if (user_id is None):
-			return Response({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+			return Response({'detail': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
 
 		# Only allow user to see their own sent requests
 		if request.user.id != int(user_id):
-			return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+			return Response({'detail': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
 
 		user_requests = FriendRequest.objects.filter(Q(sender_id=user_id)).select_related("sender", "recipient").order_by('-datetime')
 		serializer = self.get_serializer(user_requests, many=True)
@@ -222,18 +222,33 @@ class FriendRequestViewSet(viewsets.ModelViewSet):
 	def requests_received(self, request, pk=None):
 		user_id = request.query_params.get('user_id', None)
 		if (user_id is None):
-			return Response({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+			return Response({'detail': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
 
 		# Only allow user to see their own received requests
 		if request.user.id != int(user_id):
-			return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+			return Response({'detail': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
 
 		user_requests = FriendRequest.objects.filter(Q(recipient_id=user_id)).select_related("sender", "recipient").order_by('-datetime')
 		serializer = self.get_serializer(user_requests, many=True)
 		return Response(serializer.data)
 
+# Custom permissions for CheckFriendshipStatusAPIView
+class CheckFriendshipStatusAPIViewPermissions(permissions.BasePermission):
+	def has_permission(self, request, view):
+		# Allow admins to bypass permission check
+		if request.user and request.user.is_staff:
+			return True
+		# Allow users to check their own friendship status
+		user1_id = int(request.query_params.get('user1_id'))
+		user2_id = int(request.query_params.get('user2_id'))
+		user_id = request.user.id
+		if user1_id and user2_id and (user1_id == user_id or user2_id == user_id):
+			return True
+		return False
+
+# Checks friendship status between 2 users
 class CheckFriendshipStatusAPIView(APIView):
-	permission_classes = [permissions.IsAuthenticated]
+	permission_classes = [permissions.IsAuthenticated, CheckFriendshipStatusAPIViewPermissions]
 
 	def get(self, request):
 		user1_id = request.query_params.get('user1_id')
