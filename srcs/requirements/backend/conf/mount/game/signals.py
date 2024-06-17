@@ -1,7 +1,7 @@
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 from django.db import models, transaction
-from .models import Match, Member
+from .models import Match, Match3, Member
 
 # Deletes any match that has both winner and loser as null, so deleted users
 @receiver(pre_delete, sender=Member)
@@ -16,6 +16,7 @@ def delete_match_if_both_players_deleted(sender, instance, **kwargs):
 			match.delete()
 
 # ELO
+# TODO: Make ELO for Match3
 def calculate_pong_elo(winner_elo, loser_elo, k=40):
 	# expected_win is the expected probability that the winner won
 	expected_win = 1 / (1 + 10 ** ((loser_elo - winner_elo) / 400))
