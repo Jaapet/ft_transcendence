@@ -1,9 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
+import ButtonColor from './ButtonColor';
+import styles from '../styles/base.module.css';
+
 
 const DrawingCanvas = () => {
   const canvasRef = useRef(null);
-  const [canvasWidth, setCanvasWidth] = useState(800); // Valeur par défaut pour la largeur du canvas
-  const [canvasHeight, setCanvasHeight] = useState(600); // Valeur par défaut pour la hauteur du canvas
+  const [canvasWidth, setCanvasWidth] = useState(800); // default canvas value (only for reload moments)
+  const [canvasHeight, setCanvasHeight] = useState(600);// default canvas value (same)
   const [currentColor, setCurrentColor] = useState('#000');
 
   useEffect(() => {
@@ -85,11 +88,11 @@ const DrawingCanvas = () => {
         style={{ position: 'fixed', top: 0, left: 0, zIndex: 1 }}
       ></canvas>
       <div style={{ position: 'fixed', top: '20%', left: '20px', zIndex: 2, display: 'flex', flexDirection: 'column' }}>
-        <button style={{ backgroundColor: '#000', width: '30px', height: '30px', marginBottom: '5px' }} onClick={() => handleColorChange('#000')}></button>
-        <button style={{ backgroundColor: '#f00', width: '30px', height: '30px', marginBottom: '5px' }} onClick={() => handleColorChange('#f00')}></button>
-        <button style={{ backgroundColor: '#0f0', width: '30px', height: '30px', marginBottom: '5px' }} onClick={() => handleColorChange('#0f0')}></button>
-        <button style={{ backgroundColor: '#00f', width: '30px', height: '30px', marginBottom: '5px' }} onClick={() => handleColorChange('#00f')}></button>
-      </div>
+	  <img src="images/arrows.webp" alt="ArrowsGif" style={{height: '1.5cm'}}/>
+	  <ButtonColor color="#000" handleColorChange={handleColorChange} />
+        <ButtonColor color="#f00" handleColorChange={handleColorChange} />
+        <ButtonColor color="#0f0" handleColorChange={handleColorChange} />
+        <ButtonColor color="#00f" handleColorChange={handleColorChange} />      </div>
     </div>
   );
 };

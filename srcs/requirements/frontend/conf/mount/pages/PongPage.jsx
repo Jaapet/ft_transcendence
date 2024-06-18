@@ -1,7 +1,7 @@
 import React from 'react';
 import Pong from '../components/pong';
 import styles from '../styles/base.module.css';
-import ParticleCanvas from '../components/Particle';
+import DrawingCanvas from '../components/Drawing';
 
 
 const PongPage = () => {
@@ -22,7 +22,7 @@ const PongPage = () => {
 
 
 		{/* Game canvas */}
-		<ParticleCanvas/>
+		<DrawingCanvas/>
 		  <Pong />
 	  </div>
 	);

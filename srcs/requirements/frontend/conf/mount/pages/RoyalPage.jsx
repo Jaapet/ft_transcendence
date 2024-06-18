@@ -1,7 +1,7 @@
 import React from 'react';
 import Royal from '../components/royal';
 import styles from '../styles/base.module.css';
-import ParticleCanvas from '../components/Particle';
+import DrawingCanvas from '../components/Drawing';
 
 
 const RoyalPage = () => {
@@ -36,7 +36,7 @@ const RoyalPage = () => {
 
 		{/* Game canvas */}
 		<div>
-		<ParticleCanvas/>
+		<DrawingCanvas/>
 		  <Royal />
 		</div>
 	  </div>
