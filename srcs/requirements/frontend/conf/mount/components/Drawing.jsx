@@ -70,26 +70,26 @@ const DrawingCanvas = () => {
   }, [currentColor]);
 
   useEffect(() => {
-    // I don't need my canvas to be bigger than my window
-
-    const updateCanvasSize = () => {
-      const width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-      const height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-      setCanvasWidth(width);
-      setCanvasHeight(height);
-    };
-
-	//update size
-    updateCanvasSize();
-
-    // listen to resize
-    window.addEventListener('resize', updateCanvasSize);
-
-    // clean when it's done
-    return () => {
-      window.removeEventListener('resize', updateCanvasSize);
-    };
-  }, []);
+	const updateCanvasSize = () => {
+	  const width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+	  const height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+	  
+	  // check if it MUST change
+	  if (width !== canvasWidth || height !== canvasHeight) {
+		setCanvasWidth(width);
+		setCanvasHeight(height);
+	  }
+	};
+  
+	updateCanvasSize(); // resize canvas
+  
+	window.addEventListener('resize', updateCanvasSize); // listen resize
+  
+	return () => {
+	  window.removeEventListener('resize', updateCanvasSize); // clean listener
+	};
+  }, [canvasWidth, canvasHeight]); 
+  
 
   const handleColorChange = (color) => {
     setCurrentColor(color);
