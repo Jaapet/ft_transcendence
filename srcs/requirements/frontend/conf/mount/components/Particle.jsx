@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 
 const DrawingCanvas = () => {
   const canvasRef = useRef(null);
+  const [canvasWidth, setCanvasWidth] = useState(800); // Valeur par défaut pour la largeur du canvas
+  const [canvasHeight, setCanvasHeight] = useState(600); // Valeur par défaut pour la hauteur du canvas
   const [currentColor, setCurrentColor] = useState('#000');
 
   useEffect(() => {
@@ -49,6 +51,27 @@ const DrawingCanvas = () => {
     };
   }, [currentColor]);
 
+  useEffect(() => {
+    // Fonction pour mettre à jour la taille du canvas en fonction de la taille de la fenêtre
+    const updateCanvasSize = () => {
+      const width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+      const height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+      setCanvasWidth(width);
+      setCanvasHeight(height);
+    };
+
+    // Mettre à jour la taille du canvas lors du chargement initial de la page
+    updateCanvasSize();
+
+    // Écouter l'événement de redimensionnement de la fenêtre
+    window.addEventListener('resize', updateCanvasSize);
+
+    // Nettoyage des écouteurs d'événements lors du démontage du composant
+    return () => {
+      window.removeEventListener('resize', updateCanvasSize);
+    };
+  }, []);
+
   const handleColorChange = (color) => {
     setCurrentColor(color);
   };
@@ -57,11 +80,11 @@ const DrawingCanvas = () => {
     <div>
       <canvas
         ref={canvasRef}
-        width={window.innerWidth}
-        height={window.innerHeight}
+        width={canvasWidth}
+        height={canvasHeight}
         style={{ position: 'fixed', top: 0, left: 0, zIndex: 1 }}
       ></canvas>
-      <div style={{ position: 'fixed', top: '25%', left: '20px', zIndex: 2, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ position: 'fixed', top: '20%', left: '20px', zIndex: 2, display: 'flex', flexDirection: 'column' }}>
         <button style={{ backgroundColor: '#000', width: '30px', height: '30px', marginBottom: '5px' }} onClick={() => handleColorChange('#000')}></button>
         <button style={{ backgroundColor: '#f00', width: '30px', height: '30px', marginBottom: '5px' }} onClick={() => handleColorChange('#f00')}></button>
         <button style={{ backgroundColor: '#0f0', width: '30px', height: '30px', marginBottom: '5px' }} onClick={() => handleColorChange('#0f0')}></button>
