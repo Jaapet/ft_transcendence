@@ -6,14 +6,13 @@ import DrawingCanvas from '../components/Drawing';
 
 const RoyalPage = () => {
 	return (
-	  <div className={styles.container}>
+		<div className={styles.container}>
 		<div
 		  style={{
 			display: 'flex',
 			justifyContent: 'space-between',
 			alignItems: 'center',
 			width: '100%', 
-			marginTop: '8cm',
 		  }}
 		>
 
@@ -22,8 +21,10 @@ const RoyalPage = () => {
 		  <div
 			className={`card ${styles.customCard}`}
 			style={{
-			  width: '200px', 
-			  marginLeft: 'auto', 
+				position: 'absolute',
+				right: '0%',
+				top: '3cm', 
+				width: '200px',
 			}}
 		  >
 			<div className={`card-body ${styles.cardInfo}`}>
@@ -31,15 +32,14 @@ const RoyalPage = () => {
 			  {/* Put the leaderboard here */}
 			</div>
 		  </div>
+		
 		</div>
 
 
 		{/* Game canvas */}
-		<div>
 		<DrawingCanvas/>
 		  <Royal />
 		</div>
-	  </div>
 	);
   };
   
