@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import styles from '../styles/game.module.css';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
 
 const Royal = () => {
   useEffect(() => {
@@ -35,6 +37,17 @@ const Royal = () => {
     camera.position.set(0, 150, 10);
     camera.position.z = 150;
 
+
+    /// MODEL 3D
+    const loadermodel = new GLTFLoader();
+
+    loadermodel.load(
+      'games/pong/models/building.glb',
+      function (gltf) { scene.add( gltf.scene ); },
+      undefined,
+      function (error) { console.error(error); } 
+    );
+    
 
 
     /// FLOOR

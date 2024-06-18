@@ -6,6 +6,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import io from 'socket.io-client';
 import styles from '../styles/game.module.css';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { AnimationMixer } from "three";
 
 const Pong = () => {
   const socketRef = useRef(null);
@@ -58,8 +59,31 @@ const Pong = () => {
       const loadermodel = new GLTFLoader();
 
       loadermodel.load(
-        'path/to/model.glb',
-        function (gltf) { scene.add( gltf.scene ); },
+        'games/pong/models/Building.glb',
+        function (gltf)
+        { 
+          gltf.scene.position.z = -32.85;
+          gltf.scene.position.y = 0.5;
+          gltf.scene.scale.set(0.339, 0.25, 0.25);
+          scene.add( gltf.scene );
+        },
+        undefined,
+        function (error) { console.error(error); } 
+      );
+
+
+      
+      loadermodel.load(
+        'games/pong/models/man.glb',
+        function (gltf)
+        { 
+          gltf.scene.position.z = -38;
+          gltf.scene.position.x = -10;
+          gltf.scene.position.y = 0.5;
+          gltf.scene.scale.set(3, 3, 3);
+          
+          scene.add( gltf.scene );
+        },
         undefined,
         function (error) { console.error(error); } 
       );
@@ -139,6 +163,7 @@ const Pong = () => {
 
       /// ORBITAL CONTROL
       const controls = new OrbitControls(camera, canvas);
+      controls.unableDamping = true;
       controls.target.set(0, 0, 0);
       controls.maxDistance = 300;
       controls.update();
@@ -255,7 +280,7 @@ const Pong = () => {
       addwall(0, 3, -22.25, new THREE.Mesh(wall, wallmaterials2));
       addwall(-44.75, 3, 0, new THREE.Mesh(wall2, wallmaterials2));
       addwall(44.75, 3, 0, new THREE.Mesh(wall2, wallmaterials2));
-      addwall(0, -200.1,  22.5, new THREE.Mesh(skyscrapper, immeublematerials));
+      addwall(0, -200.1,  -45 + 22.5, new THREE.Mesh(skyscrapper, immeublematerials));
       addwall(0, 2.1, 0, new THREE.Mesh(watercube, water));
 
 
@@ -266,7 +291,7 @@ const Pong = () => {
       const skyboxMesh = new THREE.Mesh(skybox, skyboxMaterial);
       // positionnement de l'objet ciel
       skyboxMesh.rotation.y = -2.5;
-      skyboxMesh.position.z = 20;
+      skyboxMesh.position.z = 20 - 45;
       scene.add(skyboxMesh);
 
 
