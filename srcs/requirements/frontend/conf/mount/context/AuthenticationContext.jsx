@@ -124,10 +124,10 @@ export const AuthenticationProvider = ({ children }) => {
 				throw new Error(data.message, 'Logout failed');
 			}
 
-			await router.push('/');
-
 			setAccessToken(null);
 			setUser(null);
+
+			router.push('/account/login');
 		} catch (error) {
 			console.error('CONTEXT LOGOUT:', error);
 			setError(error.message);
@@ -188,7 +188,7 @@ export const AuthenticationProvider = ({ children }) => {
 		} catch (error) {
 			console.error('CONTEXT LOGIN REFRESH:', error);
 			// We don't set user error here cause not being logged in is not an error
-			router.push('/account/login');
+			await logout();
 		}
 	}
 

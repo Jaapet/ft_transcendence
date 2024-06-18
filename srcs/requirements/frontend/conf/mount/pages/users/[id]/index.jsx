@@ -318,21 +318,28 @@ const ProfileToasts = ({ showError, setShowError, errorMsg, setErrorMsg, showMsg
 	);
 }
 
-export default function Profile({ status, user, last_matches }) {
+export default function Profile({ status, detail, user, last_matches }) {
 	const [showError, setShowError] = useState(false);
 	const [errorMsg, setErrorMsg] = useState('');
 	const [showMsg, setShowMsg] = useState(false);
 	const [msg, setMsg] = useState('');
-	const { enable2FA } = useUser();
+	const { logout } = useAuth();
 
-	/* TODO: Implement redirect here
-	if (status === 404) {
-		// redirect here
+	const handleLogout = async () => {
+		await logout();
 	}
-	*/
 
-	if (status === 401 || status === 404 || !user) {
-		return (<p>Something went wrong...</p>);
+	if (status === 401 && detail === 'Not logged in') {
+		handleLogout();
+	}
+
+	if (status !== 200 || !user) {
+		return (
+			<div className={styles.container}>
+				<p className="bg-light text-black">Something went wrong...</p>
+				<p className="bg-light text-black">Please reload the page.</p>
+			</div>
+		);
 	}
 
 	return (
@@ -393,6 +400,7 @@ export async function getServerSideProps(context) {
 			return {
 				props: {
 					status: 404,
+					detail: 'Resource not found',
 					user: null,
 					last_matches: null
 				}
@@ -410,6 +418,7 @@ export async function getServerSideProps(context) {
 		return {
 			props: {
 				status: 200,
+				detail: 'Success',
 				user: data.user,
 				last_matches: data.last_matches
 			}
@@ -419,6 +428,7 @@ export async function getServerSideProps(context) {
 		return {
 			props: {
 				status: 401,
+				detail: error.message,
 				user: null,
 				last_matches: null
 			}

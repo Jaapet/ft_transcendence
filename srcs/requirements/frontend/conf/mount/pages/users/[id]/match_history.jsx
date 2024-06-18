@@ -2,6 +2,7 @@ import React from 'react';
 import Head from 'next/head';
 import styles from '../../../styles/base.module.css';
 import Link from 'next/link';
+import { useAuth } from '../../../context/AuthenticationContext';
 
 const UserMatchHistoryMatchPlayerLink = ({ id, username }) => {
 	if (id === null) {
@@ -114,14 +115,24 @@ Match objects contain:
 	);
 }
 
-export default function UserMatchHistory({ status, user, matches }) {
-	/* TODO: Implement redirect here
-	if (status === 404) {
-		// redirect here
+export default function UserMatchHistory({ status, detail, user, matches }) {
+	const { logout } = useAuth();
+
+	const handleLogout = async () => {
+		await logout();
 	}
-	*/
-	if (status === 401 || status === 404) {
-		return (<p>Something went wrong...</p>);
+
+	if (status === 401 && detail === 'Not logged in') {
+		handleLogout();
+	}
+
+	if (status !== 200 || !user || !matches) {
+		return (
+			<div className={styles.container}>
+				<p className="bg-light text-black">Something went wrong...</p>
+				<p className="bg-light text-black">Please reload the page.</p>
+			</div>
+		);
 	}
 
 	return (
@@ -158,6 +169,7 @@ export async function getServerSideProps(context) {
 			return {
 				props: {
 					status: 404,
+					detail: 'Resource not found',
 					user: null,
 					matches: null
 				}
@@ -175,6 +187,7 @@ export async function getServerSideProps(context) {
 		return {
 			props: {
 				status: 200,
+				detail: 'Success',
 				user: data.user,
 				matches: data.matches
 			}
@@ -184,6 +197,7 @@ export async function getServerSideProps(context) {
 		return {
 			props: {
 				status: 401,
+				detail: error.message,
 				user: null,
 				matches: null
 			}
