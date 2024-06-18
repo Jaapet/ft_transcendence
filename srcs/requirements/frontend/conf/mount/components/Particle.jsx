@@ -32,15 +32,17 @@ const ParticleCanvas = () => {
       constructor() {
         this.x = mouse.x;
         this.y = mouse.y;
-        this.size = Math.random() * 5 + 1;
-        this.speedX = Math.random() * 3 - 1.5;
-        this.speedY = Math.random() * 3 - 1.5;
-        this.color = 'rgba(255, 255, 255, 0.8)';
-      }
-      update() {
+
+        this.size = Math.random() * 10 + 1; /* random size */
+        this.speedX = Math.random() * 6 - 3;/* random speeds */
+        this.speedY = Math.random() * 6 - 3;
+		this.color = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.4)`; // random color 
+	}  
+		
+	update() {
         this.x += this.speedX;
         this.y += this.speedY;
-        if (this.size > 0.2) this.size -= 0.1;
+        if (this.size > 0.2) this.size -= 0.1; /* size down */
       }
       draw() {
         ctx.fillStyle = this.color;

@@ -1,6 +1,8 @@
 import React from 'react';
 import Royal from '../components/royal';
 import styles from '../styles/base.module.css';
+import ParticleCanvas from '../components/Particle';
+
 
 const RoyalPage = () => {
 	return (
@@ -34,6 +36,7 @@ const RoyalPage = () => {
 
 		{/* Game canvas */}
 		<div>
+		<ParticleCanvas/>
 		  <Royal />
 		</div>
 	  </div>
