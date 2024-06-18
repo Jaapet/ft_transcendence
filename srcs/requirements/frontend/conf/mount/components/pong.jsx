@@ -5,6 +5,7 @@ import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import io from 'socket.io-client';
 import styles from '../styles/game.module.css';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const Pong = () => {
   const socketRef = useRef(null);
@@ -21,48 +22,71 @@ const Pong = () => {
 	});
 	socketRef.current = socket;
 
-    function main() {
+    function main()
+    {
+      /// CANVAS
       const canvas = canvasRef.current;
 
+      /// CAMERA SETTINGS
       const fov = 42;
       const aspect = 1.5;
       const near = 0.1;
       const far = 10000;
 
+      /// TEXTURE SKYBOX AND SPHERE
       const loader = new THREE.TextureLoader();
       const texture = loader.load('games/pong/texture/city.jpg');
       texture.colorSpace = THREE.SRGBColorSpace;
       const texturesphere = loader.load('games/pong/texture/eye2.jpg');
       texture.colorSpace = THREE.SRGBColorSpace;
 
+      /// SCENE
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0x111111);
+
+      /// CAMERA
       const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
       camera.position.set(0, 100, 10);
       camera.position.z = 10;
-
+      
+      /// RENDERER
       const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
 
 
 
-      /// text
-        let text3, text3r, text2, text2r, text1, text1r, text0, text0r;
-        let textMesh1, font;
-        let textGeo;
-        const loadertext = new FontLoader();
-        loadertext.load( 'games/pong/fonts/helvetiker_regular.typeface.json', function (loadedFont)
+      /// MODEL 3D
+      const loadermodel = new GLTFLoader();
+
+      loadermodel.load(
+        'path/to/model.glb',
+        function (gltf) { scene.add( gltf.scene ); },
+        undefined,
+        function (error) { console.error(error); } 
+      );
+
+
+
+      /// TEXT
+      let text3, text3r, text2, text2r, text1, text1r, text0, text0r;
+      let textMesh1, font;
+      let textGeo;
+
+      const loadertext = new FontLoader();
+      loadertext.load('games/pong/fonts/helvetiker_regular.typeface.json',
+        function (loadedFont)
         {
           font = loadedFont;
-
-          let BLACK = [
-            new THREE.MeshPhongMaterial( { color: 0x000000, flatShading: true } ), // front
-            new THREE.MeshPhongMaterial( { color: 0x000000 } ) // side
-          ];
+          // model interieur
           let RED = [
             new THREE.MeshPhongMaterial( { color: 0xFF0000, flatShading: true } ), // front
             new THREE.MeshPhongMaterial( { color: 0xFF0000 } ) // side
           ];
-
+          // model exterieur
+          let BLACK = [
+            new THREE.MeshPhongMaterial( { color: 0x000000, flatShading: true } ), // front
+            new THREE.MeshPhongMaterial( { color: 0x000000 } ) // side
+          ];
+          // creation des different model de textes pour le compte a rebours
           text3 = createText("3", BLACK, 31, 5, 5, 2, 0, 5);
           text3r = createText("3", RED, 30, 5, 6, 1, -1, 5.5);
           text2 = createText("2", BLACK, 31, 5, 5, 2, 0, 5);
@@ -71,73 +95,63 @@ const Pong = () => {
           text1r = createText("1", RED, 30, 5, 6, 1, -8, 5.5);
           text0 = createText("0", BLACK, 31, 5, 5, 2, 0, 5);
           text0r = createText("0", RED, 30, 5, 6, 1, -1, 5.5);
-        });
-
-        function createText(text, materials, size, z, y, epaisseur, x, profondeur)
-        {
-
-          textGeo = new TextGeometry( text,
+        }
+      );
+      // creation des textes avec les parametres
+      function createText(text, materials, size, z, y, epaisseur, x, profondeur)
+      {
+        textGeo = new TextGeometry( text,
           {
             font: font,
-
             size: size,
             depth: 1,
             curveSegments: 10,
-
             bevelThickness: profondeur,
             bevelSize: epaisseur,
             bevelEnabled: y
+          }
+        );
 
-          } );
-
-          textGeo.computeBoundingBox();
-
-          const centerOffset = - 0.5 * ( textGeo.boundingBox.max.x - textGeo.boundingBox.min.x );
-
-          textMesh1 = new THREE.Mesh( textGeo, materials );
-
-          textMesh1.position.x = centerOffset + x;
-          textMesh1.position.y = y + 10;
-          textMesh1.position.z = z;
-
-          textMesh1.rotation.x = -1.4;
-          textMesh1.rotation.y = Math.PI * 2;
-          textMesh1.rotation.z = 0;
-
-          
-          return (textMesh1);
-        }
+        textGeo.computeBoundingBox();
+        const centerOffset = - 0.5 * ( textGeo.boundingBox.max.x - textGeo.boundingBox.min.x );
+        textMesh1 = new THREE.Mesh(textGeo, materials);
+        // positionnement des textes
+        textMesh1.position.x = centerOffset + x;
+        textMesh1.position.y = y + 10;
+        textMesh1.position.z = z;
+        textMesh1.rotation.x = -1.4;
+        textMesh1.rotation.y = Math.PI * 2;
+        textMesh1.rotation.z = 0;
+        return (textMesh1);
+      }
 
 
-      /// FLOOR
-
+      /// FLOOR DE LA PISCINE (PONG)
       const planeSize = 42;
       const texture2 = loader.load('games/pong/texture/dollarrachid.jpg');
       texture2.colorSpace = THREE.SRGBColorSpace;
-
       const planeGeo = new THREE.PlaneGeometry(planeSize * 2 + 6, planeSize + 3);
-      const planeMat = new THREE.MeshPhongMaterial({
-        map: texture2,
-        side: THREE.DoubleSide
-      });
+      const planeMat = new THREE.MeshPhongMaterial({ map: texture2, side: THREE.DoubleSide });
       const mesh = new THREE.Mesh(planeGeo, planeMat);
       mesh.rotation.x = Math.PI * -.5;
       scene.add(mesh);
 
-      /// ORBITAL CONTROL
 
+      /// ORBITAL CONTROL
       const controls = new OrbitControls(camera, canvas);
       controls.target.set(0, 0, 0);
+      controls.maxDistance = 300;
       controls.update();
 
-      // LUMIERES
 
+      /// LUMIERES
+      // lumiere ambiante
       const skyColor = 0xEEEEEE;
       const groundColor = 0xFFFFFF;
       const intensity2 = 0.4;
       const light2 = new THREE.HemisphereLight(skyColor, groundColor, intensity2);
       scene.add(light2);
-
+      // lumiere directionnelle 1
       const color = 0xFFFFFF;
       const intensity = 6.5;
       const light = new THREE.DirectionalLight(color, intensity);
@@ -145,13 +159,13 @@ const Pong = () => {
       light.target.position.set(0, 0, 5);
       scene.add(light);
       scene.add(light.target);
-
+      // lumiere directionnelle 1
       const light3 = new THREE.DirectionalLight(color, intensity);
       light3.position.set(-10, 2, -10);
       light3.target.position.set(0, 0, 5);
       scene.add(light3);
       scene.add(light3.target);
-
+      // lumiere directionnelle 1
       const light4 = new THREE.DirectionalLight(color, intensity);
       light4.position.set(0, 2, -10);
       light4.target.position.set(0, 0, 5);
@@ -160,37 +174,15 @@ const Pong = () => {
 
 
       /// OBJETS
-
+      // chargement des textures
       const texturewater = loader.load('games/pong/texture/water.jpg');
-      const texturevitre = loader.load('games/pong/texture/vitre.jpg');
-      texturevitre.wrapS = THREE.RepeatWrapping;
-      texturevitre.wrapT = THREE.RepeatWrapping;
-      texturevitre.magFilter = THREE.NearestFilter;
-      texturevitre.colorSpace = THREE.SRGBColorSpace;
-      texturevitre.repeat.set(1, 1);
       const textureraquette = loader.load('games/pong/texture/bouee.png');
       const textureraquette2 = loader.load('games/pong/texture/bouee2.png');
       const textureraquette3 = loader.load('games/pong/texture/boueeSide.png');
-
-
-
+      const texturevitre = loader.load('games/pong/texture/vitre.jpg');
+      texturevitre.colorSpace = THREE.SRGBColorSpace;
       
-      const wallmaterials = new THREE.MeshBasicMaterial({ map: texturevitre, side: THREE.DoubleSide, transparent: true, opacity: 0.2});
-      const wallmaterials2 = new THREE.MeshBasicMaterial({ map: texturevitre, side: THREE.DoubleSide, transparent: true, opacity: 0.2, wireframe: true, });
-      const water = new THREE.MeshBasicMaterial({ map: texturewater, transparent: true, opacity: 0.25, side: THREE.DoubleSide});
-      
-      const sideMaterial = new THREE.MeshBasicMaterial({ map: textureraquette });
-      const sideMaterial2 = new THREE.MeshBasicMaterial({ map: textureraquette2 });
-      const sideMaterial3 = new THREE.MeshBasicMaterial({ map: textureraquette3 });
-      const raquettematerials = [
-        sideMaterial2,
-        sideMaterial,
-        sideMaterial3,
-        sideMaterial3,
-        sideMaterial3,
-        sideMaterial3
-      ];
-      
+      // chargement des textures qui ce repete
       const textureImmeuble = loader.load('games/pong/texture/imeuble.jpg');
       textureImmeuble.wrapS = THREE.RepeatWrapping;
       textureImmeuble.wrapT = THREE.RepeatWrapping;
@@ -205,6 +197,23 @@ const Pong = () => {
       texturetoit.colorSpace = THREE.SRGBColorSpace;
       texturetoit.repeat.set(30, 30);
 
+      // creation des materiaux
+      const wallmaterials = new THREE.MeshBasicMaterial({ map: texturevitre, side: THREE.DoubleSide, transparent: true, opacity: 0.2});
+      const wallmaterials2 = new THREE.MeshBasicMaterial({ map: texturevitre, side: THREE.DoubleSide, transparent: true, opacity: 0.2, wireframe: true, });
+      const water = new THREE.MeshBasicMaterial({ map: texturewater, transparent: true, opacity: 0.25, side: THREE.DoubleSide});
+
+      // creation materiaux avec des textures differentes sur chaque face
+      const sideMaterial = new THREE.MeshBasicMaterial({ map: textureraquette });
+      const sideMaterial2 = new THREE.MeshBasicMaterial({ map: textureraquette2 });
+      const sideMaterial3 = new THREE.MeshBasicMaterial({ map: textureraquette3 });
+      const raquettematerials = [
+        sideMaterial2,
+        sideMaterial,
+        sideMaterial3,
+        sideMaterial3,
+        sideMaterial3,
+        sideMaterial3
+      ];
       const side = new THREE.MeshBasicMaterial({ map: textureImmeuble });
       const side2 = new THREE.MeshBasicMaterial({ map: texturetoit });
       const immeublematerials = [
@@ -216,22 +225,25 @@ const Pong = () => {
         side
       ];
       
+      // creation des differents cubes
       const cube = new THREE.BoxGeometry(2, 4, 10);
       const wall = new THREE.BoxGeometry(89, 6, 0.5);
       const wall2 = new THREE.BoxGeometry(0.5, 6, 45);
       const watercube = new THREE.BoxGeometry(89, 4, 44);
       const skyscrapper = new THREE.BoxGeometry(90, 400, 90);
-      
+
+      // creation de la balle
       const radius = 2;
       const detail = 5;
       const ball = new THREE.IcosahedronGeometry(radius, detail);
       
-      var frame = 0;
-      const objects = [];
+      // creation des tableaux pour les raquettes et les mouvements des raquettes
+      var ballstate = [];
       const raquettes = [];
       const raquettesmove = [0, 0, 0, 0];
       
-      addball(0, 2, 4, makeObj(ball, texturesphere));
+      // ajout des objets dans la scene et placement des objets
+      addball(0, 2, 0, makeObj(ball, texturesphere));
       addraquette(-43, 2, 0, new THREE.Mesh(cube, raquettematerials));
       addraquette(43, 2, 0, new THREE.Mesh(cube, raquettematerials));
       addwall(0, 3, 22.25, new THREE.Mesh(wall, wallmaterials));
@@ -246,36 +258,35 @@ const Pong = () => {
       addwall(0, -200.1,  22.5, new THREE.Mesh(skyscrapper, immeublematerials));
       addwall(0, 2.1, 0, new THREE.Mesh(watercube, water));
 
+
       /// SKYBOX
-
+      // creation d'une sphere pour le ciel
       const skybox = new THREE.IcosahedronGeometry(400,50);
-
       const skyboxMaterial = new THREE.MeshBasicMaterial({map: texture, side: THREE.BackSide });
-
       const skyboxMesh = new THREE.Mesh(skybox, skyboxMaterial);
-      skyboxMesh.rotation.y = 0.5;
+      // positionnement de l'objet ciel
+      skyboxMesh.rotation.y = -2.5;
       skyboxMesh.position.z = 20;
-
       scene.add(skyboxMesh);
 
-      /// CONTROLS
 
+      /// CONTROLS
       document.addEventListener('keydown', function(event)
       {
         switch (event.key) {
           case "w":
           case "W":
-            raquettesmove[0] = -1.2;
+            raquettesmove[0] = -1.5;
             break;
           case "s":
           case "S":
-            raquettesmove[1] = 1.2;
+            raquettesmove[1] = 1.5;
             break;
           case "ArrowUp":
-            raquettesmove[2] = -1.2;
+            raquettesmove[2] = -1.5;
             break;
           case "ArrowDown":
-            raquettesmove[3] = 1.2;
+            raquettesmove[3] = 1.5;
             break;
         }
       });
@@ -301,12 +312,12 @@ const Pong = () => {
         }
       });
 
-      let compteur = 0;
-
+      /// RENDER
+      var frame = 0;
       renderer.render(scene, camera);
 
-      /// FUNCTIONS
 
+      /// FUNCTIONS
       function makeObj(geometry, map)
       {
         const material = new THREE.MeshBasicMaterial({ map: map });
@@ -319,9 +330,8 @@ const Pong = () => {
         obj.position.x = x;
         obj.position.y = y;
         obj.position.z = z;
-        const objtab = [obj, 0.99999, 0.00001];
+        ballstate = [obj, 0.99999, 0.00001];
         scene.add(obj);
-        objects.push(objtab);
       }
 
       function addraquette(x, y, z, obj)
@@ -339,19 +349,6 @@ const Pong = () => {
         obj.position.y = y;
         obj.position.z = z;
         scene.add(obj);
-      }
-
-      function resizeRendererToDisplaySize(renderer)
-      {
-        const canvas = renderer.domElement;
-        const pixelRatio = window.devicePixelRatio;
-        const width = Math.floor(canvas.clientWidth * pixelRatio);
-        const height = Math.floor(canvas.clientHeight * pixelRatio);
-        const needResize = canvas.width !== width || canvas.height !== height;
-        if (needResize) {
-          renderer.setSize(width, height, false);
-        }
-        return needResize;
       }
 
       function raquetteHit(ball, raquettes)
@@ -417,12 +414,6 @@ const Pong = () => {
       
         if (time > 7.5)
         {
-          if (resizeRendererToDisplaySize(renderer))
-          {
-            const canvas = renderer.domElement;
-            camera.aspect = canvas.clientWidth / canvas.clientHeight;
-            camera.updateProjectionMatrix();
-          }
 
           if (raquettes[0].position.z > -16)
             raquettes[0].position.z += raquettesmove[0];
@@ -434,80 +425,80 @@ const Pong = () => {
           if (raquettes[1].position.z < 16)
             raquettes[1].position.z += raquettesmove[3];
 
-          objects.forEach(objtab => {
-            const obj = objtab[0];
-            let directionX = objtab[1];
-            let directionZ = objtab[2];
-            let speed = 1 + frame * 0.05;
 
-            if (obj.position.x < 41 && directionX > 0)
-            {
-              obj.position.x += speed * directionX;
-            }
-            else if (obj.position.x > -41 && directionX < 0)
-            {
-              obj.position.x -= speed * Math.abs(directionX);
-            }
-            else
-            {
-              var hit = raquetteHit(obj, raquettes);
-              if (hit !== 0.0)
-              {
-                let decalage = hit * 0.1;
-                directionX = -directionX;
-                directionZ += decalage;
-                directionX -= decalage;
-                const absSum = Math.abs(directionX) + Math.abs(directionZ);
-                if (absSum !== 1)
-                {
-                  const ratio = 1 / absSum;
-                  directionX *= ratio;
-                  directionZ *= ratio;
-                }
-                obj.rotation.z = 0;
-                obj.rotation.x = 0;
-                obj.rotation.y = 0;
-              }
-              else
-              {
-                return;
-              }
-            }
+          const obj = ballstate[0];
+          let directionX = ballstate[1];
+          let directionZ = ballstate[2];
+          let speed = 1.5 + frame * 0.05;
 
-            if (obj.position.z < 20 && directionZ > 0)
-              obj.position.z += speed * directionZ;
-            else if (obj.position.z > -20 && directionZ < 0)
-              obj.position.z -= speed * Math.abs(directionZ);
-            else
+          if (obj.position.x < 41 && directionX > 0)
+          {
+            obj.position.x += speed * directionX;
+          }
+          else if (obj.position.x > -41 && directionX < 0)
+          {
+            obj.position.x -= speed * Math.abs(directionX);
+          }
+          else
+          {
+            var hit = raquetteHit(obj, raquettes);
+            if (hit !== 0.0)
             {
-              directionZ = -directionZ;
+              let decalage = hit * 0.1;
+              directionX = -directionX;
+              directionZ += decalage;
+              directionX -= decalage;
+              const absSum = Math.abs(directionX) + Math.abs(directionZ);
+              if (absSum !== 1)
+              {
+                const ratio = 1 / absSum;
+                directionX *= ratio;
+                directionZ *= ratio;
+              }
               obj.rotation.z = 0;
               obj.rotation.x = 0;
               obj.rotation.y = 0;
             }
-
-            const angle = Math.atan2(directionZ, directionX);
-            const rotationX = Math.cos(angle) * (Math.PI / 4 / 5);
-            const rotationZ = Math.sin(angle) * (Math.PI / 4 / 5);
-            obj.rotateZ(-rotationX);
-            obj.rotateX(rotationZ);
-
-            if (directionZ > 0.6)
-              directionZ = 0.6;
-            if (directionZ < -0.6)
-              directionZ = -0.6;
-
-            const absSum = Math.abs(directionX) + Math.abs(directionZ);
-            if (absSum !== 1)
+            else
             {
-              const ratio = 1 / absSum;
-              directionX *= ratio;
-              directionZ *= ratio;
+              ;
             }
+          }
 
-            objtab[1] = directionX;
-            objtab[2] = directionZ;
-          });
+          if (obj.position.z < 20 && directionZ > 0)
+            obj.position.z += speed * directionZ;
+          else if (obj.position.z > -20 && directionZ < 0)
+            obj.position.z -= speed * Math.abs(directionZ);
+          else
+          {
+            directionZ = -directionZ;
+            obj.rotation.z = 0;
+            obj.rotation.x = 0;
+            obj.rotation.y = 0;
+          }
+
+          const angle = Math.atan2(directionZ, directionX);
+          const rotationX = Math.cos(angle) * (Math.PI / 4 / 5);
+          const rotationZ = Math.sin(angle) * (Math.PI / 4 / 5);
+          obj.rotateZ(-rotationX);
+          obj.rotateX(rotationZ);
+
+          if (directionZ > 0.6)
+            directionZ = 0.6;
+          if (directionZ < -0.6)
+            directionZ = -0.6;
+
+          const absSum = Math.abs(directionX) + Math.abs(directionZ);
+          if (absSum !== 1)
+          {
+            const ratio = 1 / absSum;
+            directionX *= ratio;
+            directionZ *= ratio;
+          }
+
+          ballstate[1] = directionX;
+          ballstate[2] = directionZ;
+          
         }
         renderer.render(scene, camera);
         requestAnimationFrame(render);
