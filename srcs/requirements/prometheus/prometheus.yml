@@ -21,5 +21,6 @@ scrape_configs:
       type: Bearer
       credentials_file: "/etc/prometheus/token_backend"
   - job_name: 'postgres'
+    scheme: https
     static_configs:
       - targets: ['postgres-exporter:9187']

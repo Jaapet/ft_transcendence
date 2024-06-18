@@ -17,11 +17,13 @@ RUN update-ca-certificates
 RUN mkdir /ssl
 COPY *.crt /ssl/
 COPY *.key /ssl/
+RUN chown -R 1001 /ssl
 
-#TODO CHANGER CA
-ENV DATA_SOURCE_NAME "postgresql://rachid:jadorelargent@db:5432/transcendence"
-COPY postgres_exporter.yml postgres_exporter.yml
+COPY inited_postgres_exporter.yml postgres_exporter.yml
 
+USER 1001
+COPY web-config.yml /opt/bitnami/postgres-exporter/
+ENTRYPOINT ["postgres_exporter", "--web.config.file=/opt/bitnami/postgres-exporter/web-config.yml"]
 #TODO TLS SUPPORT
 #https://github.com/prometheus/exporter-toolkit/blob/master/docs/web-configuration.md
 #https://github.com/prometheus-community/postgres_exporter#flags

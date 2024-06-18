@@ -1,8 +1,11 @@
 volumes:
   prometheus: {}
+  elasticsearch_data: {}
+  logstash_data: {}
+  kibana_data: {}
 
 services:
-  proxy: #https://myhostname/adm/traefik/dashboard/#/ For Dasboard
+  proxy: #Reverse-proxy used to expose all web services to the client, reverse on subpath, run on Traefik v3
     build: ./requirements/proxy
     container_name: proxy_${PROJECT_NAME}
     image: proxy_${PROJECT_NAME} #TODO Remove before submiting
@@ -60,14 +63,6 @@ services:
       - .env
     depends_on:
       - frontend
-    # healthcheck:
-    #   # Run traefik healthcheck command
-    #   # https://doc.traefik.io/traefik/operations/cli/#healthcheck
-    #   test: ["CMD", "traefik", "healthcheck", "--ping"]
-    #   interval: 10s
-    #   timeout: 5s
-    #   retries: 3
-    #   start_period: 5s
     networks:
       default:
         aliases:
@@ -100,7 +95,7 @@ services:
     profiles:
       - main
     # ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
-    #   - "${PROJECT_PORT_ID}80:8000"
+    #   - "${PROJECT_PORT_ID}82:8000"
     env_file:
       - .env
     volumes: #TODO Volumes binded should be changed before submiting the project
@@ -150,13 +145,13 @@ services:
     #TODO HEALTHCHECK
     restart: unless-stopped
 
-##DevOps
+##Monitoring
   prometheus: #Prometheus is the metric collector used by Grafana
     build: ./requirements/prometheus
     container_name: prometheus_${PROJECT_NAME}
     image: prometheus_${PROJECT_NAME} #TODO Remove before submiting
     profiles:
-      - devops
+      - monitoring
     labels: #Label used to dynamically conf traefik
       - "my.zone=${PROJECT_NAME}"
       - "traefik.enable=true"
@@ -168,6 +163,7 @@ services:
       - "traefik.http.services.prometheus.loadbalancer.server.scheme=https" #Communicate with the service in HTTPS
       - "traefik.http.services.prometheus.loadbalancer.serverstransport=transport_prometheus@file"
       # Auth
+        #Add a whitelist who only allow current ip (access from localhost) TODO WHEN SUBMITING
       - "traefik.http.routers.prometheus.middlewares=adm_auth"
     env_file:
       - .env
@@ -182,13 +178,13 @@ services:
           - prometheus #Used for inter containers communication, certs will match this fqdn
       #TODO HEALTHCHECK
     restart: unless-stopped
-
+  
   grafana: #Grafana is a graph app useful for visualizing metrics
     build: ./requirements/grafana
     container_name: grafana_${PROJECT_NAME} #Don't change it, it's important for certificates, frontend will receive the "frontend.cert"
     image: grafana_${PROJECT_NAME}
     profiles:
-      - devops
+      - monitoring
     labels: #Label used to dynamically conf traefik
       - "my.zone=${PROJECT_NAME}"
       - "traefik.enable=true"
@@ -200,7 +196,7 @@ services:
       - "traefik.http.services.grafana.loadbalancer.server.scheme=https" #Communicate with the service in HTTPS
       - "traefik.http.services.grafana.loadbalancer.serverstransport=transport_grafana@file"
       # Auth
-      #Add a whitelist who only allow current ip (access from localhost)
+        #Add a whitelist who only allow current ip (access from localhost) TODO WHEN SUBMITING
       - "traefik.http.routers.grafana.middlewares=adm_auth"
     env_file:
       - .env
@@ -209,12 +205,15 @@ services:
         aliases:
           - grafana
     restart: unless-stopped
-  postgres-exporter:
+
+  postgres-exporter: #Postgres-Exporter is a service to create an interface between prostgre and prometheus
     build: ./requirements/postgres-exporter
-    container_name: postgres-exporter_${PROJECT_NAME} #Don't change it, it's important for certificates, frontend will receive the "frontend.cert"
+    container_name: postgres-exporter_${PROJECT_NAME}
     image: postgres-exporter_${PROJECT_NAME}
     profiles:
-      - devops
+      - monitoring
+    env_file:
+      - .env
     depends_on:
       - db
     networks:
@@ -222,3 +221,77 @@ services:
         aliases:
           - postgres-exporter #Used for inter containers communication, certs will match this fqdn
       #TODO HEALTHCHECK
+    restart: unless-stopped
+##ELK
+  elasticsearch:
+    build: ./requirements/elasticsearch
+    container_name: elasticsearch_${PROJECT_NAME}
+    image: elasticsearch_${PROJECT_NAME}
+    profiles:
+      - elk
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data/
+    env_file:
+      - .env
+    networks:
+      default:
+        aliases:
+          - elasticsearch #Used for inter containers communication, certs will match this fqdn
+    healthcheck: #Basic healtcheck that cat the API, if it respond the service is UP
+      test: curl -s -X GET https://elasticsearch:9200 -u ${ELASTIC_USERNAME}:${ELASTIC_PASSWORD} > /dev/null || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 30 #Increade this number if the server is a toaster, like the macs mini
+    restart: unless-stopped
+
+  logstash:
+    build: ./requirements/logstash
+    container_name: logstash_${PROJECT_NAME}
+    image: logstash_${PROJECT_NAME}
+    profiles:
+      - elk
+    volumes:
+      - logstash_data:/usr/share/logstash/data
+    networks:
+      default:
+        aliases:
+          - logstash #Used for inter containers communication, certs will match this fqdn
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+    #TODO HEALTHCHECK
+    restart: unless-stopped
+
+  kibana:
+    build: ./requirements/kibana
+    container_name: kibana_${PROJECT_NAME}
+    image: kibana_${PROJECT_NAME}
+    profiles:
+      - elk
+    labels: #Label used to dynamically conf traefik
+      - "my.zone=${PROJECT_NAME}"
+      - "traefik.enable=true"
+      - "traefik.http.routers.kibana.tls=true"
+      - "traefik.http.routers.kibana.rule=Host(`${FQDN}`) && PathPrefix(`/adm/kibana`)"
+      - "traefik.http.routers.kibana.entrypoints=websecure"
+      - "traefik.http.services.kibana.loadbalancer.server.port=5601"
+      # TLS Proxy to service
+      - "traefik.http.services.kibana.loadbalancer.server.scheme=https" #Communicate with the service in HTTPS
+      - "traefik.http.services.kibana.loadbalancer.serverstransport=transport_kibana@file"
+      # Auth
+      #Add a whitelist who only allow current ip (access from localhost) TODO WHEN SUBMITING
+      # - "traefik.http.routers.kibana.middlewares=adm_auth" #Cannot use it it conflict with kibana legacy login
+    env_file:
+      - .env
+    volumes:
+      - kibana_data:/usr/share/kibana/data
+    networks:
+      default:
+        aliases:
+          - kibana #Used for inter containers communication, certs will match this fqdn
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    #TODO HEALTHCHECK
+    restart: unless-stopped
