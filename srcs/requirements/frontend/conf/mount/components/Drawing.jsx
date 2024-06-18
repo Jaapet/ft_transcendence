@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ButtonColor from './ButtonColor';
-import styles from '../styles/base.module.css';
 
 
 const DrawingCanvas = () => {
@@ -48,7 +47,7 @@ const DrawingCanvas = () => {
     canvas.addEventListener('mouseup', stopDrawing);
     canvas.addEventListener('mouseout', stopDrawing);
 
-    // Nettoyage des écouteurs d'événements
+    // clean listeners
     return () => {
       canvas.removeEventListener('mousedown', startDrawing);
       canvas.removeEventListener('mousemove', draw);
@@ -58,7 +57,8 @@ const DrawingCanvas = () => {
   }, [currentColor]);
 
   useEffect(() => {
-    // Fonction pour mettre à jour la taille du canvas en fonction de la taille de la fenêtre
+    // I don't need my canvas to be bigger than my window
+
     const updateCanvasSize = () => {
       const width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
       const height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
@@ -66,13 +66,13 @@ const DrawingCanvas = () => {
       setCanvasHeight(height);
     };
 
-    // Mettre à jour la taille du canvas lors du chargement initial de la page
+	//update size
     updateCanvasSize();
 
-    // Écouter l'événement de redimensionnement de la fenêtre
+    // listen to resize
     window.addEventListener('resize', updateCanvasSize);
 
-    // Nettoyage des écouteurs d'événements lors du démontage du composant
+    // clean when it's done
     return () => {
       window.removeEventListener('resize', updateCanvasSize);
     };

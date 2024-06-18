@@ -1,19 +1,15 @@
 import React from 'react';
+import styles from '../styles/game.module.css';
+
 
 const ButtonColor = ({ color, handleColorChange }) => {
   return (
 
-    <button
-      style={{
-        backgroundColor: color,
-        width: '30px',
-        height: '30px',
-        marginBottom: '5px',
-        borderRadius: '50%',
-        border: '1px solid black',
-      }}
-      onClick={() => handleColorChange(color)}
-    ></button>
+	<button
+	className={styles.colorButton}
+	style={{ backgroundColor: color }}
+	onClick={() => handleColorChange(color)}
+  ></button>
   );
 };
 
