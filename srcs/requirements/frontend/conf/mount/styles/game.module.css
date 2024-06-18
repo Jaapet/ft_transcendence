@@ -21,28 +21,17 @@
 	height: 30px;
 	margin-bottom: 5px;
 	border-radius: 50%;
+	
 	border: 1px solid black;
+	transition: transform 0.2s ease-in-out; /* Smooth transition for scaling */
+}
+
+
+  .colorButton:hover {
+	transform: scale(1.1); /* Scale up on hover */
   }
   
-  /* Media Queries for responsive */
-  /* @media (max-width: 768px) {
-	.color-button {
-	  width: 25px;
-	  height: 25px;
-	}
+  .colorButton:active {
+	transform: scale(0.8); /* Scale down when clicked */
+	border-color: aliceblue;
   }
-  
-  @media (max-width: 576px) {
-	.color-button {
-	  width: 20px;
-	  height: 20px;
-	}
-  }
-  
-  @media (max-width: 400px) {
-	.color-button {
-	  width: 15px;
-	  height: 15px;
-	}
-  }
-   */

@@ -8,8 +8,21 @@ const DrawingCanvas = () => {
   const [canvasHeight, setCanvasHeight] = useState(600);// default canvas value (same)
   const [currentColor, setCurrentColor] = useState('#000');
 
-  /* button color tab */
-  const colors = ['#000', '#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff', '#888', '#444', '#666'];
+  const colors = [
+	'#FFFFFF', // White
+	'#FFFF00', // Yellow
+	'#FFA500', // Orange
+	'#FF0000', // Red
+	'#FF69B4', // Pink
+	'#901070', // Purple
+	'#0000FF', // Dark Blue
+	'#00BFFF', // Light Blue
+	'#00FF00', // Green
+	'#8B4513', // Brown
+	'#808080', // Grey
+	'#000000', // Black
+  ];
+  
 
   useEffect(() => {
     const canvas = canvasRef.current;

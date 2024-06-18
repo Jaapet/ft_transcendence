@@ -11,15 +11,7 @@ const Pong = () => {
   const canvasRef = useRef(null);
 
   useEffect(() => {
-	const socket = io('http://localhost:3000');
-	// Gérer les événements de connexion et d'erreur
-	socket.on('connect', () => {
-		console.log('Connecté au serveur Socket.IO');
-	});
-	socket.on('connect_error', (error) => {
-		console.error('Erreur de connexion au serveur Socket.IO:', error);
-	});
-	socketRef.current = socket;
+	
 
     function main() {
       const canvas = canvasRef.current;
@@ -456,7 +448,6 @@ const Pong = () => {
     main();
 
     return () => {
-      socketRef.current.disconnect();
     };
   }, []);
 
