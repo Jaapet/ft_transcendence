@@ -1,88 +1,66 @@
 import React, { useEffect, useRef } from 'react';
 
-const ParticleCanvas = () => {
+const DrawingCanvas = () => {
   const canvasRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    function draw(e) {
+      if (!isDrawing) return; // Stop drawing if not in drawing mode
+      ctx.strokeStyle = '#000'; // Set stroke color
+      ctx.lineWidth = 5; // Set line width
 
-    let particlesArray = [];
+      ctx.beginPath(); // Start a new path
+      ctx.moveTo(lastX, lastY); // Move to the last position
+      ctx.lineTo(e.offsetX, e.offsetY); // Draw a line to the current position
+      ctx.stroke(); // Stroke the path
 
-    const mouse = {
-      x: null,
-      y: null,
-      radius: 100
+      // Update last position to current position
+      lastX = e.offsetX;
+      lastY = e.offsetY;
     }
 
-    const handleMousemove = (event) => {
-      mouse.x = event.x;
-      mouse.y = event.y;
-      for (let i = 0; i < 5; i++) {
-        particlesArray.push(new Particle());
-      }
-    };
-
-    window.addEventListener('mousemove', handleMousemove);
-
-    class Particle {
-      constructor() {
-        this.x = mouse.x;
-        this.y = mouse.y;
-
-        this.size = Math.random() * 10 + 1; /* random size */
-        this.speedX = Math.random() * 6 - 3;/* random speeds */
-        this.speedY = Math.random() * 6 - 3;
-		this.color = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.4)`; // random color 
-	}  
-		
-	update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-        if (this.size > 0.2) this.size -= 0.1; /* size down */
-      }
-      draw() {
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
-      }
+    function startDrawing(e) {
+      isDrawing = true;
+      lastX = e.offsetX;
+      lastY = e.offsetY;
     }
 
-    const handleParticles = () => {
-      for (let i = 0; i < particlesArray.length; i++) {
-        particlesArray[i].update();
-        particlesArray[i].draw();
-        if (particlesArray[i].size <= 0.3) {
-          particlesArray.splice(i, 1);
-          i--;
-        }
-      }
+    function stopDrawing() {
+      isDrawing = false;
     }
 
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      handleParticles();
-      requestAnimationFrame(animate);
-    }
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
 
-    animate();
-
-    window.addEventListener('resize', () => {
+    // Resize canvas on initial load and window resize
+    const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-    });
+    };
+
+    resizeCanvas(); // Initial resize
+
+    window.addEventListener('resize', resizeCanvas);
 
     return () => {
-      window.removeEventListener('mousemove', handleMousemove);
-    }
+      // Cleanup: remove event listeners
+      canvas.removeEventListener('mousedown', startDrawing);
+      canvas.removeEventListener('mousemove', draw);
+      canvas.removeEventListener('mouseup', stopDrawing);
+      canvas.removeEventListener('mouseout', stopDrawing);
+      window.removeEventListener('resize', resizeCanvas);
+    };
   }, []);
 
   return <canvas ref={canvasRef} style={{ position: 'fixed', top: 0, left: 0, zIndex: 1 }}></canvas>;
 };
 
-export default ParticleCanvas;
+export default DrawingCanvas;
