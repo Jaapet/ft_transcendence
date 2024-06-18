@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 const DrawingCanvas = () => {
   const canvasRef = useRef(null);
+  const [currentColor, setCurrentColor] = useState('#000');
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -11,16 +12,15 @@ const DrawingCanvas = () => {
     let lastY = 0;
 
     function draw(e) {
-      if (!isDrawing) return; // Stop drawing if not in drawing mode
-      ctx.strokeStyle = '#000'; // Set stroke color
-      ctx.lineWidth = 5; // Set line width
+      if (!isDrawing) return;
+      ctx.strokeStyle = currentColor;
+      ctx.lineWidth = 5;
 
-      ctx.beginPath(); // Start a new path
-      ctx.moveTo(lastX, lastY); // Move to the last position
-      ctx.lineTo(e.offsetX, e.offsetY); // Draw a line to the current position
-      ctx.stroke(); // Stroke the path
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
 
-      // Update last position to current position
       lastX = e.offsetX;
       lastY = e.offsetY;
     }
@@ -40,27 +40,35 @@ const DrawingCanvas = () => {
     canvas.addEventListener('mouseup', stopDrawing);
     canvas.addEventListener('mouseout', stopDrawing);
 
-    // Resize canvas on initial load and window resize
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-
-    resizeCanvas(); // Initial resize
-
-    window.addEventListener('resize', resizeCanvas);
-
+    // Nettoyage des écouteurs d'événements
     return () => {
-      // Cleanup: remove event listeners
       canvas.removeEventListener('mousedown', startDrawing);
       canvas.removeEventListener('mousemove', draw);
       canvas.removeEventListener('mouseup', stopDrawing);
       canvas.removeEventListener('mouseout', stopDrawing);
-      window.removeEventListener('resize', resizeCanvas);
     };
-  }, []);
+  }, [currentColor]);
 
-  return <canvas ref={canvasRef} style={{ position: 'fixed', top: 0, left: 0, zIndex: 1 }}></canvas>;
+  const handleColorChange = (color) => {
+    setCurrentColor(color);
+  };
+
+  return (
+    <div>
+      <canvas
+        ref={canvasRef}
+        width={window.innerWidth}
+        height={window.innerHeight}
+        style={{ position: 'fixed', top: 0, left: 0, zIndex: 1 }}
+      ></canvas>
+      <div style={{ position: 'fixed', top: '25%', left: '20px', zIndex: 2, display: 'flex', flexDirection: 'column' }}>
+        <button style={{ backgroundColor: '#000', width: '30px', height: '30px', marginBottom: '5px' }} onClick={() => handleColorChange('#000')}></button>
+        <button style={{ backgroundColor: '#f00', width: '30px', height: '30px', marginBottom: '5px' }} onClick={() => handleColorChange('#f00')}></button>
+        <button style={{ backgroundColor: '#0f0', width: '30px', height: '30px', marginBottom: '5px' }} onClick={() => handleColorChange('#0f0')}></button>
+        <button style={{ backgroundColor: '#00f', width: '30px', height: '30px', marginBottom: '5px' }} onClick={() => handleColorChange('#00f')}></button>
+      </div>
+    </div>
+  );
 };
 
 export default DrawingCanvas;
