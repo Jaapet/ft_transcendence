@@ -1,6 +1,8 @@
 import React from 'react';
 import Pong from '../components/pong';
 import styles from '../styles/base.module.css';
+import ParticleCanvas from '../components/Particle';
+
 
 const PongPage = () => {
 	return (
@@ -11,19 +13,17 @@ const PongPage = () => {
 			justifyContent: 'space-between',
 			alignItems: 'center',
 			width: '100%', 
-			marginTop: '8cm',
 		  }}
 		>
+		</div>
 
 {/* you can put things here if you want */}
 
-		</div>
 
 
 		{/* Game canvas */}
-		<div>
+		<ParticleCanvas/>
 		  <Pong />
-		</div>
 	  </div>
 	);
   };

@@ -38,6 +38,8 @@
 	min-width: max-content;	/* else horizontal slide == no background */
 	margin-top: 68px;  /* HEADER SIZE */
 	min-height: calc(100vh - 68px);	/* vertical background safety*/
+
+	z-index: 0;
 }
 
 
@@ -61,6 +63,8 @@
 	background-position: left, right;
 	background-blend-mode: overlay;
 	opacity: 0.80;
+
+	z-index: 2;
 }
 
 /* our cards to put big info */
@@ -129,6 +133,8 @@
     background: linear-gradient(45deg, #ff6b6b, #f06595, #cc5de8, #845ef7, #5c7cfa, #339af0, #22b8cf, #20c997, #51cf66, #94d82d, #fcc419, #ff922b);
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+
+	z-index: 3;
 }
 
 .button:hover {

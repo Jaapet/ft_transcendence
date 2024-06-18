@@ -1,15 +1,15 @@
 .canvasWrapper {
 	position: relative;
 	justify-content:center;
-	bottom: 2cm;
-	width: 1040px;/* canvas + border */
+	top: 4vh;
+	width: 1100px;/* canvas + border */
 	display: flex;
 	justify-content: center;
 
 	background-color: rgba(255, 255, 255, 0.1);
-	border: 20px solid transparent; /* initial transparent border */
-	border-image: url('../public/images/borderpattern.jpg'); 
-	border-image-slice: 1; /*will cut X in border image */
-	
+	border: 50px ridge black;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Ombre douce */
+
+
 	z-index: 6;/* whatever happens, I want the game to be playable */
   }

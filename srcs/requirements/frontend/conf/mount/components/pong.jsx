@@ -461,11 +461,9 @@ const Pong = () => {
   }, []);
 
   return (
-    <div>
       <div className={styles.canvasWrapper}>
-        <canvas ref={canvasRef} id="pong-canvas" className={styles.canvas} width="1000" height="700"></canvas>
+        <canvas ref={canvasRef} id="pong-canvas" className={styles.canvas} width="1000" height="600"></canvas>
       </div>
-    </div>
   );
 };
 

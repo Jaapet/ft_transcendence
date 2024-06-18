@@ -14,7 +14,7 @@ const Footer = () => {
           </Col>
 
 		  <Col sm={6} md={4}>
-            <p className="text-white">&copy; {new Date().getFullYear()} Nice Footer. All Rights Reserved.</p>
+            <p className="text-white">&copy; {new Date().getFullYear()} my footer. All Rights Reserved.</p>
             <p className="text-white">Designed by *Me*</p>
           </Col>
 
