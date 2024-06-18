@@ -2,12 +2,12 @@
 	position: relative;
 	justify-content:center;
 	top: 4vh;
-	width: 1100px;/* canvas + border */
+	width: 1070px;/* canvas + border */
 	display: flex;
 	justify-content: center;
 
 	background-color: rgba(255, 255, 255, 0.1);
-	border: 50px  ridge black;
+	border: 35px  ridge black;
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Ombre douce */
 
 

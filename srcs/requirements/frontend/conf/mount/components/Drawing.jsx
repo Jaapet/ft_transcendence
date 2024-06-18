@@ -9,6 +9,9 @@ const DrawingCanvas = () => {
   const [canvasHeight, setCanvasHeight] = useState(600);// default canvas value (same)
   const [currentColor, setCurrentColor] = useState('#000');
 
+  /* button color tab */
+  const colors = ['#000', '#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff', '#888', '#444', '#666'];
+
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
@@ -87,12 +90,15 @@ const DrawingCanvas = () => {
         height={canvasHeight}
         style={{ position: 'fixed', top: 0, left: 0, zIndex: 1 }}
       ></canvas>
-      <div style={{ position: 'fixed', top: '20%', left: '20px', zIndex: 2, display: 'flex', flexDirection: 'column' }}>
+      
+	  {/* arty side */}
+	  <div style={{ position: 'fixed', top: '20%', left: '20px', zIndex: 2, display: 'flex', flexDirection: 'column' }}>
 	  <img src="images/arrows.webp" alt="ArrowsGif" style={{height: '1.5cm'}}/>
-	  <ButtonColor color="#000" handleColorChange={handleColorChange} />
-        <ButtonColor color="#f00" handleColorChange={handleColorChange} />
-        <ButtonColor color="#0f0" handleColorChange={handleColorChange} />
-        <ButtonColor color="#00f" handleColorChange={handleColorChange} />      </div>
+	 
+	 {/* mapping color button generation */}
+	  {colors.map((color, index) => (
+          <ButtonColor key={index} color={color} handleColorChange={handleColorChange} />
+        ))}   </div>
     </div>
   );
 };
