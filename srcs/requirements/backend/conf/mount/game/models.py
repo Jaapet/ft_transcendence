@@ -51,6 +51,11 @@ class MemberManager(BaseUserManager):
 # - pong2_matches_lost
 # - pong2_matches_won
 #
+# From Match3 objects:
+# - pong3_matches_as_paddle1
+# - pong3_matches_as_paddle2
+# - pong3_matches_as_ball
+#
 # Indexed on:
 # - username
 # - last_activity
