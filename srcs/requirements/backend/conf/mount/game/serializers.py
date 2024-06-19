@@ -1,5 +1,25 @@
-from .models import Member, FriendRequest, Match
+from .models import Member, FriendRequest, Match, Match3
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django_otp.plugins.otp_totp.models import TOTPDevice
+
+# Checks username and password validity for login
+# Logs in directly if 2FA is disabled
+# Notifies that 2FA is required otherwise
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+	def validate(self, attrs):
+		data = super().validate(attrs)
+		user = self.user
+
+		device = TOTPDevice.objects.filter(user=user, confirmed=True).first()
+
+		if device:
+			return {'requires_2fa': True, 'user_id': user.id}
+		else:
+			refresh = self.get_token(self.user)
+			data['refresh'] = str(refresh)
+			data['access'] = str(refresh.access_token)
+			return data
 
 # Limiting sizes of file uploads
 # Currently to 10MB
@@ -9,24 +29,18 @@ def validate_file_size(file):
 	if (file.size > max_size):
 		raise serializers.ValidationError(f"File size must be under {megabytes} MB")
 
-# Declaring the fields I want by hand to avoid problems with
-# permission-detail and lookup_field
-class MemberSerializer(serializers.HyperlinkedModelSerializer):
+# Restricted serializer for querying users that are not the current one
+class RestrictedMemberSerializer(serializers.HyperlinkedModelSerializer):
 	is_online = serializers.ReadOnlyField()
 
 	class Meta:
 		model = Member
 		fields = [
-			'url',
 			'id',
 			'username',
-			'password',
-			'email',
 			'avatar',
 			'join_date',
-			'friends',
-			'is_superuser',
-			'is_admin',
+			'elo_pong',
 			'is_online'
 		]
 
@@ -98,21 +112,6 @@ class UpdateMemberSerializer(serializers.HyperlinkedModelSerializer):
 			'avatar': {'required': False}
 		}
 
-class FriendSerializer(serializers.ModelSerializer):
-	is_online = serializers.ReadOnlyField()
-
-	class Meta:
-		model = Member
-		fields = [
-			'url',
-			'id',
-			'username',
-			'email',
-			'avatar',
-			'join_date',
-			'is_online'
-		]
-
 class SendFriendRequestSerializer(serializers.Serializer):
 	target_id = serializers.IntegerField()
 
@@ -140,7 +139,7 @@ class RemoveFriendSerializer(serializers.Serializer):
 		try:
 			target = Member.objects.get(id=value)
 		except Member.DoesNotExist:
-			raise serializers.ValidationError("Recipient does not exist.")
+			raise serializers.ValidationError("This user does not exist.")
 		return target
 
 class FriendRequestSerializer(serializers.HyperlinkedModelSerializer):
@@ -194,6 +193,7 @@ class MatchSerializer(serializers.HyperlinkedModelSerializer):
 		fields = [
 			'url',
 			'id',
+			'type',
 			'winner',
 			'loser',
 			'winner_score',
@@ -219,3 +219,55 @@ class MatchSerializer(serializers.HyperlinkedModelSerializer):
 
 	def get_loser_id(self, obj):
 		return obj.loser.id if obj.loser else None
+
+class Match3Serializer(serializers.HyperlinkedModelSerializer):
+	paddle1_username = serializers.SerializerMethodField()
+	paddle2_username = serializers.SerializerMethodField()
+	ball_username = serializers.SerializerMethodField()
+	paddle1_id = serializers.SerializerMethodField()
+	paddle2_id = serializers.SerializerMethodField()
+	ball_id = serializers.SerializerMethodField()
+	start_date = serializers.DateTimeField(source='start_datetime', format='%B %d %Y')
+	end_date = serializers.DateTimeField(source='end_datetime', format='%B %d %Y')
+	start_time = serializers.DateTimeField(source='start_datetime', format='%H:%M')
+	end_time = serializers.DateTimeField(source='end_datetime', format='%H:%M')
+
+	class Meta:
+		model = Match3
+		fields = [
+			'url',
+			'id',
+			'type',
+			'paddle1',
+			'paddle2',
+			'ball',
+			'ball_won',
+			'start_date',
+			'end_date',
+			'start_time',
+			'end_time',
+			'paddle1_username',
+			'paddle2_username',
+			'ball_username',
+			'paddle1_id',
+			'paddle2_id',
+			'ball_id'
+		]
+
+	def get_paddle1_username(self, obj):
+		return obj.paddle1.username if obj.paddle1 else 'Deleted user'
+
+	def get_paddle2_username(self, obj):
+		return obj.paddle2.username if obj.paddle2 else 'Deleted user'
+
+	def get_ball_username(self, obj):
+		return obj.ball.username if obj.ball else 'Deleted user'
+
+	def get_paddle1_id(self, obj):
+		return obj.paddle1.id if obj.paddle1 else None
+
+	def get_paddle2_id(self, obj):
+		return obj.paddle2.id if obj.paddle2 else None
+
+	def get_ball_id(self, obj):
+		return obj.ball.id if obj.ball else None

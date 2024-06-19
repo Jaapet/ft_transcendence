@@ -48,14 +48,15 @@ class MemberManager(BaseUserManager):
 # - everything else is from AbstractBaseUser
 #
 # From Match objects:
-# - matches_lost
-# - matches_won
+# - pong2_matches_lost
+# - pong2_matches_won
 #
 # Indexed on:
 # - username
 # - last_activity
 # - join_date + username
 # - DESC join_date + username
+# - elo_pong
 class Member(AbstractBaseUser, PermissionsMixin):
 	username = models.CharField(
 		max_length=25,
@@ -107,6 +108,14 @@ class Member(AbstractBaseUser, PermissionsMixin):
 		verbose_name="Friends list"
 	)
 
+	elo_pong = models.IntegerField(
+		default=1000,
+		null=False,
+		blank=False,
+		db_comment="ELO rating for the pong game",
+		verbose_name="Pong ELO rating"
+	)
+
 	objects = MemberManager()
 
 	# Required for extending AbstractBaseUser
@@ -121,7 +130,8 @@ class Member(AbstractBaseUser, PermissionsMixin):
 			models.Index(fields=["username"], name="member_username_idx"),
 			models.Index(fields=["last_activity"], name="member_last_activity_idx"),
 			models.Index(fields=["join_date", "username"], name="member_join_date_idx"),
-			models.Index(fields=["-join_date", "username"], name="member_join_date_rev_idx")
+			models.Index(fields=["-join_date", "username"], name="member_join_date_rev_idx"),
+			models.Index(fields=["elo_pong"], name="member_elo_pong_idx")
 		]
 
 	def __str__(self):
@@ -246,25 +256,32 @@ class FriendRequest(models.Model):
 		return f"{self.sender.username} invited {self.recipient.username} ({self.datetime})"
 
 # Match objects contain:
-# - winner			(Member Foreign Key)
-# - loser			(Member Foreign Key)
-# - winner_score	(IntegerField)
-# - loser_score		(IntegerField)
+# - type						(CharField)
+# - winner					(Member Foreign Key)
+# - loser						(Member Foreign Key)
+# - winner_score		(IntegerField)
+# - loser_score			(IntegerField)
 # - start_datetime	(DateTimeField)
-# - end_datetime	(DateTimeField)
+# - end_datetime		(DateTimeField)
 #
 # Indexed on:
 # - winner
 # - loser
 # - end_datetime
-# TODO: Index on players in either winner or loser
-# TODO: Index on end_datetime + players in either winner or loser
 class Match(models.Model):
+	type = models.CharField(
+		null=False,
+		blank=False,
+		default='pong2',
+		db_comment="Type of the game",
+		verbose_name="Game Type"
+	)
+
 	winner = models.ForeignKey(
 		Member,
 		null=True,
 		on_delete=models.SET_NULL,
-		related_name='matches_won',
+		related_name='pong2_matches_won',
 		db_comment="Winner of the match",
 		verbose_name="Winner"
 	)
@@ -273,7 +290,7 @@ class Match(models.Model):
 		Member,
 		null=True,
 		on_delete=models.SET_NULL,
-		related_name='matches_lost',
+		related_name='pong2_matches_lost',
 		db_comment="Loser of the match",
 		verbose_name="Loser"
 	)
@@ -302,12 +319,12 @@ class Match(models.Model):
 	)
 
 	class Meta:
-		verbose_name = "match"
-		verbose_name_plural = "matches"
+		verbose_name = "pong2 match"
+		verbose_name_plural = "pong2 matches"
 		indexes = [
-			models.Index(fields=["winner"], name="match_winner_idx"),
-			models.Index(fields=["loser"], name="match_loser_idx"),
-			models.Index(fields=["end_datetime"], name="match_date_idx")
+			models.Index(fields=["winner"], name="pong2_match_winner_idx"),
+			models.Index(fields=["loser"], name="pong2_match_loser_idx"),
+			models.Index(fields=["end_datetime"], name="pong2_match_date_idx")
 		]
 
 	def __str__(self):
@@ -318,3 +335,91 @@ class Match(models.Model):
 		if (self.loser):
 			loser_name = self.loser.username
 		return f"{winner_name} vs {loser_name} ({self.winner_score}-{self.loser_score})"
+
+# Match3 objects contain:
+# - type						(CharField)
+# - paddle1					(Member Foreign Key)
+# - paddle2					(Member Foreign Key)
+# - ball						(Member Foreign Key)
+# - ball_won				(BooleanField)
+# - start_datetime	(DateTimeField)
+# - end_datetime		(DateTimeField)
+#
+# Indexed on:
+# - ball_won
+# - end_datetime
+class Match3(models.Model):
+	type = models.CharField(
+		null=False,
+		blank=False,
+		default='pong3',
+		db_comment="Type of the game",
+		verbose_name="Game Type"
+	)
+
+	paddle1 = models.ForeignKey(
+		Member,
+		null=True,
+		on_delete=models.SET_NULL,
+		related_name='pong3_matches_as_paddle1',
+		db_comment="First paddle in the match",
+		verbose_name="Paddle 1"
+	)
+
+	paddle2 = models.ForeignKey(
+		Member,
+		null=True,
+		on_delete=models.SET_NULL,
+		related_name='pong3_matches_as_paddle2',
+		db_comment="Second paddle in the match",
+		verbose_name="Paddle 2"
+	)
+
+	ball = models.ForeignKey(
+		Member,
+		null=True,
+		on_delete=models.SET_NULL,
+		related_name='pong3_matches_as_ball',
+		db_comment="The ball in the match",
+		verbose_name="Ball"
+	)
+
+	ball_won = models.BooleanField(
+		default=False,
+		db_comment="Whether the ball won the match",
+		verbose_name="Ball Won"
+	)
+
+	start_datetime = models.DateTimeField(
+		auto_now_add=True,
+		db_comment="Date and time of the start of the match",
+		verbose_name="Start of match"
+	)
+
+	end_datetime = models.DateTimeField(
+		db_comment="Date and time of the end of the match",
+		verbose_name="End of match"
+	)
+
+	class Meta:
+		verbose_name = "pong3 match"
+		verbose_name_plural = "pong3 matches"
+		indexes = [
+			models.Index(fields=["ball_won"], name="pong3_match_ball_won_idx"),
+			models.Index(fields=["end_datetime"], name="pong3_match_date_idx")
+		]
+
+	def __str__(self):
+		paddle1_name = "Deleted member"
+		paddle2_name = "Deleted member"
+		ball_name = "Deleted member"
+		result = "paddles won"
+		if (self.paddle1):
+			paddle1_name = self.paddle1.username
+		if (self.paddle2):
+			paddle2_name = self.paddle2.username
+		if (self.ball):
+			ball_name = self.ball.username
+		if (self.ball_won == True):
+			result = "ball won"
+		return f"{paddle1_name} & {paddle2_name} vs {ball_name} ({result})"

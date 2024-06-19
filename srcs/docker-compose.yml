@@ -94,8 +94,8 @@ services:
     image: backend_${PROJECT_NAME} #TODO Remove before submiting
     profiles:
       - main
-    # ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
-    #   - "${PROJECT_PORT_ID}82:8000"
+    ports: #Expose port should be removed, the only authorize entrypoint for the front && backend will be the front throught the proxy
+      - "${BACK_PORT}:8000"
     env_file:
       - .env
     volumes: #TODO Volumes binded should be changed before submiting the project

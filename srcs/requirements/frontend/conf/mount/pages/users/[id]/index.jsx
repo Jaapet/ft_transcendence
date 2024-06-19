@@ -4,6 +4,7 @@ import Image from 'next/image';
 import styles from '../../../styles/base.module.css';
 import Link from 'next/link';
 import { useAuth } from '../../../context/AuthenticationContext';
+import { useUser } from '../../../context/UserContext';
 import { Card, Button } from 'react-bootstrap';
 import FriendButton from '../../../components/FriendButton';
 import ToastList from '../../../components/toasts/ToastList';
@@ -76,7 +77,7 @@ const ProfileMemberCardFriendsButton = ({ target_user }) => {
 	}
 
 	return (
-			<Link href={`/${user.id}/friends`} className={styles.minorbutton} passHref>
+			<Link href={`${user.id}/friends`} className={styles.minorbutton} passHref>
 				<strong>Friend List</strong>
 			</Link>
 			
@@ -89,16 +90,60 @@ const ProfileMemberCardEditButton = ({ target_user }) => {
 	if (!user || !target_user || !user.id || !target_user.id || user.id !== target_user.id) {
 		return ;
 	}
+	
+
+	return (
+		<Link href={`${user.id}/edit`} className={styles.minorbutton} passHref>
+			<strong>Edit</strong>
+		</Link>
+	);
+}
+
+// TODO: check if 2FA is already enabled and ask if user wants to disable it
+const ProfileMemberCard2FAButton = ({ target_user, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
+	const { user } = useAuth();
+	const { enable2FA } = useUser();
+	const [secretKey, setSecretKey] = useState('');
+	const [qrUrl, setQrUrl] = useState('');
+
+	if (!user || !target_user || !user.id || !target_user.id || user.id !== target_user.id) {
+		return ;
+	}
+
+	const handleClick = async (event) => {
+		event.preventDefault();
+		const data = await enable2FA();
+		if (data) {
+			setSecretKey(data.secret_key);
+			setQrUrl('http://backend:8000' + data.qr_code_url);
+		}
+	}
+
+	if (secretKey !== '' && qrUrl !== '') {
+		return (
+			<div className={`card ${styles.customCard}`} style={{marginTop: '15px'}}>
+				<Image
+					src={qrUrl}
+					alt={`Your 2FA secret key is ${secretKey}`}
+					width={100}
+					height={100}
+					style={{ width: '200px', height: '200px' , objectFit: 'cover'}}
+					className="card-img-top"
+					priority={true}
+				/>
+			</div>
+		);
+	}
 
 	return (
 		<div className={`card ${styles.customCard}`} style={{marginTop: '15px'}}>
 			<Button
 				type="button"
-				variant="warning"
+				variant="danger-outline"
 				style={{fontSize: '25px'}}
-				href={`${user.id}/edit`}
+				onClick={handleClick}
 			>
-				<strong>Edit</strong>
+				<strong>Enable 2FA</strong>
 			</Button>
 		</div>
 	);
@@ -119,11 +164,22 @@ const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg
 				setMsg={setMsg}
 			/>
 
+		<div className='buttonVerticalContainer'>
 			{/* Edit button */}
 			<ProfileMemberCardEditButton target_user={user} />
 
+			{/* 2FA button */}
+			<ProfileMemberCard2FAButton
+				target_user={user}
+				setShowError={setShowError}
+				setErrorMsg={setErrorMsg}
+				setShowMsg={setShowMsg}
+				setMsg={setMsg}
+			/>
+
 			{/* Friends button */}
 			<ProfileMemberCardFriendsButton target_user={user} />
+		</div>
 
 			{/* elo */}
 			<ProfileMemberCardELO user={user} />
@@ -152,7 +208,7 @@ const ProfileMatchPlayers = ({ user, match }) => {
 	if (match.winner_id === user.id) {
 		return (
 			<p className="fs-2 mb-0">
-				<strong style={{color: '#00B300'}}>
+				<strong style={{color: '#006300'}}>
 					{match.winner_username}
 				</strong>
 				&nbsp;vs&nbsp;
@@ -262,20 +318,28 @@ const ProfileToasts = ({ showError, setShowError, errorMsg, setErrorMsg, showMsg
 	);
 }
 
-export default function Profile({ status, user, last_matches }) {
+export default function Profile({ status, detail, user, last_matches }) {
 	const [showError, setShowError] = useState(false);
 	const [errorMsg, setErrorMsg] = useState('');
 	const [showMsg, setShowMsg] = useState(false);
 	const [msg, setMsg] = useState('');
+	const { logout } = useAuth();
 
-	/* TODO: Implement redirect here
-	if (status === 404) {
-		// redirect here
+	const handleLogout = async () => {
+		await logout();
 	}
-	*/
 
-	if (status === 401 || status === 404 || !user) {
-		return (<p>Something went wrong...</p>);
+	if (status === 401 && detail === 'Not logged in') {
+		handleLogout();
+	}
+
+	if (status !== 200 || !user) {
+		return (
+			<div className={styles.container}>
+				<p className="bg-light text-black">Something went wrong...</p>
+				<p className="bg-light text-black">Please reload the page.</p>
+			</div>
+		);
 	}
 
 	return (
@@ -336,6 +400,7 @@ export async function getServerSideProps(context) {
 			return {
 				props: {
 					status: 404,
+					detail: 'Resource not found',
 					user: null,
 					last_matches: null
 				}
@@ -353,6 +418,7 @@ export async function getServerSideProps(context) {
 		return {
 			props: {
 				status: 200,
+				detail: 'Success',
 				user: data.user,
 				last_matches: data.last_matches
 			}
@@ -362,6 +428,7 @@ export async function getServerSideProps(context) {
 		return {
 			props: {
 				status: 401,
+				detail: error.message,
 				user: null,
 				last_matches: null
 			}

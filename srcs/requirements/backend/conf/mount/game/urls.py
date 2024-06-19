@@ -1,6 +1,9 @@
 from django.urls import include, path
 from rest_framework import routers
 from .views import (
+	CustomTokenObtainPairView,
+	Enable2FAView,
+	Verify2FAView,
 	MemberViewSet,
 	MemberAPIView,
 	RegisterMemberAPIView,
@@ -14,6 +17,7 @@ from .views import (
 	DeclineFriendRequestAPIView,
 	RemoveFriendAPIView,
 	MatchViewSet,
+	Match3ViewSet,
 	MetricsView
 )
 from rest_framework_simplejwt import views as jwt_views
@@ -24,14 +28,17 @@ from rest_framework_simplejwt import views as jwt_views
 router = routers.DefaultRouter()
 router.register(r'members', MemberViewSet)
 router.register(r'friend_requests', FriendRequestViewSet)
-router.register(r'matches', MatchViewSet)
+router.register(r'pong2_matches', MatchViewSet)
+router.register(r'pong3_matches', Match3ViewSet)
 
 urlpatterns = [
 	path('', include(router.urls)),
-	path('token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
+	path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
 	path('token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
 	path('user/', MemberAPIView.as_view(), name='login'),
 	path('register/', RegisterMemberAPIView.as_view(), name='register'),
+	path('enable_2fa/', Enable2FAView.as_view(), name='enable_2fa'),
+	path('verify_2fa/', Verify2FAView.as_view(), name='verify_2fa'),
 	path('edit/', UpdateMemberAPIView.as_view(), name='edit'),
 	path('friend_request/send', SendFriendRequestAPIView.as_view(), name='send_friend_request'),
 	path('friend_request/delete', DeleteFriendRequestAPIView.as_view(), name='delete_friend_request'),
