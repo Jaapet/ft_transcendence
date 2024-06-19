@@ -28,7 +28,7 @@ const RemoveFriendButton = ({ target_id, setShowError, setErrorMsg, setShowMsg, 
 		<button
 			type="button"
 			className="btn btn-danger"
-			style={{fontSize: '25px'}}
+			style={{fontSize: '25px', textAlign: 'center', minWidth: '200px'}}
 			onClick={handleClick}
 		>
 			Remove friend
