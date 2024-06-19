@@ -54,7 +54,7 @@ COPY web-config.yml /etc/prometheus/
 COPY alerts-rules.yml /etc/prometheus/
 COPY inited_alertmanager.yml /etc/alertmanager/alertmanager.yml
 
-COPY webhook.secret /etc/alertmanager/
+#COPY webhook.secret /etc/alertmanager/
 RUN chmod -R 755 /etc/alertmanager
 # Install CA certificates package
 RUN apk update && apk add ca-certificates && update-ca-certificates

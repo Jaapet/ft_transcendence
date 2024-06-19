@@ -85,6 +85,8 @@ fi
 	echo "FQDN=${FQDN}" >> $ENVFILE
 
 	#Ports
+	BACK_PORT=${PROJECT_PORT_ID}82
+	echo "BACK_PORT=${BACK_PORT}" >> $ENVFILE
 	FRONT_PORT=${PROJECT_PORT_ID}81
 	echo "FRONT_PORT=${FRONT_PORT}" >> $ENVFILE
 	WEBSOCKET_PORT=${PROJECT_PORT_ID}80
@@ -158,17 +160,6 @@ echo "$expanded_content" > "$DEST"
 	##Postrges exporter conf file
 TEMPLATE="./init_template/postgres_exporter.yml.template"
 DEST="./srcs/requirements/postgres-exporter/inited_postgres_exporter.yml"
-if [ ! -f "$TEMPLATE" ]; then
-    echo "Template file not found: $TEMPLATE"
-    exit 1
-fi
-template_content=$(cat "$TEMPLATE")
-expanded_content=$(envsubst <<< "$template_content")
-echo "$expanded_content" > "$DEST"
-
-	##Logstash exporter yml file
-TEMPLATE="./init_template/logstash.yml.template"
-DEST="./srcs/requirements/logstash/inited_logstash.yml"
 if [ ! -f "$TEMPLATE" ]; then
     echo "Template file not found: $TEMPLATE"
     exit 1
