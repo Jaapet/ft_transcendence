@@ -1,8 +1,7 @@
-#ggualerz header
+#USE PLEASE ALPINE BASED IMAGES OR MINIDEB IF ALPINE IS NOT AVAILABLE
+FROM		XXXX:STABLEVERSION
 
-FROM		traefik:v3.0.2
-
-LABEL		author="ggualerz@student.42nice.fr"
+LABEL		author="xxx@student.42nice.fr"
 
 # Install CA certificates package
 RUN apk update && apk add ca-certificates && update-ca-certificates
@@ -20,5 +19,4 @@ RUN mkdir /ssl
 COPY *.crt /ssl/
 COPY *.key /ssl/
 
-#ssl dyn conf of traefik
-COPY ssl.yml /app/ssl.yml
+#Sometimes the user who run the image will not have the perm on /ssl, find the user and give him ownership of the dir

@@ -1,0 +1,17 @@
+server:
+  name: "Transcendence Kibana"
+  host: kibana
+  basePath: "/adm/kibana"
+  rewriteBasePath: true
+  ssl:
+    enabled: true
+    key: "/ssl/kibana.key"
+    certificate: "/ssl/kibana.crt"
+
+elasticsearch.hosts: [ "https://elasticsearch:9200" ]
+elasticsearch.ssl.certificateAuthorities: /ssl/CA.crt
+
+server.publicBaseUrl: https://${FQDN}:${FRONT_PORT}/adm/kibana
+monitoring.ui.container.elasticsearch.enabled: true
+elasticsearch.username: "kibana_system"
+elasticsearch.password: ${ELASTIC_KIBANA_PASSWORD}

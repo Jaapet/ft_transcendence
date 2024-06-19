@@ -19,3 +19,5 @@ Makefile
 openssl.cnf
 .env
 token_backend
+inited_*
+*.secret
