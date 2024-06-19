@@ -437,6 +437,9 @@ class Match3(models.Model):
 # - start_datetime	(DateTimeField)
 # - end_datetime		(DateTimeField)
 #
+# From RoyalPlayer:
+# - players
+#
 # Indexed on:
 # - end_datetime
 class MatchR(models.Model):
@@ -466,6 +469,14 @@ class MatchR(models.Model):
 			models.Index(fields=["end_datetime"], name="royal_match_date_idx")
 		]
 
+# RoyalPlayer objects contain:
+# - match				(MatchR Foreign Key)
+# - member			(Member Foreign Key)
+# - position		(PositiveSmallIntegerField)
+#
+# Indexed on:
+# - match
+# - member
 class RoyalPlayer(models.Model):
 	match = models.ForeignKey(
 		MatchR,
@@ -491,6 +502,12 @@ class RoyalPlayer(models.Model):
 	)
 
 	class Meta:
+		verbose_name = "royal player"
+		verbose_name_plural = "royal players"
+		indexes = [
+			models.Index(fields=["match"], name="royal_player_match_idx"),
+			models.Index(fields=["member"], name="royal_player_member_idx")
+		]
 		# This ensures that members and positions are unique in the associated match
 		unique_together = [("match", "member"), ("match", "position")]
 		# Ensures position-based ordering when retrieved
