@@ -31,8 +31,6 @@ def validate_file_size(file):
 
 # Restricted serializer for querying users that are not the current one
 class RestrictedMemberSerializer(serializers.HyperlinkedModelSerializer):
-	is_online = serializers.ReadOnlyField()
-
 	class Meta:
 		model = Member
 		fields = [
@@ -42,7 +40,8 @@ class RestrictedMemberSerializer(serializers.HyperlinkedModelSerializer):
 			'join_date',
 			'elo_pong',
 			'is_online'
-		]
+		],
+		read_only_fields = fields
 
 # Serializes sent data for Member registration
 # Checks if avatar is under size limit defined in validate_file_size
@@ -164,7 +163,8 @@ class FriendRequestSerializer(serializers.HyperlinkedModelSerializer):
 			'recipient_id',
 			'date',
 			'time'
-		]
+		],
+		read_only_fields = fields
 
 	def get_sender_username(self, obj):
 		return obj.sender.username if obj.sender else 'Deleted user'
@@ -206,7 +206,8 @@ class MatchSerializer(serializers.HyperlinkedModelSerializer):
 			'loser_username',
 			'winner_id',
 			'loser_id'
-		]
+		],
+		read_only_fields = fields
 
 	def get_winner_username(self, obj):
 		return obj.winner.username if obj.winner else 'Deleted user'
@@ -252,7 +253,8 @@ class Match3Serializer(serializers.HyperlinkedModelSerializer):
 			'paddle1_id',
 			'paddle2_id',
 			'ball_id'
-		]
+		],
+		read_only_fields = fields
 
 	def get_paddle1_username(self, obj):
 		return obj.paddle1.username if obj.paddle1 else 'Deleted user'
