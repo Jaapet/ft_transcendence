@@ -83,6 +83,7 @@ fi
 	echo "PROJECT_PORT_ID=${PROJECT_PORT_ID}" >> $ENVFILE
 	FQDN=$(hostname).$(dnsdomainname)
 	echo "FQDN=${FQDN}" >> $ENVFILE
+	echo "NEXT_PUBLIC_FQDN=${FQDN}" >> $ENVFILE
 
 	#Ports
 	BACK_PORT=${PROJECT_PORT_ID}82
