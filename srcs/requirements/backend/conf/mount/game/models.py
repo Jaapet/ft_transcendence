@@ -149,6 +149,8 @@ class Member(AbstractBaseUser, PermissionsMixin):
 	@property
 	def is_online(self):
 		# Right now - 5 minutes
+		if not self.last_activity:
+			return False
 		threshold = timezone.now() - timezone.timedelta(minutes=5)
 		return self.last_activity and self.last_activity >= threshold
 
