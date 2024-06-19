@@ -105,7 +105,7 @@
 .buttonVerticalContainer {
 	display: flex;
 	flex-direction: column;
-	align-items: flex-start; /* starting aligned to the left*/
+	align-items: flex-start; /* text starting aligned */
 }
 
 
