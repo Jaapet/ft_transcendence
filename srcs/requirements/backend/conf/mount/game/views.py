@@ -28,7 +28,8 @@ from .serializers import (
 	InteractFriendRequestSerializer,
 	RemoveFriendSerializer,
 	MatchSerializer,
-	Match3Serializer
+	Match3Serializer,
+	MatchRSerializer
 )
 
 # Enables 2FA for current user
@@ -403,6 +404,44 @@ class Match3ViewSet(viewsets.ModelViewSet):
 		if (player_id is None):
 			return Response({'error': 'Player ID is required'}, status=status.HTTP_400_BAD_REQUEST)
 		player_matches = Match.objects.filter(Q(paddle1_id=player_id) | Q(paddle2_id=player_id) | Q(ball_id=player_id)).select_related("paddle1", "paddle2", "ball").order_by('-end_datetime')[:3]
+		serializer = self.get_serializer(player_matches, many=True)
+		return Response(serializer.data)
+
+# Custom permissions for MatchRViewSet
+class MatchRViewSetPermissions(permissions.BasePermission):
+	def has_permission(self, request, view):
+		# Admins have full access
+		if request.user and request.user.is_staff:
+			return True
+		# Users can only use these actions (all matches, 1 match, all matches for 1 user, 3 last matches for 1 user)
+		if request.user and view.action in ['list', 'retrieve', 'player_matches', 'last_player_matches']:
+			return True
+		return False
+
+# Queries all royal matches ordered by most recently finished
+# Requires authentication
+class MatchRViewSet(viewsets.ModelViewSet):
+	permission_classes = [permissions.IsAuthenticated, MatchRViewSetPermissions]
+	serializer_class = MatchRSerializer
+	queryset = MatchR.objects.all().order_by('-end_datetime')
+
+	# Get all matches involving 1 player
+	@action(detail=False, methods=['get'])
+	def player_matches(self, request, pk=None):
+		player_id = request.query_params.get('player_id', None)
+		if (player_id is None):
+			return Response({'error': 'Player ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+		player_matches = MatchR.objects.filter(players__member_id=player_id).distinct().order_by('-end_datetime')
+		serializer = self.get_serializer(player_matches, many=True)
+		return Response(serializer.data)
+
+	# Get a player's last 3 matches
+	@action(detail=False, methods=['get'])
+	def last_player_matches(self, request, pk=None):
+		player_id = request.query_params.get('player_id', None)
+		if (player_id is None):
+			return Response({'error': 'Player ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+		player_matches = MatchR.objects.filter(players__member_id=player_id).distinct().order_by('-end_datetime')[:3]
 		serializer = self.get_serializer(player_matches, many=True)
 		return Response(serializer.data)
 
