@@ -1,7 +1,7 @@
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 from django.db import models, transaction
-from .models import Match, Match3, Member
+from .models import Match, Match3, MatchR, Member, RoyalPlayer
 
 # Deletes any match that has both winner and loser as null, so deleted users
 @receiver(pre_delete, sender=Member)
@@ -26,6 +26,19 @@ def delete_match3_if_all_players_deleted(sender, instance, **kwargs):
 		if ((match.paddle1 == instance and match.paddle2 == None and match.ball == None)
 			or (match.paddle2 == instance and match.paddle1 == None and match.ball == None)
 			or (match.ball == instance and match.paddle1 == None and match.paddle2 == None)):
+			match.delete()
+
+@receiver(pre_delete, sender=Member)
+def delete_matchr_if_all_players_deleted(sender, instance, **kwargs):
+	# Retrieve all matches that user participated in
+	plays = RoyalPlayer.objects.filter(models.Q(member=instance))
+	for play in plays:
+		match = play.match
+		# Retrieve all players associated with the match except the one being deleted
+		players = RoyalPlayer.objects.filter(match=match).exclude(member=instance)
+		# Check if all other players in the match are deleted
+		if players.exists() and not players.filter(member__isnull=False).exists():
+			# If all other players are deleted, delete the match
 			match.delete()
 
 ### ELO
@@ -101,3 +114,6 @@ def update_pong3_elo(paddle1, paddle2, ball, ball_won):
 def update_elo_on_pong3_match_save(sender, instance, created, **kwargs):
 	if created and instance.paddle1 and instance.paddle2 and instance.ball:
 		update_pong3_elo(instance.paddle1, instance.paddle2, instance.ball, instance.ball_won)
+
+# MatchR / Royal
+

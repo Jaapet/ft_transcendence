@@ -3,9 +3,10 @@ from django.db import models
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
+from django.forms.models import BaseInlineFormSet
 from django.core.exceptions import ValidationError
 from django.template.response import TemplateResponse
-from .models import Member, FriendRequest, Match, Match3
+from .models import Member, FriendRequest, Match, Match3, MatchR, RoyalPlayer
 
 # The content of this file is only used on Django Admin
 # You can ignore it for correction
@@ -73,6 +74,7 @@ class MemberAdmin(BaseUserAdmin):
 		member = self.get_object(request, object_id)
 		pong2_matches = Match.objects.filter(models.Q(winner=member) | models.Q(loser=member))
 		pong3_matches = Match3.objects.filter(models.Q(paddle1=member) | models.Q(paddle2=member) | models.Q(ball=member))
+		royal_matches = MatchR.objects.filter(players__member=member)
 
 		# Get default context from the changelist
 		ModelForm = self.get_form(request, member)
@@ -99,6 +101,7 @@ class MemberAdmin(BaseUserAdmin):
 		extra_context.update({
 			'pong2_matches': pong2_matches,
 			'pong3_matches': pong3_matches,
+			'royal_matches': royal_matches,
 			'opts': self.model._meta,
 			'original': member,
 			'title': 'Change member',
@@ -132,3 +135,36 @@ admin.site.register(Match, MatchAdmin)
 class Match3Admin(admin.ModelAdmin):
 	list_display = ("paddle1", "paddle2", "ball", "ball_won", "start_datetime", "end_datetime")
 admin.site.register(Match3, Match3Admin)
+
+class RoyalPlayerInlineFormSet(BaseInlineFormSet):
+	def clean(self):
+		super().clean()
+		count = 0
+		for form in self.forms:
+			if form.cleaned_data.get('DELETE') is False:
+				count += 1
+		if count < 2:
+			raise forms.ValidationError('You must have at least 2 players.')
+		elif count > 8:
+			raise forms.ValidationError('You cannot have more than 8 players.')
+
+class RoyalPlayerInline(admin.TabularInline):
+	model = RoyalPlayer
+	formset = RoyalPlayerInlineFormSet
+	extra = 0
+	min_num = 2
+	max_num = 8
+	verbose_name_plural = "Royal Players"
+
+class MatchRAdmin(admin.ModelAdmin):
+	inlines = [RoyalPlayerInline]
+	list_display = ("id", "display_players", "start_datetime", "end_datetime")
+
+	def display_players(self, obj):
+		return ", ".join([player.member.username if player.member else 'Deleted user' for player in obj.players.all()])
+	display_players.short_description = "Players"
+admin.site.register(MatchR, MatchRAdmin)
+
+class RoyalPlayerAdmin(admin.ModelAdmin):
+	list_display = ("match", "member")
+admin.site.register(RoyalPlayer, RoyalPlayerAdmin)

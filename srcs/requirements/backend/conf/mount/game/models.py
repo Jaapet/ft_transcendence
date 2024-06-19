@@ -2,6 +2,7 @@ from django.db import models, transaction
 from django.utils import timezone
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 # The create_user function will be called for each new Member
 # the create_superuser is called only for createsuperuser cmd in cli (python manage.py createsuperuser)
@@ -430,3 +431,73 @@ class Match3(models.Model):
 		if (self.ball_won == True):
 			result = "ball won"
 		return f"{paddle1_name} & {paddle2_name} vs {ball_name} ({result})"
+
+# MatchR objects contain:
+# - type						(CharField)
+# - start_datetime	(DateTimeField)
+# - end_datetime		(DateTimeField)
+#
+# Indexed on:
+# - end_datetime
+class MatchR(models.Model):
+	type = models.CharField(
+		null=False,
+		blank=False,
+		default='royal',
+		db_comment="Type of the game",
+		verbose_name="Game Type"
+	)
+
+	start_datetime = models.DateTimeField(
+		auto_now_add=True,
+		db_comment="Date and time of the start of the match",
+		verbose_name="Start of match"
+	)
+
+	end_datetime = models.DateTimeField(
+		db_comment="Date and time of the end of the match",
+		verbose_name="End of match"
+	)
+
+	class Meta:
+		verbose_name = "royal match"
+		verbose_name_plural = "royal matches"
+		indexes = [
+			models.Index(fields=["end_datetime"], name="royal_match_date_idx")
+		]
+
+class RoyalPlayer(models.Model):
+	match = models.ForeignKey(
+		MatchR,
+		related_name='players',
+		on_delete=models.CASCADE
+	)
+
+	member = models.ForeignKey(
+		Member,
+		null=True,
+		on_delete=models.SET_NULL,
+		db_comment="Player object for Royal",
+		verbose_name="Player"
+	)
+
+	position = models.PositiveSmallIntegerField(
+		default=0,
+		null=False,
+		blank=False,
+		validators=[MinValueValidator(1), MaxValueValidator(8)],
+		db_comment="Position in associated game's results",
+		verbose_name="Position in game"
+	)
+
+	class Meta:
+		# This ensures that members and positions are unique in the associated match
+		unique_together = [("match", "member"), ("match", "position")]
+		# Ensures position-based ordering when retrieved
+		ordering = ['position']
+
+	def __str__(self):
+		name = "Deleted user"
+		if self.member:
+			name = self.member.username
+		return f"{name} in royal match {self.match.id}"

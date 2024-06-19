@@ -1,5 +1,5 @@
 import os
-from .models import Member, FriendRequest, Match, Match3
+from .models import Member, FriendRequest, Match, Match3, MatchR
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
@@ -443,6 +443,7 @@ class MetricsView(APIView):
 		metrics += self.collect_total_friend_requests()
 		metrics += self.collect_total_pong2_matches()
 		metrics += self.collect_total_pong3_matches()
+		metrics += self.collect_total_royal_matches()
 		return '\n'.join(metrics)
 
 	def collect_total_users(self):
@@ -487,5 +488,14 @@ class MetricsView(APIView):
 			'# HELP back_total_pong3_matches Number of played 1v2 pong matches',
 			'# TYPE back_total_pong3_matches counter',
 			f'back_total_pong3_matches {total_pong3_matches}'
+		]
+		return metric
+
+	def collect_total_royal_matches(self):
+		total_royal_matches = MatchR.objects.count()
+		metric = [
+			'# HELP back_total_royal_matches Number of played royal matches',
+			'# TYPE back_total_royal_matches counter',
+			f'back_total_royal_matches {total_royal_matches}'
 		]
 		return metric
