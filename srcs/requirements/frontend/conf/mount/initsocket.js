@@ -83,27 +83,30 @@ io.on('connection', socket => {
 		}
 
 		// Create queue if !queue and join it
-		if (!findRoom(queueType))
-			queue = createRoom(queueType);
+		if (!findRoom(queueType, userELO))
+			queue = createRoom(queueType, userELO);
 		addPlayerToRoom(queue, socket, userId, userELO, userAvatar);
 
 		room = null;
-		if (playerInRoom(queueType, queue.id))
+		while (playerInRoom(queueType, queue.id))
 		{
 			//io.to(socket.id).emit('info', { message: `a` });
 			if (roomPlayerNb(queueType, queue.id) === 1 && !findRoom(gameType))
 			{
 				// io.to(socket.id).emit('info', { message: `creating` });
-				room = createRoom(gameType);
+				room = createRoom(gameType, userELO);
 				removePlayerFromQueue(queueType, queue.id);
 				addPlayerToRoom(room, socket, userId, userELO, userAvatar);
 			}
 			else
 			{
 				// io.to(socket.id).emit('info', { message: `joining` });
-				room = findRoom(gameType);
-				removePlayerFromQueue(queueType, queue.id);
-				addPlayerToRoom(room, socket, userId, userELO, userAvatar);
+				room = findRoomElo(gameType, userELO);
+				if (room)
+				{
+					removePlayerFromQueue(queueType, queue.id);
+					addPlayerToRoom(room, socket, userId, userELO, userAvatar);
+				}
 			}
 		}
 
@@ -134,11 +137,28 @@ io.on('connection', socket => {
 		}
 	});
 
+	// Returns true if userELO matches roomELO, false if not
+	function checkElo(room, userELO) {
+		if ( !room.elo || (userELO <= (room.elo + 100) && userELO >= (room.elo - 100)) )
+			return true;
+		return false;
+	}
+
 	// Finds room if ther is one, null if not
 	function findRoom(gameType) {
 		// For all rooms in selected game type, return the first one that is not full
 		for (const roomId in rooms[gameType]) {
 			if (!isRoomFull(gameType, roomId) && !isRoomLaunched(gameType, roomId)) {
+				return rooms[gameType][roomId];
+			}
+		}
+		return null;
+	}
+
+	// Finds room matching elo if ther is one, null if not
+	function findRoomElo(gameType, userELO) {
+		for (const roomId in rooms[gameType]) {
+			if (!isRoomFull(gameType, roomId) && !isRoomLaunched(gameType, roomId) && checkElo(rooms[gameType][roomId], userELO)) {
 				return rooms[gameType][roomId];
 			}
 		}
@@ -177,7 +197,7 @@ io.on('connection', socket => {
 	// }
 
 	// Creates a room for the player
-	function createRoom(gameType) {
+	function createRoom(gameType, userELO) {
 		// Create a new room
 		const newRoomId = generateRoomId(gameType);
 		switch (gameType) {
@@ -194,15 +214,15 @@ io.on('connection', socket => {
 				io.to(socket.id).emit('info', { message: `Room $queueR$ created` });
 				return rooms["queueR"]["$queueR$"];
 			case 'pong3':
-				rooms[gameType][newRoomId] = { id: newRoomId, launched: false, maxPlayers: PONG3_NB_PLAYERS, players: {} };
+				rooms[gameType][newRoomId] = { id: newRoomId, launched: false, maxPlayers: PONG3_NB_PLAYERS, players: {}, elo: userELO };
 				break ;
 			case 'royal':
-				rooms[gameType][newRoomId] = { id: newRoomId, launched: false, maxPlayers: ROYAL_MAX_PLAYERS, players: {} };
+				rooms[gameType][newRoomId] = { id: newRoomId, launched: false, maxPlayers: ROYAL_MAX_PLAYERS, players: {}, elo: userELO };
 				break ;
 			default:
-				rooms[gameType][newRoomId] = { id: newRoomId, launched: false, maxPlayers: PONG2_NB_PLAYERS, players: {} };
+				rooms[gameType][newRoomId] = { id: newRoomId, launched: false, maxPlayers: PONG2_NB_PLAYERS, players: {}, elo: userELO };
 		}
-		io.to(socket.id).emit('info', { message: `Room ${newRoomId} created` });
+		io.to(socket.id).emit('info', { message: `Room ${newRoomId} created, room elo ${userELO}` });
 		return rooms[gameType][newRoomId];
 	}
 
@@ -217,8 +237,9 @@ io.on('connection', socket => {
 
 	// Adds a player to a room
 	// Does nothing if either room or socket does not exist
+	// Does nothing if elo doesn't match
 	function addPlayerToRoom(room, socket, userId, userELO, userAvatar) {
-		if (room && socket) {
+		if (room && socket && checkElo(room, userELO)) {
 			socket.join(room.id);
 			room.players[socket.id] = {
 				id: userId,
@@ -227,7 +248,7 @@ io.on('connection', socket => {
 				avatar: userAvatar
 			};
 			// DEBUG
-			io.to(socket.id).emit('info', { message: `You joined room ${room.id} ` });//[${gameType}]
+			io.to(socket.id).emit('info', { message: `You (elo ${userELO}) joined room ${room.id}, room elo ${room.elo}` });//[${gameType}]
 		}
 	}
 
