@@ -90,12 +90,11 @@ io.on('connection', socket => {
 		room = null;
 		while (playerInRoom(queueType, queue.id))
 		{
-			//io.to(socket.id).emit('info', { message: `a` });
 			if (roomPlayerNb(queueType, queue.id) === 1 && !findRoom(gameType))
 			{
 				// io.to(socket.id).emit('info', { message: `creating` });
 				room = createRoom(gameType, userELO);
-				removePlayerFromQueue(queueType, queue.id);
+				removePlayerFromQueue(queueType, queue.id, socket.id);
 				addPlayerToRoom(room, socket, userId, userELO, userAvatar);
 			}
 			else
@@ -104,26 +103,30 @@ io.on('connection', socket => {
 				room = findRoomElo(gameType, userELO);
 				if (room)
 				{
-					removePlayerFromQueue(queueType, queue.id);
+					io.to(socket.id).emit('info', { message: `found room ${room.id}` });
+					removePlayerFromQueue(queueType, queue.id, socket.id);
 					addPlayerToRoom(room, socket, userId, userELO, userAvatar);
 				}
 			}
 		}
+		io.to(socket.id).emit('info', { message: `left while` });
 
 		//const room = findOrCreateRoom(gameType);
 		// addPlayerToRoom(room, socket, userId, userELO, userAvatar);
 
 		// DEBUG
 		// io.to(socket.id).emit('info', { message: `You joined room ${room.id} [${gameType}]` });
-		// if (isRoomFull(gameType, room.id)) {
-		// 	io.to(room.id).emit('info', { message: `Room ${room.id} [${gameType}] is now full` });
-		// }
+		if (isRoomFull(gameType, room.id)) {
+			io.to(room.id).emit('info', { message: `Room ${room.id} [${gameType}] is now full` });
+		}
 
 		// Set player as ready
-		// room.players[socket.id].ready = true;
+		room.players[socket.id].ready = true;
+
+		fillRoom(room, queueType);
 
 		// Start game if it can be started
-		// checkGameStart(room, gameType);
+		checkGameStart(room, gameType);
 	});
 
 	// INPUT HANDLER
@@ -158,11 +161,20 @@ io.on('connection', socket => {
 	// Finds room matching elo if ther is one, null if not
 	function findRoomElo(gameType, userELO) {
 		for (const roomId in rooms[gameType]) {
-			if (!isRoomFull(gameType, roomId) && !isRoomLaunched(gameType, roomId) && checkElo(rooms[gameType][roomId], userELO)) {
+			if (!isRoomFull(gameType, roomId) && !isRoomLaunched(gameType, roomId) && checkElo(rooms[gameType][roomId], userELO) ) {
 				return rooms[gameType][roomId];
 			}
 		}
 		return null;
+	}
+
+	// Returns true if room was created at least 10s ago
+	function checkTimeStamp(room) {
+		const now = Date.now();
+		//io.to(socket.id).emit('info', { message: `check ${now - room.timeStamp}` });
+		if (now - room.timeStamp >= 10000)
+			return true;
+		return false;
 	}
 
 	// // Finds room if ther is one, null if not
@@ -199,30 +211,32 @@ io.on('connection', socket => {
 	// Creates a room for the player
 	function createRoom(gameType, userELO) {
 		// Create a new room
+		const now = Date.now();
 		const newRoomId = generateRoomId(gameType);
 		switch (gameType) {
 			case 'queue2':
-				rooms["queue2"]["$queue2$"] = { id: "$queue2$", launched: false, maxPlayers: 1000, players: {} };
+				rooms["queue2"]["$queue2$"] = { id: "$queue2$", launched: false, maxPlayers: 1000, timeStamp: now, players: {} };
 				io.to(socket.id).emit('info', { message: `Room $queue2$ created` });
 				return rooms["queue2"]["$queue2$"];
 			case 'queue3':
-				rooms["queue3"]["$queue3$"] = { id: "$queue3$", launched: false, maxPlayers: 1000, players: {} };
+				rooms["queue3"]["$queue3$"] = { id: "$queue3$", launched: false, maxPlayers: 1000, timeStamp: now, players: {} };
 				io.to(socket.id).emit('info', { message: `Room $queue3$ created` });
 				return rooms["queue3"]["$queue3$"];
 			case 'queueR':
-				rooms["queueR"]["$queueR$"] = { id: "$queueR$", launched: false, maxPlayers: 1000, players: {} };
+				rooms["queueR"]["$queueR$"] = { id: "$queueR$", launched: false, maxPlayers: 1000, timeStamp: now, players: {} };
 				io.to(socket.id).emit('info', { message: `Room $queueR$ created` });
 				return rooms["queueR"]["$queueR$"];
 			case 'pong3':
-				rooms[gameType][newRoomId] = { id: newRoomId, launched: false, maxPlayers: PONG3_NB_PLAYERS, players: {}, elo: userELO };
+				rooms[gameType][newRoomId] = { id: newRoomId, launched: false, maxPlayers: PONG3_NB_PLAYERS, timeStamp: now, players: {}, elo: userELO };
 				break ;
 			case 'royal':
-				rooms[gameType][newRoomId] = { id: newRoomId, launched: false, maxPlayers: ROYAL_MAX_PLAYERS, players: {}, elo: userELO };
+				rooms[gameType][newRoomId] = { id: newRoomId, launched: false, maxPlayers: ROYAL_MAX_PLAYERS, timeStamp: now, players: {}, elo: userELO };
 				break ;
 			default:
-				rooms[gameType][newRoomId] = { id: newRoomId, launched: false, maxPlayers: PONG2_NB_PLAYERS, players: {}, elo: userELO };
+				rooms[gameType][newRoomId] = { id: newRoomId, launched: false, maxPlayers: PONG2_NB_PLAYERS, timeStamp: now, players: {}, elo: userELO };
 		}
 		io.to(socket.id).emit('info', { message: `Room ${newRoomId} created, room elo ${userELO}` });
+		//io.to(socket.id).emit('info', { message: `created at ${now}` });
 		return rooms[gameType][newRoomId];
 	}
 
@@ -233,6 +247,36 @@ io.on('connection', socket => {
 			newRoomId = Math.random().toString(36).substring(2, 11);
 		} while (rooms[gameType][newRoomId]);
 		return newRoomId;
+	}
+
+	// Runs while room is not full.
+	// When timestamp goes over 10s, takes the nearest player by elo in the queu, and joins it to the room
+	function fillRoom(room, queueType)
+	{
+		if (isRoomFull(room.gameType, room.id))
+			return ;
+		if (checkTimeStamp(room))
+		{
+			cSocket = null;
+			cPlayer = null;
+			cElo = -1;
+			queueId = null;
+			for (const roomId in rooms[queueType]) {
+				for (playerId in rooms[queueType][roomId].players) {
+					if (cElo === -1 || Math.abs(rooms[queueType][roomId].players[playerId].elo - room.elo)) {
+						cSocket = playerId;
+						cPlayer = rooms[queueType][roomId].players[playerId];
+						cElo = rooms[queueType][roomId].players[playerId].elo;
+						queueId = roomId;
+					}
+				}
+			}
+			removePlayerFromQueue(queueType, queueId, cSocket);
+			addPlayerToRoom(room, cSocket, cPlayer.id, cElo, cPlayer.userAvatar);
+			return ;
+		}
+		else
+			fillRoom(room);
 	}
 
 	// Adds a player to a room
@@ -285,15 +329,11 @@ io.on('connection', socket => {
 	}
 
 	//Removes player from queue
-	function removePlayerFromQueue(queueType, queueId) {
-		if (rooms[queueType][queueId].players[socket.id])
+	function removePlayerFromQueue(queueType, queueId, playerSocket) {
+		if (rooms[queueType][queueId].players[playerSocket])
 		{
-			delete rooms[queueType][queueId].players[socket.id];
-			io.to(socket.id).emit('info', { message: `You left room ${queueId}` });
-			// if (playerInQueue())
-			// 	io.to(socket.id).emit('info', { message: `still in queue` });
-			// else
-			// 	io.to(socket.id).emit('info', { message: `not antmore in queue` });
+			delete rooms[queueType][queueId].players[playerSocket];
+			io.to(playerSocket).emit('info', { message: `You left room ${queueId}` });
 			return;
 		}
 	}
