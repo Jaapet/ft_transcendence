@@ -117,3 +117,69 @@ def update_elo_on_pong3_match_save(sender, instance, created, **kwargs):
 
 # MatchR / Royal
 
+def calculate_royal_player_elo_part(player, rival, k):
+	# expected probability that the player won
+	expected_player_win = 1 / (1 + 10 ** ((rival['elo'] - player['elo']) / 400))
+
+	# 1 means winning, 0 means losing
+	player_elo_change = k * ((1 if player['pos'] < rival['pos'] else 0) - expected_player_win)
+
+	return player_elo_change
+
+def calculate_royal_player_elo(player, players, k, min_elo=0, max_elo=5000):
+	elo = player['elo']
+	pos = player['pos']
+
+	for rival in players:
+		if rival != player:
+			elo += calculate_royal_player_elo_part(player, rival, k)
+
+	elo = min(max(elo, min_elo), max_elo)
+	return elo
+
+def calculate_royal_elo(players):
+	k = len(players) * 2.5
+	print("K:", k) # debug
+
+	new_players_elo = []
+	for player in players:
+		new_players_elo.append(calculate_royal_player_elo(player, players, k))
+
+	return new_players_elo
+
+def get_average_royal_match_elo(players):
+	total_elo = 0
+	count = 0
+	for player in players:
+		if player.member:
+			total_elo += player.member.elo_royal
+			count += 1
+	return total_elo / count if count > 0 else 1000
+
+def update_royal_elo(players):
+	average_elo = get_average_royal_match_elo(players)
+	print("Average ELO:", average_elo) # debug
+
+	players_trunc = []
+
+	for player in players:
+		if player.member:
+			players_trunc.append({ "elo": player.member.elo_royal, "pos": player.position })
+		else:
+			players_trunc.append({ "elo": average_elo, "pos": player.position })
+
+	new_players_elo = calculate_royal_elo(players_trunc)
+
+	for i, player in enumerate(players):
+		if player.member and i < len(new_players_elo):
+			with transaction.atomic():
+				player.member.elo_royal = round(new_players_elo[i])
+				player.member.save(update_fields=['elo_royal'])
+
+@receiver(post_save, sender=MatchR)
+def update_elo_on_royal_match_save(sender, instance, created, **kwargs):
+	print("Match:", instance) # debug
+	print("Created:", created) # debug
+	print("Players:", instance.players.all()) # debug
+	if instance.players.exists():
+		update_royal_elo(instance.players.all())

@@ -46,6 +46,8 @@ class MemberManager(BaseUserManager):
 # - is_admin			(BooleanField)
 # - last_activity	(DateTimeField)
 # - friends				(ManyToManyField Member)
+# - elo_pong			(IntegerField)
+# - elo_royal			(IntegerField)
 # - everything else is from AbstractBaseUser
 #
 # From Match objects:
@@ -63,6 +65,7 @@ class MemberManager(BaseUserManager):
 # - join_date + username
 # - DESC join_date + username
 # - elo_pong
+# - elo_royal
 class Member(AbstractBaseUser, PermissionsMixin):
 	username = models.CharField(
 		max_length=25,
@@ -122,6 +125,14 @@ class Member(AbstractBaseUser, PermissionsMixin):
 		verbose_name="Pong ELO rating"
 	)
 
+	elo_royal = models.IntegerField(
+		default=1000,
+		null=False,
+		blank=False,
+		db_comment="ELO rating for the royal game",
+		verbose_name="Royal ELO rating"
+	)
+
 	objects = MemberManager()
 
 	# Required for extending AbstractBaseUser
@@ -137,7 +148,8 @@ class Member(AbstractBaseUser, PermissionsMixin):
 			models.Index(fields=["last_activity"], name="member_last_activity_idx"),
 			models.Index(fields=["join_date", "username"], name="member_join_date_idx"),
 			models.Index(fields=["-join_date", "username"], name="member_join_date_rev_idx"),
-			models.Index(fields=["elo_pong"], name="member_elo_pong_idx")
+			models.Index(fields=["elo_pong"], name="member_elo_pong_idx"),
+			models.Index(fields=["elo_royal"], name="member_elo_royal_idx")
 		]
 
 	def __str__(self):

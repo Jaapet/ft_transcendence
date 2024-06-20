@@ -39,6 +39,7 @@ class RestrictedMemberSerializer(serializers.HyperlinkedModelSerializer):
 			'avatar',
 			'join_date',
 			'elo_pong',
+			'elo_royal',
 			'is_online'
 		]
 

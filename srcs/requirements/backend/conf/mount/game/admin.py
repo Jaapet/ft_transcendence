@@ -56,7 +56,7 @@ class MemberAdmin(BaseUserAdmin):
 	list_filter = ["is_admin"]
 	fieldsets = [
 		(None, {"fields": ["username", "email", "password"]}),
-		("Other info", {"fields": ["avatar", "elo_pong", "friends"]}),
+		("Other info", {"fields": ["avatar", "elo_pong", "elo_royal", "friends"]}),
 		("Permissions", {"fields": ["is_superuser", "is_admin"]})
 	]
 	# add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
@@ -163,6 +163,18 @@ class MatchRAdmin(admin.ModelAdmin):
 	def display_players(self, obj):
 		return ", ".join([player.member.username if player.member else 'Deleted user' for player in obj.players.all()])
 	display_players.short_description = "Players"
+
+	def save_model(self, request, obj, form, change):
+		if not obj.pk:
+			super().save_model(request, obj, form, change)
+		else:
+			pass
+
+	def save_related(self, request, form, formsets, change):
+		form.save_m2m()
+		for formset in formsets:
+			self.save_formset(request, form, formset, change=change)
+		super().save_model(request, form.instance, form, change)
 admin.site.register(MatchR, MatchRAdmin)
 
 class RoyalPlayerAdmin(admin.ModelAdmin):
