@@ -32,7 +32,7 @@ const Pong = () => {
       const fov = 42;
       const aspect = 1.5;
       const near = 0.1;
-      const far = 10000;
+      const far = 100000;
 
       /// TEXTURE SKYBOX AND SPHERE
       const loader = new THREE.TextureLoader();
@@ -74,7 +74,55 @@ const Pong = () => {
 
       
       loadermodel.load(
-        'games/pong/models/man.glb',
+        'games/pong/models/city.glb',
+        function (gltf)
+        { 
+          gltf.scene.position.z = 490;
+          gltf.scene.position.x = 1330;
+          gltf.scene.position.y = -1060;
+          gltf.scene.rotation.y = 2.17;
+          gltf.scene.scale.set(100, 100, 100);
+          
+          scene.add( gltf.scene );
+        },
+        undefined,
+        function (error) { console.error(error); } 
+      );
+
+      loadermodel.load(
+        'games/pong/models/rover.glb',
+        function (gltf)
+        { 
+          gltf.scene.position.z = -40;
+          gltf.scene.position.x = -38;
+          gltf.scene.position.y = 0.3;
+          gltf.scene.rotation.y = -1.57;
+          gltf.scene.scale.set(3, 3, 3);
+          
+          scene.add( gltf.scene );
+        },
+        undefined,
+        function (error) { console.error(error); } 
+      );
+
+      loadermodel.load(
+        'games/pong/models/Parrot.glb',
+        function (gltf)
+        { 
+          gltf.scene.position.z = -40;
+          gltf.scene.position.x = -20;
+          gltf.scene.position.y = 3;
+          gltf.scene.rotation.y = 1.5;
+          gltf.scene.scale.set(0.1, 0.1, 0.1);
+          
+          scene.add( gltf.scene );
+        },
+        undefined,
+        function (error) { console.error(error); } 
+      );
+
+     /* loadermodel.load(
+        'games/pong/models/beach.glb',
         function (gltf)
         { 
           gltf.scene.position.z = -38;
@@ -86,7 +134,8 @@ const Pong = () => {
         },
         undefined,
         function (error) { console.error(error); } 
-      );
+      );*/
+
 
 
 
@@ -165,7 +214,7 @@ const Pong = () => {
       const controls = new OrbitControls(camera, canvas);
       controls.unableDamping = true;
       controls.target.set(0, 0, 0);
-      controls.maxDistance = 300;
+      //controls.maxDistance = 300;
       controls.update();
 
 
@@ -286,7 +335,7 @@ const Pong = () => {
 
       /// SKYBOX
       // creation d'une sphere pour le ciel
-      const skybox = new THREE.IcosahedronGeometry(400,50);
+      const skybox = new THREE.IcosahedronGeometry(4000,50);
       const skyboxMaterial = new THREE.MeshBasicMaterial({map: texture, side: THREE.BackSide });
       const skyboxMesh = new THREE.Mesh(skybox, skyboxMaterial);
       // positionnement de l'objet ciel
