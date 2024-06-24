@@ -1,0 +1,11 @@
+Model Information:
+* title:	Small Stylised Bush
+* source:	https://sketchfab.com/3d-models/small-stylised-bush-a83fd7049a784ca6bc0095e7323451d0
+* author:	Parelaxel (https://sketchfab.com/parelaxel)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Small Stylised Bush" (https://sketchfab.com/3d-models/small-stylised-bush-a83fd7049a784ca6bc0095e7323451d0) by Parelaxel (https://sketchfab.com/parelaxel) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

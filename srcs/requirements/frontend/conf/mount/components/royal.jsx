@@ -285,7 +285,13 @@ const Royal = () => {
 
     function render(time)
     {
-      time *= 0.001;  
+      time *= 0.001; 
+      
+      if (!modelsLoaded)
+      {
+        requestAnimationFrame(render);
+        return;
+      }
       
       const canvas = renderer.domElement;
       camera.aspect = canvas.clientWidth / canvas.clientHeight;

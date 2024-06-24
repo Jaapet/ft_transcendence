@@ -21,7 +21,7 @@ const Pong = () => {
 	socket.on('connect_error', (error) => {
 		console.error('Erreur de connexion au serveur Socket.IO:', error);
 	});
-	socketRef.current = socket;
+  socketRef.current = socket;
 
     function main()
     {
@@ -36,7 +36,7 @@ const Pong = () => {
 
       /// TEXTURE SKYBOX AND SPHERE
       const loader = new THREE.TextureLoader();
-      const texture = loader.load('games/pong/texture/city.jpg');
+      const texture = loader.load('games/pong/texture/test.jpg');
       texture.colorSpace = THREE.SRGBColorSpace;
       const texturesphere = loader.load('games/pong/texture/eye2.jpg');
       texture.colorSpace = THREE.SRGBColorSpace;
@@ -56,16 +56,30 @@ const Pong = () => {
 
 
       /// MODEL 3D
+      const totalmodel = 12;
+      let actualmodel = 0;
+      let modelsLoaded = false;
+
+      // Fonction pour vérifier si tous les modèles sont chargés
+      function checkModelsLoaded()
+      {
+        if (actualmodel === totalmodel)
+          modelsLoaded = true;
+      }
+
       const loadermodel = new GLTFLoader();
 
       loadermodel.load(
         'games/pong/models/Building.glb',
         function (gltf)
         { 
-          gltf.scene.position.z = -32.85;
+          gltf.scene.position.z = -45;
+          gltf.scene.position.x = -2;
           gltf.scene.position.y = 0.5;
           gltf.scene.scale.set(0.339, 0.25, 0.25);
           scene.add( gltf.scene );
+          actualmodel += 1;
+          checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
         },
         undefined,
         function (error) { console.error(error); } 
@@ -79,11 +93,12 @@ const Pong = () => {
         { 
           gltf.scene.position.z = 490;
           gltf.scene.position.x = 1330;
-          gltf.scene.position.y = -1060;
+          gltf.scene.position.y = -1063;
           gltf.scene.rotation.y = 2.17;
           gltf.scene.scale.set(100, 100, 100);
-          
           scene.add( gltf.scene );
+          actualmodel++;
+          checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
         },
         undefined,
         function (error) { console.error(error); } 
@@ -93,13 +108,14 @@ const Pong = () => {
         'games/pong/models/rover.glb',
         function (gltf)
         { 
-          gltf.scene.position.z = -40;
-          gltf.scene.position.x = -38;
+          gltf.scene.position.z = -55;
+          gltf.scene.position.x = -42;
           gltf.scene.position.y = 0.3;
           gltf.scene.rotation.y = -1.57;
           gltf.scene.scale.set(3, 3, 3);
-          
           scene.add( gltf.scene );
+          actualmodel++;
+          checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
         },
         undefined,
         function (error) { console.error(error); } 
@@ -114,12 +130,167 @@ const Pong = () => {
           gltf.scene.position.y = 3;
           gltf.scene.rotation.y = 1.5;
           gltf.scene.scale.set(0.1, 0.1, 0.1);
-          
           scene.add( gltf.scene );
+          actualmodel++;
+          checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
         },
         undefined,
         function (error) { console.error(error); } 
       );
+
+      loadermodel.load(
+        'games/pong/models/palm/palmtree.gltf',
+        function (gltf)
+        { 
+          gltf.scene.position.z = 26.5;
+          gltf.scene.position.x = 48.5;
+          gltf.scene.position.y = 1;
+          gltf.scene.rotation.y = 1;
+          gltf.scene.scale.set(5, 5, 5);
+          scene.add(gltf.scene);
+          actualmodel++;
+          checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
+        },
+        undefined,
+        function (error) { console.error(error); } 
+      );
+
+      loadermodel.load(
+        'games/pong/models/palm/palmtree.gltf',
+        function (gltf)
+        { 
+          gltf.scene.position.z = 26.5;
+          gltf.scene.position.x = -48.5;
+          gltf.scene.position.y = 1;
+          gltf.scene.rotation.y = -1;
+          gltf.scene.scale.set(5, 5, 5);
+          scene.add(gltf.scene);
+          actualmodel++;
+          checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
+        },
+        undefined,
+        function (error) { console.error(error); } 
+      );
+
+      loadermodel.load(
+        'games/pong/models/bush/scene.gltf',
+        function (gltf)
+        { 
+          gltf.scene.position.z = 27;
+          gltf.scene.position.x = -49;
+          gltf.scene.position.y = -2;
+          gltf.scene.rotation.y = -1;
+          gltf.scene.scale.set(0.05, 0.05, 0.05);
+          scene.add(gltf.scene);
+          actualmodel++;
+          checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
+        },
+        undefined,
+        function (error) { console.error(error); } 
+      );
+
+      loadermodel.load(
+        'games/pong/models/bush/scene.gltf',
+        function (gltf)
+        { 
+          gltf.scene.position.z = 27;
+          gltf.scene.position.x = 49;
+          gltf.scene.position.y = -2;
+          gltf.scene.rotation.y = -1;
+          gltf.scene.scale.set(0.05, 0.05, 0.05);
+          scene.add(gltf.scene);
+          actualmodel++;
+          checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
+        },
+        undefined,
+        function (error) { console.error(error); } 
+      );
+
+      loadermodel.load(
+        'games/pong/models/palm2/scene.gltf',
+        function (gltf)
+        { 
+          gltf.scene.position.z = -71;
+          gltf.scene.position.x = -50;
+          gltf.scene.position.y = 1;
+          gltf.scene.rotation.y = -1.4;
+          gltf.scene.scale.set(9, 9, 9);
+          scene.add(gltf.scene);
+          actualmodel++;
+          checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
+        },
+        undefined,
+        function (error) { console.error(error); } 
+      );
+
+      loadermodel.load(
+        'games/pong/models/bush/scene.gltf',
+        function (gltf)
+        { 
+          gltf.scene.position.z = -71;
+          gltf.scene.position.x = -50;
+          gltf.scene.position.y = -2;
+          gltf.scene.rotation.y = -1;
+          gltf.scene.scale.set(0.05, 0.05, 0.05);
+          scene.add(gltf.scene);
+          actualmodel++;
+          checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
+        },
+        undefined,
+        function (error) { console.error(error); } 
+      );
+
+      loadermodel.load(
+        'games/pong/models/palm2/scene.gltf',
+        function (gltf)
+        { 
+          gltf.scene.position.z = -71;
+          gltf.scene.position.x = 50;
+          gltf.scene.position.y = 1;
+          gltf.scene.rotation.y = -1.5;
+          gltf.scene.scale.set(9, 9, 9);
+          scene.add(gltf.scene);
+          actualmodel++;
+          checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
+        },
+        undefined,
+        function (error) { console.error(error); } 
+      );
+
+      loadermodel.load(
+        'games/pong/models/bush/scene.gltf',
+        function (gltf)
+        { 
+          gltf.scene.position.z = -71;
+          gltf.scene.position.x = 50;
+          gltf.scene.position.y = -2;
+          gltf.scene.rotation.y = -1;
+          gltf.scene.scale.set(0.05, 0.05, 0.05);
+          scene.add(gltf.scene);
+          actualmodel++;
+          checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
+        },
+        undefined,
+        function (error) { console.error(error); } 
+      );
+
+      loadermodel.load(
+        'games/pong/models/lounger.glb',
+        function (gltf)
+        { 
+          gltf.scene.position.z = -30;
+          gltf.scene.position.x = 40;
+          gltf.scene.position.y = 0;
+          gltf.scene.rotation.y = -1;
+          gltf.scene.scale.set(3, 3, 3);
+          scene.add(gltf.scene);
+          actualmodel++;
+          checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
+        },
+        undefined,
+        function (error) { console.error(error); } 
+      );
+
 
      /* loadermodel.load(
         'games/pong/models/beach.glb',
@@ -209,6 +380,47 @@ const Pong = () => {
       mesh.rotation.x = Math.PI * -.5;
       scene.add(mesh);
 
+      /// floor toit immeuble
+      const Size = 104;
+      const plane_Geo = new THREE.PlaneGeometry(Size + 20, Size -11);
+      const plane_Mat = new THREE.MeshPhongMaterial({ color: 0x331313, side: THREE.DoubleSide });
+      const planmesh = new THREE.Mesh(plane_Geo, plane_Mat);
+      planmesh.rotation.x = Math.PI * -.5;
+      planmesh.position.y = -1.1;
+      planmesh.position.z = -22;
+      scene.add(planmesh);
+
+      /// floor toit immeuble
+      const Size2 = 104;
+      const plane_Geo2 = new THREE.PlaneGeometry(Size2 -11, Size2 +18);
+      const plane_Mat2 = new THREE.MeshPhongMaterial({ color: 0x331313, side: THREE.DoubleSide });
+      const planmesh2 = new THREE.Mesh(plane_Geo2, plane_Mat2);
+      planmesh2.rotation.x = Math.PI * -.5;
+      planmesh2.position.y = -1.1;
+      planmesh2.position.z = -22;
+      scene.add(planmesh2);
+
+      /// floor toit immeuble
+      const Size3 = 12;
+      const plane_Geo3 = new THREE.PlaneGeometry(Size3, Size3);
+      const plane_Mat3 = new THREE.MeshPhongMaterial({ color: 0x000005, side: THREE.DoubleSide });
+      const planmesh3 = new THREE.Mesh(plane_Geo3, plane_Mat3);
+      planmesh3.rotation.x = Math.PI * -.5;
+      planmesh3.position.y = -2.2;
+      planmesh3.position.z = -70;
+      planmesh3.position.x = 49;
+      scene.add(planmesh3);
+
+      /*// floor grass
+      const Size2 = 5000;
+      const plane_Geo2 = new THREE.PlaneGeometry(Size2 * 2.5, Size2);
+      const plane_Mat2 = new THREE.MeshPhongMaterial({ color: 0x00AA00, side: THREE.DoubleSide });
+      const planmesh2 = new THREE.Mesh(plane_Geo2, plane_Mat2 );
+      planmesh2.rotation.x = Math.PI * -.5;
+      planmesh2.position.y = -660;
+      planmesh2.position.z = 1370;
+      planmesh2.rotation.z = 2.17;
+      scene.add(planmesh2);*/
 
       /// ORBITAL CONTROL
       const controls = new OrbitControls(camera, canvas);
@@ -220,17 +432,17 @@ const Pong = () => {
 
       /// LUMIERES
       // lumiere ambiante
-      const skyColor = 0xEEEEEE;
+      const skyColor = 0xFFFFFF;
       const groundColor = 0xFFFFFF;
-      const intensity2 = 0.4;
+      const intensity2 = 5;
       const light2 = new THREE.HemisphereLight(skyColor, groundColor, intensity2);
       scene.add(light2);
       // lumiere directionnelle 1
-      const color = 0xFFFFFF;
+      /*const color = 0xFFFFFF;
       const intensity = 6.5;
       const light = new THREE.DirectionalLight(color, intensity);
-      light.position.set(10, 2, -10);
-      light.target.position.set(0, 0, 5);
+      light.position.set(0, 0.1, 0);
+      light.target.position.set(0, 0, 0);
       scene.add(light);
       scene.add(light.target);
       // lumiere directionnelle 1
@@ -244,7 +456,7 @@ const Pong = () => {
       light4.position.set(0, 2, -10);
       light4.target.position.set(0, 0, 5);
       scene.add(light4);
-      scene.add(light4.target);
+      scene.add(light4.target);*/
 
 
       /// OBJETS
@@ -255,14 +467,6 @@ const Pong = () => {
       const textureraquette3 = loader.load('games/pong/texture/boueeSide.png');
       const texturevitre = loader.load('games/pong/texture/vitre.jpg');
       texturevitre.colorSpace = THREE.SRGBColorSpace;
-      
-      // chargement des textures qui ce repete
-      const textureImmeuble = loader.load('games/pong/texture/imeuble.jpg');
-      textureImmeuble.wrapS = THREE.RepeatWrapping;
-      textureImmeuble.wrapT = THREE.RepeatWrapping;
-      textureImmeuble.magFilter = THREE.NearestFilter;
-      textureImmeuble.colorSpace = THREE.SRGBColorSpace;
-      textureImmeuble.repeat.set(2, 4);
 
       const texturetoit = loader.load('games/pong/texture/rock.jpg');
       texturetoit.wrapS = THREE.RepeatWrapping;
@@ -288,23 +492,13 @@ const Pong = () => {
         sideMaterial3,
         sideMaterial3
       ];
-      const side = new THREE.MeshBasicMaterial({ map: textureImmeuble });
-      const side2 = new THREE.MeshBasicMaterial({ map: texturetoit });
-      const immeublematerials = [
-        side,
-        side,
-        side2,
-        side2,
-        side,
-        side
-      ];
+
       
       // creation des differents cubes
       const cube = new THREE.BoxGeometry(2, 4, 10);
       const wall = new THREE.BoxGeometry(89, 6, 0.5);
       const wall2 = new THREE.BoxGeometry(0.5, 6, 45);
       const watercube = new THREE.BoxGeometry(89, 4, 44);
-      const skyscrapper = new THREE.BoxGeometry(90, 400, 90);
 
       // creation de la balle
       const radius = 2;
@@ -329,13 +523,12 @@ const Pong = () => {
       addwall(0, 3, -22.25, new THREE.Mesh(wall, wallmaterials2));
       addwall(-44.75, 3, 0, new THREE.Mesh(wall2, wallmaterials2));
       addwall(44.75, 3, 0, new THREE.Mesh(wall2, wallmaterials2));
-      addwall(0, -200.1,  -45 + 22.5, new THREE.Mesh(skyscrapper, immeublematerials));
       addwall(0, 2.1, 0, new THREE.Mesh(watercube, water));
 
 
       /// SKYBOX
       // creation d'une sphere pour le ciel
-      const skybox = new THREE.IcosahedronGeometry(4000,50);
+      const skybox = new THREE.IcosahedronGeometry(4200,50);
       const skyboxMaterial = new THREE.MeshBasicMaterial({map: texture, side: THREE.BackSide });
       const skyboxMesh = new THREE.Mesh(skybox, skyboxMaterial);
       // positionnement de l'objet ciel
@@ -388,6 +581,8 @@ const Pong = () => {
 
       /// RENDER
       var frame = 0;
+      if (totalmodel == actualmodel)
+        console.log(actualmodel, totalmodel);;
       renderer.render(scene, camera);
 
 
@@ -444,10 +639,15 @@ const Pong = () => {
 
       function render(time)
       {
-        time *= 0.001;
-        frame += 0.005;
+        if (!modelsLoaded)
+        {
+          requestAnimationFrame(render);
+          return;
+        }
+        time *= 0.0001;
+        frame += 0.01;
         
-        if (time > 7)
+        if (frame > 4)
         {
           scene.remove(text0);
           scene.remove(text0r);
@@ -458,21 +658,21 @@ const Pong = () => {
           scene.remove(text3);
           scene.remove(text3r);
         }
-        else if (time > 6)
+        else if (frame > 3)
         {
           scene.remove(text1);
           scene.remove(text1r);
           scene.add(text0);
           scene.add(text0r);
         }
-        else if (time > 5)
+        else if (frame > 2)
         {
           scene.remove(text2);
           scene.remove(text2r);
           scene.add(text1);
           scene.add(text1r);
         }
-        else if (time > 4)
+        else if (frame > 1)
         {
           scene.remove(text3);
           scene.remove(text3r);
@@ -486,7 +686,7 @@ const Pong = () => {
         }
 
       
-        if (time > 7.5)
+        if (frame > 5)
         {
 
           if (raquettes[0].position.z > -16)
@@ -503,7 +703,7 @@ const Pong = () => {
           const obj = ballstate[0];
           let directionX = ballstate[1];
           let directionZ = ballstate[2];
-          let speed = 1.5 + frame * 0.05;
+          let speed = 1.5 + time * 0.05;
 
           if (obj.position.x < 41 && directionX > 0)
           {
