@@ -55,7 +55,7 @@ class MemberAdmin(BaseUserAdmin):
 	list_display = ["username", "email", "join_date", "is_admin", "is_online"]
 	list_filter = ["is_admin"]
 	fieldsets = [
-		(None, {"fields": ["username", "email", "password"]}),
+		(None, {"fields": ["username", "email", "password", "qr_2fa"]}),
 		("Other info", {"fields": ["avatar", "elo_pong", "elo_royal", "friends"]}),
 		("Permissions", {"fields": ["is_superuser", "is_admin"]})
 	]

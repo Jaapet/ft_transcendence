@@ -1,10 +1,12 @@
 import os
 from .models import Member, FriendRequest, Match, Match3, MatchR
+from django.db import transaction
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.db.models import Q
 from django.contrib.auth import get_user_model
+from django.core.files.storage import default_storage
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework import viewsets, permissions, status
@@ -40,11 +42,20 @@ class Enable2FAView(APIView):
 		user = request.user
 
 		# Check if the user already has a TOTP device
-		if TOTPDevice.objects.filter(user=user, confirmed=True).exists():
-			return Response({'detail': '2FA is already enabled for this user'}, status=status.HTTP_400_BAD_REQUEST)
+		ex_device = TOTPDevice.objects.filter(user=user, confirmed=True).first()
+		if ex_device and user.qr_2fa and default_storage.exists(user.qr_2fa[user.qr_2fa.startswith('/media/') and len('/media/'):]):
+			ex_secret = ex_device.config_url
+			return JsonResponse({
+				'detail': '2FA is already enabled for this user',
+				'secret_key': ex_secret.split('secret=')[1].split('&')[0],
+				'qr_code_url': user.qr_2fa
+			}, status=status.HTTP_200_OK)
 
 		# Create or Get the user's TOTP device
-		device = TOTPDevice.objects.create(user=user, confirmed=True)
+		if ex_device:
+			device = ex_device
+		else:
+			device = TOTPDevice.objects.create(user=user, confirmed=True)
 		secret = device.config_url
 
 		# Generate a QR code for the TOTP secret
@@ -53,15 +64,50 @@ class Enable2FAView(APIView):
 		qr_img.save(buffer, format='PNG')
 		buffer.seek(0)
 
-		file_name = f'{user.id}_{timezone.now()}_qr.png'
-
-		file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-		with open(file_path, 'wb') as f:
+		file_dir = os.path.join(settings.MEDIA_ROOT, f'qr_codes/{user.id}')
+		os.makedirs(file_dir, exist_ok=True)
+		file_name = f'{timezone.now().strftime("%Y%m%d_%H%M%S")}_qr.png'
+		file_path = os.path.join(file_dir, file_name)
+	
+		with default_storage.open(file_path, 'wb') as f:
 			f.write(buffer.getvalue())
 
-		file_url = os.path.join(settings.MEDIA_URL, file_name)
+		file_url = os.path.join(settings.MEDIA_URL, f'qr_codes/{user.id}', file_name)
 
-		return JsonResponse({'secret_key': secret.split('secret=')[1].split('&')[0], 'qr_code_url': file_url},status=status.HTTP_201_CREATED)
+		with transaction.atomic():
+			user.qr_2fa = file_url
+			user.save(update_fields=['qr_2fa'])
+
+		return JsonResponse({
+			'detail': '2FA has been enabled for this user',
+			'secret_key': secret.split('secret=')[1].split('&')[0],
+			'qr_code_url': file_url
+		}, status=status.HTTP_201_CREATED)
+
+# Disables 2FA for current user
+class Disable2FAView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def post(self, request, *args, **kwargs):
+		user = request.user
+
+		device = user.totpdevice_set.filter(confirmed=True).first()
+		if not device:
+			return Response({'detail': '2FA is already disabled for this user'}, status=status.HTTP_400_BAD_REQUEST)
+
+		try:
+			with transaction.atomic():
+				if user.qr_2fa:
+					path = user.qr_2fa[user.qr_2fa.startswith('/media/') and len('/media/'):]
+					if default_storage.exists(path):
+						default_storage.delete(path)
+				user.qr_2fa = None
+				user.save(update_fields=['qr_2fa'])
+				device.delete()
+		except Exception as e:
+			return Response({'detail': f'Could not disable 2FA for this user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+		return Response({'detail': '2FA has been disabled for this user'}, status=status.HTTP_200_OK)
 
 # Verifies 2FA token for user login and returns JWT
 class Verify2FAView(APIView):

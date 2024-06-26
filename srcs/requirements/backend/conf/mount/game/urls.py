@@ -3,6 +3,7 @@ from rest_framework import routers
 from .views import (
 	CustomTokenObtainPairView,
 	Enable2FAView,
+	Disable2FAView,
 	Verify2FAView,
 	MemberViewSet,
 	MemberAPIView,
@@ -40,6 +41,7 @@ urlpatterns = [
 	path('user/', MemberAPIView.as_view(), name='login'),
 	path('register/', RegisterMemberAPIView.as_view(), name='register'),
 	path('enable_2fa/', Enable2FAView.as_view(), name='enable_2fa'),
+	path('disable_2fa/', Disable2FAView.as_view(), name='disable_2fa'),
 	path('verify_2fa/', Verify2FAView.as_view(), name='verify_2fa'),
 	path('edit/', UpdateMemberAPIView.as_view(), name='edit'),
 	path('friend_request/send', SendFriendRequestAPIView.as_view(), name='send_friend_request'),

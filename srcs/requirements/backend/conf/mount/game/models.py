@@ -98,6 +98,14 @@ class Member(AbstractBaseUser, PermissionsMixin):
 		verbose_name="Join date"
 	)
 
+	qr_2fa = models.CharField(
+		max_length=255,
+		null=True,
+		blank=False,
+		db_comment="Filepath of 2FA QR code of a member",
+		verbose_name="2FA QR filepath"
+	)
+
 	is_admin = models.BooleanField(
 		default=False,
 		db_comment="Admin status",

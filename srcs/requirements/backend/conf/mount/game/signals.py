@@ -139,7 +139,6 @@ def calculate_royal_player_elo(player, players, k, min_elo=0, max_elo=5000):
 
 def calculate_royal_elo(players):
 	k = len(players) * 2.5
-	print("K:", k) # debug
 
 	new_players_elo = []
 	for player in players:
@@ -158,7 +157,6 @@ def get_average_royal_match_elo(players):
 
 def update_royal_elo(players):
 	average_elo = get_average_royal_match_elo(players)
-	print("Average ELO:", average_elo) # debug
 
 	players_trunc = []
 
@@ -178,8 +176,5 @@ def update_royal_elo(players):
 
 @receiver(post_save, sender=MatchR)
 def update_elo_on_royal_match_save(sender, instance, created, **kwargs):
-	print("Match:", instance) # debug
-	print("Created:", created) # debug
-	print("Players:", instance.players.all()) # debug
 	if instance.players.exists():
 		update_royal_elo(instance.players.all())
