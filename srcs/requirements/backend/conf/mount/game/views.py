@@ -524,6 +524,7 @@ class MetricsView(APIView):
 		# Collect metrics here and format them with Prometheus format
 		metrics = []
 		metrics += self.collect_total_users()
+		metrics += self.collect_total_2fa_users()
 		metrics += self.collect_online_users()
 		metrics += self.collect_total_friend_requests()
 		metrics += self.collect_total_pong2_matches()
@@ -537,6 +538,15 @@ class MetricsView(APIView):
 			'# HELP back_total_users Number of accounts created in the database',
 			'# TYPE back_total_users counter',
 			f'back_total_users {total_users}'
+		]
+		return metric
+
+	def collect_total_2fa_users(self):
+		total_2fa_users = TOTPDevice.objects.count()
+		metric = [
+			'# HELP back_total_2fa_users Number of accounts that have 2FA enabled',
+			'# TYPE back_total_2fa_users counter',
+			f'back_total_2fa_users {total_2fa_users}'
 		]
 		return metric
 
