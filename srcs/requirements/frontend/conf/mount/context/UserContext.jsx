@@ -73,6 +73,37 @@ export const UserProvider = ({ children }) => {
 		}
 	}
 
+	// Disable 2FA
+	const disable2FA = async () => {
+		try {
+			const response = await fetch(`/api/current_user/disable_2fa`, {
+				method: 'POST',
+				headers: {
+					'Accept': 'application/json',
+					'Content-Type': 'application/json'
+				}
+			});
+			if (!response) {
+				throw new Error('Disabling 2FA failed');
+			}
+
+			const data = await response.json();
+			if (!data) {
+				throw new Error('Disabling 2FA failed');
+			}
+			if (!response.ok) {
+				throw new Error(data.message || 'Disabling 2FA failed');
+			}
+
+			setUserMsg(data.message || '2FA is now disabled');
+			return data;
+		} catch (error) {
+			console.error('CONTEXT DISABLE 2FA:', error);
+			setUserError(error.message);
+			return null;
+		}
+	}
+
 	const isFriends = async ({ target_id }) => {
 		if (!user) {
 			return ;
@@ -291,7 +322,7 @@ export const UserProvider = ({ children }) => {
 		<UserContext.Provider value={{
 			userError, setUserError, clearUserError,
 			userMsg, setUserMsg, clearUserMsg,
-			edit, enable2FA,
+			edit, enable2FA, disable2FA,
 			isFriends, addFriend, removeFriend,
 			acceptFriendRequest, declineFriendRequest, deleteFriendRequest
 		}}>

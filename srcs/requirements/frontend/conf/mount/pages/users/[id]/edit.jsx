@@ -295,6 +295,11 @@ export default function EditPage({ status, detail, current_user }) {
 										/>
 
 										<p className="text-center text-muted mt-0 mb-0" >
+											<Link href={`/users/${user.id}/edit_2fa`} className="fw-bold text-body">
+												<u>To 2FA settings page</u>
+											</Link>
+										</p>
+										<p className="text-center text-muted mt-0 mb-0" >
 											<Link href={`/users/${user.id}`} className="fw-bold text-body">
 												<u>Back to profile</u>
 											</Link>

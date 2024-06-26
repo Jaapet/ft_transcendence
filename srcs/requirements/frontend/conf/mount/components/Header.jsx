@@ -48,8 +48,12 @@ const ProfileNavLog = () => {
 				<Link href={`/users/${user.id}/friends`} passHref legacyBehavior>
 					<NavDropdown.Item as="a">Friends</NavDropdown.Item>
 				</Link>
-				<Link href={`/users/${user.id}/friend_requests`} passHref legacyBehavior>
-					<NavDropdown.Item as="a">Friend requests</NavDropdown.Item>
+				<NavDropdown.Divider />
+				<Link href={`/users/${user.id}/edit`} passHref legacyBehavior>
+					<NavDropdown.Item as="a">Edit profile</NavDropdown.Item>
+				</Link>
+				<Link href={`/users/${user.id}/edit_2fa`} passHref legacyBehavior>
+					<NavDropdown.Item as="a">2FA settings</NavDropdown.Item>
 				</Link>
 				<NavDropdown.Item as="button" onClick={handleLogout}>Log out</NavDropdown.Item>
 			</>
