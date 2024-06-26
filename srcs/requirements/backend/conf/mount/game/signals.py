@@ -61,7 +61,7 @@ def calculate_pong2_elo(winner_elo, loser_elo, k=40, min_elo=0, max_elo=5000):
 	return new_winner_elo, new_loser_elo
 
 def update_pong2_elo(winner, loser):
-	winner_elo, loser_elo = calculate_pong_elo(winner.elo_pong, loser.elo_pong)
+	winner_elo, loser_elo = calculate_pong2_elo(winner.elo_pong, loser.elo_pong)
 
 	with transaction.atomic():
 		winner.elo_pong = round(winner_elo)
