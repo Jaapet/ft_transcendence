@@ -242,7 +242,12 @@ const UserFriendRequestsTable = ({ sent, recv, setSent, setRecv, setShowError, s
 	}
 
 	if (!sent || !recv) {
-		return ;
+		return (
+			<div className={styles.container}>
+				<p className="bg-light text-black">Something went wrong...</p>
+				<p className="bg-light text-black">Please reload the page.</p>
+			</div>
+		);
 	}
 
 	return (
