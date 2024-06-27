@@ -20,6 +20,7 @@ from .views import (
 	MatchViewSet,
 	Match3ViewSet,
 	MatchRViewSet,
+	LastThreeMatchesAPIView,
 	MetricsView
 )
 from rest_framework_simplejwt import views as jwt_views
@@ -44,6 +45,7 @@ urlpatterns = [
 	path('disable_2fa/', Disable2FAView.as_view(), name='disable_2fa'),
 	path('verify_2fa/', Verify2FAView.as_view(), name='verify_2fa'),
 	path('edit/', UpdateMemberAPIView.as_view(), name='edit'),
+	path('last_matches/', LastThreeMatchesAPIView.as_view(), name='last_matches'),
 	path('friend_request/send', SendFriendRequestAPIView.as_view(), name='send_friend_request'),
 	path('friend_request/delete', DeleteFriendRequestAPIView.as_view(), name='delete_friend_request'),
 	path('friend_request/accept', AcceptFriendRequestAPIView.as_view(), name='accept_friend_request'),

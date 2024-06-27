@@ -449,7 +449,7 @@ class Match3ViewSet(viewsets.ModelViewSet):
 		player_id = request.query_params.get('player_id', None)
 		if (player_id is None):
 			return Response({'error': 'Player ID is required'}, status=status.HTTP_400_BAD_REQUEST)
-		player_matches = Match.objects.filter(Q(paddle1_id=player_id) | Q(paddle2_id=player_id) | Q(ball_id=player_id)).select_related("paddle1", "paddle2", "ball").order_by('-end_datetime')[:3]
+		player_matches = Match3.objects.filter(Q(paddle1_id=player_id) | Q(paddle2_id=player_id) | Q(ball_id=player_id)).select_related("paddle1", "paddle2", "ball").order_by('-end_datetime')[:3]
 		serializer = self.get_serializer(player_matches, many=True)
 		return Response(serializer.data)
 
@@ -490,6 +490,42 @@ class MatchRViewSet(viewsets.ModelViewSet):
 		player_matches = MatchR.objects.filter(players__member_id=player_id).distinct().order_by('-end_datetime')[:3]
 		serializer = self.get_serializer(player_matches, many=True)
 		return Response(serializer.data)
+
+class LastThreeMatchesAPIView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def get(self, request, *args, **kwargs):
+		target_id = request.query_params.get('target_id')
+		if not target_id:
+			return Response({"detail": "target_id parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+		try:
+			user = Member.objects.get(id=target_id)
+		except Member.DoesNotExist:
+			return Response({"detail": "User does not exist."}, status=status.HTTP_404_NOT_FOUND)
+
+		# Fetch the last 3 matches of each type
+		matches2 = list(Match.objects.filter(Q(winner=user) | Q(loser=user)).select_related("winner", "loser").order_by('-end_datetime')[:3])
+		matches3 = list(Match3.objects.filter(Q(paddle1=user) | Q(paddle2=user) | Q(ball=user)).select_related("paddle1", "paddle2", "ball").order_by('-end_datetime')[:3])
+		matchesR = list(MatchR.objects.filter(players__member=user).distinct().order_by('-end_datetime')[:3])
+
+		# Combine and sort the matches by date
+		all_matches = matches2 + matches3 + matchesR
+		all_matches_sorted = sorted(all_matches, key=lambda x: x.end_datetime, reverse=True)
+
+		# Get the last 3 matches
+		last_three_matches = all_matches_sorted[:3]
+
+		serialized_matches = []
+		for match in last_three_matches:
+			if isinstance(match, Match):
+				serialized_matches.append(MatchSerializer(match, context={'request': request}).data)
+			elif isinstance(match, Match3):
+				serialized_matches.append(Match3Serializer(match, context={'request': request}).data)
+			elif isinstance(match, MatchR):
+				serialized_matches.append(MatchRSerializer(match, context={'request': request}).data)
+
+		return Response(serialized_matches)
 
 # Custom authentication specific to Prometheus
 class PrometheusAuthentication(BaseAuthentication):
