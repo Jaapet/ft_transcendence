@@ -46,7 +46,7 @@ export default async (req, res) => {
 		}
 
 		// Fetch user's last 3 pong2 matches
-		const matchRes = await fetch(`http://backend:8000/api/pong2_matches/last_player_matches/?player_id=${id}`, {
+		const matchRes = await fetch(`http://backend:8000/api/last_matches/?target_id=${id}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',

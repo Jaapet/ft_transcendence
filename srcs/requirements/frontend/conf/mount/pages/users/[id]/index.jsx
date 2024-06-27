@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '../../../context/AuthenticationContext';
 import { useUser } from '../../../context/UserContext';
 import { Card, Button } from 'react-bootstrap';
+import MatchScoreCard from '../../../components/MatchScoreCard';
 import FriendButton from '../../../components/FriendButton';
 import ToastList from '../../../components/toasts/ToastList';
 import ErrorToast from '../../../components/toasts/ErrorToast';
@@ -128,68 +129,27 @@ const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg
 	);
 }
 
-
-const ProfileMatchPlayerLink = ({ id, username }) => {
-	if (id === null) {
-		return (<span>{username}</span>);
-	}
-
-	return (
-		<Link
-			href={`/users/${id}`}
-			passHref
-			className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
-		>
-			{username}
-		</Link>
-	);
-}
-
-const ProfileMatchPlayers = ({ user, match }) => {
-	if (match.winner_id === user.id) {
-		return (
-			<p className="fs-2 mb-0">
-				<strong style={{color: '#006300'}}>
-					{match.winner_username}
-				</strong>
-				&nbsp;vs&nbsp;
-				<ProfileMatchPlayerLink id={match.loser_id} username={match.loser_username} />
-			</p>
-		);
-	} else if (match.loser_id === user.id) {
-		return (
-			<p className="fs-2 mb-0">
-				<ProfileMatchPlayerLink id={match.winner_id} username={match.winner_username} />
-				&nbsp;vs&nbsp;
-				<strong style={{color: '#B30086'}}>
-					{match.loser_username}
-				</strong>
-			</p>
-		);
-	}
-}
-
 const ProfileMatchList = ({ user, last_matches }) => {
 	/*
-	Match objects contain:
-	- url							(url to match resource in backend)
-	- id							(unique id)
-	- winner					(url to backend resource)
-	- loser						(url to backend resource)
-	- winner_score		(number)
-	- loser_score			(number)
-	- start_date			(string 'Month DD YYYY')
-	- end_date				(string 'Month DD YYYY')
-	- start_time			(string 'HH:MM')
-	- end_time				(string 'HH:MM')
-	- winner_username	(string)
-	- loser_username	(string)
-	- winner_id				(number)
-	- loser_id				(number)
-	Indexed on:
-	- winner
-	- loser
-	- end_datetime
+		Match objects contain:
+		- url							(url to match resource in backend)
+		- id							(unique id)
+		- winner					(url to backend resource)
+		- loser						(url to backend resource)
+		- winner_score		(number)
+		- loser_score			(number)
+		- start_date			(string 'Month DD YYYY')
+		- end_date				(string 'Month DD YYYY')
+		- start_time			(string 'HH:MM')
+		- end_time				(string 'HH:MM')
+		- winner_username	(string)
+		- loser_username	(string)
+		- winner_id				(number)
+		- loser_id				(number)
+		Indexed on:
+		- winner
+		- loser
+		- end_datetime
 	*/
 
 	if (!last_matches || last_matches.length < 1) {
@@ -208,11 +168,7 @@ const ProfileMatchList = ({ user, last_matches }) => {
 				
 				<ul className="list-group list-group">
 					{last_matches.map(match => (
-						<li key={match.id} className={`list-group-item ${styles.customList}`}>
-							<ProfileMatchPlayers user={user} match={match} />
-							<p className="fs-3 mb-0">{match.winner_score}-{match.loser_score}</p>
-							<p className="fs-4 mb-0">{match.end_date}</p>
-						</li>
+						<MatchScoreCard key={`${match.type}_${match.id}`} user={user} match={match} />
 					))}
 				</ul>
 			</div>
