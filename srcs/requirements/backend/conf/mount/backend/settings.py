@@ -29,6 +29,10 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 # SSL
+
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 #SECURE_SSL_REDIRECT = True
 #SECURE_HSTS_SECONDS = 3600
 #SECURE_HSTS_INCLUDE_SUBDOMAINS = True
@@ -72,6 +76,7 @@ INSTALLED_APPS = [
 	'django.contrib.sessions',
 	'django.contrib.messages',
 	'django.contrib.staticfiles',
+	'django_extensions'
 ]
 
 MIDDLEWARE = [

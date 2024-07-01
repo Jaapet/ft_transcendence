@@ -52,7 +52,7 @@ export default async (req, res) => {
 		}
 
 		// Edit user
-		const response = await fetch(`http://backend:8000/api/edit/`, {
+		const response = await fetch(`https://backend:8000/api/edit/`, {
 			method: 'PUT',
 			headers: {
 				'Authorization': `Bearer ${access}`

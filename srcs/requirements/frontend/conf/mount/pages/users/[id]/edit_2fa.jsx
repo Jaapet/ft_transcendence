@@ -31,7 +31,7 @@ const Enable2FAButton =
 		const data = await enable2FA();
 		if (data) {
 			setSecretKey(data.secret_key);
-			setQrUrl('http://backend:8000' + data.qr_code_url);
+			setQrUrl('https://backend:8000' + data.qr_code_url);
 		}
 	}
 

@@ -43,6 +43,8 @@ WORKDIR	/usr/app
 RUN			apk add --no-cache \
 					build-base \
 					libpq-dev \
+					libffi \
+					libffi-dev \
 				&& \
 				pip install --upgrade \
 					pip \
@@ -55,8 +57,10 @@ RUN			apk add --no-cache \
 					qrcode \
 					django-cors-headers \
 					psycopg2 \
-					pillow
-#					django-sslserver
+					pillow \
+					werkzeug \
+					django-extensions \
+					pyOpenSSL
 
 # psycopg2 if for postgres
 # pillow is required for ImageField to work

@@ -17,7 +17,7 @@ export default async (req, res) => {
 		}
 
 		// Fetch user list
-		const userRes = await fetch(`http://backend:8000/api/members`, {
+		const userRes = await fetch(`https://backend:8000/api/members`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',

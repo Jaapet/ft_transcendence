@@ -22,7 +22,7 @@ export default async (req, res) => {
 		}
 
 		// Fetch user
-		const userRes = await fetch(`http://backend:8000/api/members/${id}`, {
+		const userRes = await fetch(`https://backend:8000/api/members/${id}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -42,7 +42,7 @@ export default async (req, res) => {
 		}
 
 		// Fetch user's pong2 match history
-		const pong2Res = await fetch(`http://backend:8000/api/pong2_matches/player_matches/?player_id=${id}`, {
+		const pong2Res = await fetch(`https://backend:8000/api/pong2_matches/player_matches/?player_id=${id}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -62,7 +62,7 @@ export default async (req, res) => {
 		}
 
 		// Fetch user's pong3 match history
-		const pong3Res = await fetch(`http://backend:8000/api/pong3_matches/player_matches/?player_id=${id}`, {
+		const pong3Res = await fetch(`https://backend:8000/api/pong3_matches/player_matches/?player_id=${id}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -82,7 +82,7 @@ export default async (req, res) => {
 		}
 
 		// Fetch user's royal match history
-		const royalRes = await fetch(`http://backend:8000/api/royal_matches/player_matches/?player_id=${id}`, {
+		const royalRes = await fetch(`https://backend:8000/api/royal_matches/player_matches/?player_id=${id}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',

@@ -9,7 +9,7 @@ TODO: Also, check if fapi is ever useful please
 module.exports = {
 	images: {
 		remotePatterns: [{
-			protocol: 'http',
+			protocol: 'https',
 			hostname: 'backend',
 			port: '8000',
 			pathname: '/media/**',

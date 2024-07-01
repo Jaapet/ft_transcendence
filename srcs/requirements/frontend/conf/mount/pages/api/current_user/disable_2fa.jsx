@@ -15,7 +15,7 @@ export default async (req, res) => {
 			throw new Error('Not logged in');
 		}
 
-		const enableRes = await fetch(`http://backend:8000/api/disable_2fa/`, {
+		const enableRes = await fetch(`https://backend:8000/api/disable_2fa/`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',

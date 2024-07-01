@@ -19,7 +19,7 @@ export default async (req, res) => {
 		}
 
 		// Fetch user data
-		const userRes = await fetch(`http://backend:8000/api/user/`, {
+		const userRes = await fetch(`https://backend:8000/api/user/`, {
 			headers: {
 				'Authorization': 'Bearer ' + accessToken
 			}
