@@ -13,8 +13,14 @@ const Royal = () => {
 			return;
 		}
 
+    function getRandomInt(min, max) {
+      const minCeiled = Math.ceil(min);
+      const maxFloored = Math.floor(max);
+      return Math.floor(Math.random() * (maxFloored - minCeiled + 1) + minCeiled); // The maximum is exclusive and the minimum is inclusive
+    }
+
 		const socket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`); // Connect to server on port 3001
-		socket.emit('join', { gameType: 'pong2', userId: user.id, userELO: user.elo_pong, userAvatar: user.avatar });
+		socket.emit('join', { gameType: 'pong2', userId: user.id, userELO: getRandomInt(500, 1500), userAvatar: user.avatar });
 
 		socket.on('connect', () => {
 			console.log('Connected to websocket server');
