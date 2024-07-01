@@ -10,20 +10,20 @@ Our group is called ***"Comment devenir millionaire" par Rachid*** and is compri
 
 As we are not required to complete all modules, here is our definitive selection:
 ### Major modules
-- Back-end in Django
-- Standard user management, authentification and tournaments
-- Advanced 3D with ThreeJS
-- A second game with user history and match-making
-- Distant players (playing on 2 different computers)
-- Multiple players (more than 2 in one game)
-- Log management (ELK)
-- 2FA + JSON Web Tokens
+- ✅ Back-end in Django
+- ✅ Standard user management, ✅ authentification and 🛠️ tournaments
+- ✅ Advanced 3D with ThreeJS
+- 🛠️ A second game with ✅ user history and ✅ match-making
+- 🛠️ Distant players (playing on 2 different computers)
+- 🛠️ Multiple players (more than 2 in one game)
+- 🛠️ Log management (ELK)
+- ✅ 2FA + JSON Web Tokens
 ---
 ### Minor modules
-- PostgreSQL DB in back-end
-- Bootstrap toolkit and Next.js in front-end
-- Multiple browser support
-- Monitoring system 
+- ✅ PostgreSQL DB in back-end
+- ✅ Bootstrap toolkit and Next.js in front-end
+- 🛠️ Multiple browser support
+- 🛠️ Monitoring system 
 
 ## How to use
 
