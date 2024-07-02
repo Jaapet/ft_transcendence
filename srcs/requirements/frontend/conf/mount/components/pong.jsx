@@ -23,10 +23,19 @@ const Pong = () => {
 	});
   socketRef.current = socket;
 
-    function main()
-    {
+
+  /// SCENE
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x111111);
+
+  const canvas = canvasRef.current;
+
+  /// RENDERER
+  const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
+
+
+
       /// CANVAS
-      const canvas = canvasRef.current;
 
       /// CAMERA SETTINGS
       const fov = 42;
@@ -41,22 +50,19 @@ const Pong = () => {
       const texturesphere = loader.load('games/pong/texture/eye2.jpg');
       texture.colorSpace = THREE.SRGBColorSpace;
 
-      /// SCENE
-      const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x111111);
+      
 
       /// CAMERA
       const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
       camera.position.set(0, 100, 10);
       camera.position.z = 10;
       
-      /// RENDERER
-      const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
+      
 
 
 
       /// MODEL 3D
-      const totalmodel = 12;
+      const totalmodel = 11;
       let actualmodel = 0;
       let modelsLoaded = false;
 
@@ -104,7 +110,7 @@ const Pong = () => {
         function (error) { console.error(error); } 
       );
 
-      loadermodel.load(
+      /*loadermodel.load(
         'games/pong/models/rover.glb',
         function (gltf)
         { 
@@ -119,13 +125,13 @@ const Pong = () => {
         },
         undefined,
         function (error) { console.error(error); } 
-      );
+      );*/
 
       loadermodel.load(
         'games/pong/models/Parrot.glb',
         function (gltf)
         { 
-          gltf.scene.position.z = -40;
+          gltf.scene.position.z = -52;
           gltf.scene.position.x = -20;
           gltf.scene.position.y = 3;
           gltf.scene.rotation.y = 1.5;
@@ -274,7 +280,7 @@ const Pong = () => {
         function (error) { console.error(error); } 
       );
 
-      loadermodel.load(
+      /*loadermodel.load(
         'games/pong/models/lounger.glb',
         function (gltf)
         { 
@@ -289,7 +295,7 @@ const Pong = () => {
         },
         undefined,
         function (error) { console.error(error); } 
-      );
+      );*/
 
 
      /* loadermodel.load(
@@ -645,7 +651,7 @@ const Pong = () => {
           return;
         }
         time *= 0.0001;
-        frame += 0.01;
+        frame += 0.1;
         
         if (frame > 4)
         {
@@ -779,10 +785,46 @@ const Pong = () => {
 
       }
       requestAnimationFrame(render);
-    }
-    main();
 
-    return () => {
+
+    return () =>
+    {
+      // Dispose of Three.js objects
+      scene.traverse((object) =>
+      {
+        if (!object.isMesh)
+          return;
+
+        object.geometry.dispose();
+
+        if (object.material.isMaterial)
+        {
+          cleanMaterial(object.material);
+        } 
+        else
+        {
+          for (const material of object.material)
+            cleanMaterial(material);
+        }
+      });
+
+      function cleanMaterial(material)
+      {
+        material.dispose();
+    
+        // Dispose textures if any
+        for (const key in material)
+        {
+            const value = material[key];
+            if (value && typeof value === 'object' && 'minFilter' in value)
+                value.dispose();
+        }
+      }
+
+      renderer.dispose();
+      
+      cancelAnimationFrame(render); 
+
       socketRef.current.disconnect();
     };
   }, []);
