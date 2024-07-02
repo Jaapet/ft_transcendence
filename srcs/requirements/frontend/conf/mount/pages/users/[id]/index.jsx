@@ -41,7 +41,7 @@ const ProfileMemberCardPicture = ({ user }) => {
 */
 const ProfileMemberCardELOroyal = ({ user }) => {
 	return (
-		<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '20px'}}>
+		<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '20px',  minWidth: '200px'}}>
 			<div className="card-body" style={{backgroundColor:'rgba(255, 255, 255, 0.1)'}}>
 				<p className="card-text" >Royale:{user.elo_royal}</p>
 			</div>
@@ -51,7 +51,7 @@ const ProfileMemberCardELOroyal = ({ user }) => {
 
 const ProfileMemberCardELO = ({ user }) => {
 	return (
-		<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '20px'}}>
+		<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '20px', minWidth: '200px'}}>
 			<div className="card-body" style={{backgroundColor:'rgba(255, 255, 255, 0.1)'}}>
 				<p className="card-text"> Pong:{user.elo_pong} </p>
 			</div>
