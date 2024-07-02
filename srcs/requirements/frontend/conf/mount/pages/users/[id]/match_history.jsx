@@ -97,12 +97,12 @@ export default function UserMatchHistory({ status, detail, user, pong2_matches, 
 				<title>Profile Page</title>
 			</Head>
 			
-			<h1 className={`mt-3 ${styles.background_title}`}>{user.username}</h1>
+			<h1 className={`mt-1 ${styles.background_title}`}>{user.username}</h1>
 			<Card
 				className="bg-dark text-white mt-3"
-				style={{ width: '60%' }}
+				style={{ width: '60%', bottom: '30px'}}
 			>
-				<Card.Header>
+				<Card.Header >
 					<Nav
 						justify
 						variant="tabs"

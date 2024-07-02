@@ -41,6 +41,18 @@ const Pong2MatchScoreCardPlayers = ({ user, match }) => {
 	}
 }
 
+const Pong3MatchScoreCardPlayers = ({ match }) => {
+	return (
+		<p className="fs-2 mb-0">
+			<MatchScoreCardPlayerLink id={match.paddle1_id} username={match.paddle1_username} />
+			&nbsp;&&&nbsp;
+			<MatchScoreCardPlayerLink id={match.paddle2_id} username={match.paddle2_username} />
+			&nbsp;vs&nbsp;
+			<MatchScoreCardPlayerLink id={match.ball_id} username={match.ball_username} />
+		</p>
+	);
+}
+
 const Pong2MatchScoreCard = ({ user, match }) => {
 	return (
 		<li key={`pong2_${match.id}`} className={`list-group-item ${styles.customList}`}>
@@ -52,12 +64,27 @@ const Pong2MatchScoreCard = ({ user, match }) => {
 }
 
 const Pong3MatchScoreCard = ({ user, match }) => {
-	return (
-		<li key={`pong3_${match.id}`} className={`list-group-item ${styles.customList}`}>
-			<p>WORK IN PROGRESS (PONG3)</p>
-			<p className="fs-4 mb-0">{match.end_date}</p>
-		</li>
-	);
+	if (match.ball_won) {
+		return (
+			<li key={`pong3_${match.id}`} className={`list-group-item ${styles.customList}`}>
+				<Pong3MatchScoreCardPlayers match={match} />
+				<p className="fs-3 mb-0">
+					<strong style={{color: '#006300'}}>{match.ball_username}</strong> won
+				</p>
+				<p className="fs-4 mb-0">{match.end_date}</p>
+			</li>
+		);
+	} else {
+		return (
+			<li key={`pong3_${match.id}`} className={`list-group-item ${styles.customList}`}>
+				<Pong3MatchScoreCardPlayers match={match} />
+				<p className="fs-3 mb-0">
+					<strong style={{color: '#006300'}}>{match.paddle1_username} - {match.paddle2_username}</strong> team won
+				</p>
+				<p className="fs-4 mb-0">{match.end_date}</p>
+			</li>
+		);
+	}
 }
 
 const RoyalMatchScoreCard = ({ user, match }) => {
