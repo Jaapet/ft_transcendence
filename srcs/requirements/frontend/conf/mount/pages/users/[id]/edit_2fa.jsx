@@ -207,7 +207,9 @@ export default function Edit2FAPage({ status, detail, current_user }) {
 	}
 
 	return (
-		<section className="vh-100" style={{backgroundColor: '#38255f'}}>
+		<div className={styles.container}>
+
+		<section className={styles.customCard}>
 			<Head>
 				<title>Edit 2FA Settings</title>
 			</Head>
@@ -256,6 +258,8 @@ export default function Edit2FAPage({ status, detail, current_user }) {
 				</div>
 			</div>
 		</section>
+		</div>
+
 	);
 }
 

@@ -2,6 +2,8 @@ import React from 'react';
 import Pong from '../components/pong';
 import styles from '../styles/base.module.css';
 import { useAuth } from '../context/AuthenticationContext';
+import DrawingCanvas from '../components/Drawing';
+
 
 export default function PongPage({ status, detail }) {
 	const { logout } = useAuth();
