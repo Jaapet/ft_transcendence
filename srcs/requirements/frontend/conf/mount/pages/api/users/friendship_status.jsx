@@ -24,7 +24,7 @@ export default async (req, res) => {
 			throw new Error('No target_id provided');
 		}
 
-		const reqRes = await fetch(`http://backend:8000/api/friends/friendship_status?user1_id=${user_id}&user2_id=${target_id}`, {
+		const reqRes = await fetch(`https://backend:8000/api/friends/friendship_status?user1_id=${user_id}&user2_id=${target_id}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',

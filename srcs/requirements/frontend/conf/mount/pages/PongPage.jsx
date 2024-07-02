@@ -1,12 +1,30 @@
 import React from 'react';
 import Pong from '../components/pong';
 import styles from '../styles/base.module.css';
-import DrawingCanvas from '../components/Drawing';
+import { useAuth } from '../context/AuthenticationContext';
 
+export default function PongPage({ status, detail }) {
+	const { logout } = useAuth();
 
-const PongPage = () => {
+	const handleLogout = async () => {
+		await logout();
+	}
+
+	if (status === 401 && detail === 'Not logged in') {
+		handleLogout();
+	}
+
+	if (status !== 200) {
+		return (
+			<div className={styles.container}>
+				<p className="bg-light text-black">Something went wrong...</p>
+				<p className="bg-light text-black">Please reload the page.</p>
+			</div>
+		);
+	}
+
 	return (
-	  <div className={styles.container}>
+	<div className={styles.container}>
 		<div
 		  style={{
 			display: 'flex',
@@ -15,6 +33,35 @@ const PongPage = () => {
 			width: '100%', 
 		  }}
 		>
+
+		{/* Player info */}
+		<div
+			className={`card ${styles.customCard}`}
+			style={{
+			  width: '200px', 
+			  marginRight: 'auto',
+			}}
+		  >
+			<div className={`card-body ${styles.cardInfo}`}>
+			  <h5>Player 1</h5>
+			  {/* Put the ball texture here */}
+			</div>
+		  </div>
+
+
+		  {/* Current leaderboard */}
+		  <div
+			className={`card ${styles.customCard}`}
+			style={{
+			  width: '200px', 
+			  marginLeft: 'auto', 
+			}}
+		  >
+			<div className={`card-body ${styles.cardInfo}`}>
+			  <h5>Player 2</h5>
+			  {/* Put the leaderboard here */}
+			</div>
+		  </div>
 		</div>
 
 {/* you can put things here if you want */}
@@ -26,7 +73,50 @@ const PongPage = () => {
 		  <Pong />
 	  </div>
 	);
-  };
-  
-  
-export default PongPage;
+}
+
+export async function getServerSideProps(context) {
+	try {
+		const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/user`, {
+			method: 'POST',
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json',
+				'Cookie': context.req.headers.cookie
+			}
+		});
+		if (!response) {
+			throw new Error('Dummy fetch failed');
+		}
+		if (response.status === 404) {
+			return {
+				props: {
+					status: 404,
+					detail: 'Resource not found'
+				}
+			}
+		}
+
+		const data = await response.json();
+		if (!data) {
+			throw new Error('Dummy fetch failed');
+		}
+		if (!response.ok) {
+			throw new Error(data.message, 'Dummy fetch failed');
+		}
+
+		return {
+			props: {
+				status: 200,
+				detail: 'Success'
+			}
+		}
+	} catch (error) {
+		return {
+			props: {
+				status: 401,
+				detail: error.message
+			}
+		}
+	}
+}

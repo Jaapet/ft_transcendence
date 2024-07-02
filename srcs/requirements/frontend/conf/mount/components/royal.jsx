@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import styles from '../styles/game.module.css';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
 
 const Royal = () => {
   useEffect(() => {
@@ -35,6 +37,17 @@ const Royal = () => {
     camera.position.set(0, 150, 10);
     camera.position.z = 150;
 
+
+    /// MODEL 3D
+    const loadermodel = new GLTFLoader();
+
+    loadermodel.load(
+      'games/pong/models/building.glb',
+      function (gltf) { scene.add( gltf.scene ); },
+      undefined,
+      function (error) { console.error(error); } 
+    );
+    
 
 
     /// FLOOR
@@ -185,9 +198,6 @@ const Royal = () => {
                 
                 ballmove[1] = 0.1;
                 break;
-            case " ":
-                space = 1;
-                break;
       }
     });
 
@@ -210,8 +220,6 @@ const Royal = () => {
             case "D":
                 
                 ballmove[1] = 0;
-                break;
-            case " ":
                 break;
       }
     });
@@ -277,7 +285,13 @@ const Royal = () => {
 
     function render(time)
     {
-      time *= 0.001;  
+      time *= 0.001; 
+      
+      if (!modelsLoaded)
+      {
+        requestAnimationFrame(render);
+        return;
+      }
       
       const canvas = renderer.domElement;
       camera.aspect = canvas.clientWidth / canvas.clientHeight;
@@ -290,15 +304,6 @@ const Royal = () => {
       objects.forEach(objtab => {
         // ce deplace dans une direction et s'arrete au bord et repart dans l'autre sens
         const obj = objtab[0];
-
-        if (space == 1 && obj.position.y < 10)
-          obj.position.y = obj.position.y * 1.1;
-        else if (obj.position.y > 2)
-          {
-          obj.position.y = obj.position.y - 1;
-          space = 0;
-          }
-
 
         
         ballspeed[0] = objtab[1];

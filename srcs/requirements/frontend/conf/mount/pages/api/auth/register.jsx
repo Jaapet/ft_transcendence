@@ -44,7 +44,7 @@ export default async (req, res) => {
 		}
 
 		// Register new user
-		const response = await fetch(`http://backend:8000/api/register/`, {
+		const response = await fetch(`https://backend:8000/api/register/`, {
 			method: 'POST',
 			body: formData
 		});

@@ -2,6 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from '../../styles/base.module.css';
+import { useAuth } from '../../context/AuthenticationContext';
 
 const UserTableHead = () => {
 	return (
@@ -11,7 +12,6 @@ const UserTableHead = () => {
 				<th scope="col">ID</th>
 				<th scope="col">Username</th>
 				<th scope="col">Online?</th>
-				<th scope="col">Email</th>
 				<th scope="col">Join date</th>
 				<th scope="col">Role</th>
 			</tr>
@@ -51,10 +51,9 @@ const UserTableRow = ({ user }) => {
 						marginRight: '5px',
 						verticalAlign: 'middle'
 					}}
-       			></span>
+				></span>
 			</td>
-			
-			<td>{user.email}</td>
+
 			<td>{user.join_date}</td>
 			<td>{user.is_admin ? 'Admin' : 'User'}</td>
 		</tr>
@@ -67,19 +66,29 @@ const UserTable = ({ users }) => {
 			<UserTableHead />
 			<tbody>
 			{ users.map(user => (
-				<UserTableRow user={user} />
+				<UserTableRow key={user.id} user={user} />
 			)) }
 			</tbody>
 		</table>
 	)
 }
 
-export default function Users({ users }) {
-	if (!users) {
+export default function Users({ status, detail, users }) {
+	const { logout } = useAuth();
+
+	const handleLogout = async () => {
+		await logout();
+	}
+
+	if (status === 401 && detail === 'Not logged in') {
+		handleLogout();
+	}
+
+	if (status !== 200 || !users) {
 		return (
 			<div className={styles.container}>
-				<p>Something went wrong...</p>
-				<p>Please reload the page.</p>
+				<p className="bg-light text-black">Something went wrong...</p>
+				<p className="bg-light text-black">Please reload the page.</p>
 			</div>
 		);
 	}
@@ -122,6 +131,7 @@ export async function getServerSideProps(context) {
 			return {
 				props: {
 					status: 404,
+					detail: 'Resource not found',
 					users: null
 				}
 			}
@@ -138,6 +148,7 @@ export async function getServerSideProps(context) {
 		return {
 			props: {
 				status: 200,
+				detail: 'Success',
 				users: data.users
 			}
 		}
@@ -146,6 +157,7 @@ export async function getServerSideProps(context) {
 		return {
 			props: {
 				status: 401,
+				detail: error.message,
 				users: null
 			}
 		}

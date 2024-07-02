@@ -30,7 +30,7 @@ export default async (req, res) => {
 		}
 
 		// Fetch access token
-		const tokRes = await fetch(`http://backend:8000/api/token/refresh/`, {
+		const tokRes = await fetch(`https://backend:8000/api/token/refresh/`, {
 			method: 'POST',
 			headers: {
 				'Accept': 'application/json',

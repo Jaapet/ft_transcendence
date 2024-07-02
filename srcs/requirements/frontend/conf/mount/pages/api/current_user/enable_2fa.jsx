@@ -15,7 +15,7 @@ export default async (req, res) => {
 			throw new Error('Not logged in');
 		}
 
-		const enableRes = await fetch(`http://backend:8000/api/enable_2fa/`, {
+		const enableRes = await fetch(`https://backend:8000/api/enable_2fa/`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -31,7 +31,10 @@ export default async (req, res) => {
 		if (!enableRes.ok)
 			throw new Error(enableData.detail || 'Could not enable 2FA');
 
-		return res.status(200).json({ message: '2FA enabled successfully', secret_key: enableData.secret_key, qr_code_url: enableData.qr_code_url });
+		if (enableRes.status === 201)
+			return res.status(201).json({ message: '2FA enabled successfully', secret_key: enableData.secret_key, qr_code_url: enableData.qr_code_url });
+		else
+			return res.status(200).json({ message: '2FA is already enabled', secret_key: enableData.secret_key, qr_code_url: enableData.qr_code_url });
 	} catch (error) {
 		console.error('API ENABLE 2FA:', error);
 		return res.status(500).json({ message: error.message });

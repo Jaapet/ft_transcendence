@@ -1,6 +1,6 @@
 #ggualerz header
 
-FROM		traefik:v3.0.1
+FROM		traefik:v3.0.2
 
 LABEL		author="ggualerz@student.42nice.fr"
 

@@ -22,7 +22,7 @@ export default async (req, res) => {
 		}
 
 		// Fetch user
-		const userRes = await fetch(`http://backend:8000/api/members/${id}`, {
+		const userRes = await fetch(`https://backend:8000/api/members/${id}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -46,7 +46,7 @@ export default async (req, res) => {
 		}
 
 		// Fetch user's list of sent friend requests
-		const sentRes = await fetch(`http://backend:8000/api/friend_requests/requests_sent/?user_id=${id}`, {
+		const sentRes = await fetch(`https://backend:8000/api/friend_requests/requests_sent/?user_id=${id}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ export default async (req, res) => {
 		}
 
 		// Fetch user's list of received friend requests
-		const recvRes = await fetch(`http://backend:8000/api/friend_requests/requests_received/?user_id=${id}`, {
+		const recvRes = await fetch(`https://backend:8000/api/friend_requests/requests_received/?user_id=${id}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
