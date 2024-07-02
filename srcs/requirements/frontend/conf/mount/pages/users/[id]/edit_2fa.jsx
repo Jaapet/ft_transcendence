@@ -209,7 +209,7 @@ export default function Edit2FAPage({ status, detail, current_user }) {
 	return (
 		<div className={styles.container}>
 
-		<section className={styles.customCard}>
+		<section className={styles.backCard} style={{top: '5vh', paddingTop: '100px', paddingBottom: '100px', paddingRight: '100px'}}>
 			<Head>
 				<title>Edit 2FA Settings</title>
 			</Head>
@@ -226,8 +226,7 @@ export default function Edit2FAPage({ status, detail, current_user }) {
 			<div className="container h-100">
 				<div className="row d-flex justify-content-center align-items-center h-100">
 					<div className="col-lg-12 col-xl-11">
-						<div className="card text-black" style={{borderRadius: '25px', backgroundColor: '#506080'}}>
-							<div className="card-body p-md-5">
+							<div className={styles.customCard} style={{minWidth: '60vw'}}>
 								<div className="row justify-content-center">
 									<div className="col-md-10 col-lg-6 col-xl-5 order-2 order-lg-1">
 
@@ -241,18 +240,17 @@ export default function Edit2FAPage({ status, detail, current_user }) {
 										/>
 
 										<p className="text-center text-muted mt-0 mb-0" >
-											<Link href={`/users/${user.id}/edit`} className="fw-bold text-body">
+											<Link href={`/users/${user.id}/edit`} className={styles.cardInfo}>
 												<u>To profile edit page</u>
 											</Link>
 										</p>
 										<p className="text-center text-muted mt-0 mb-0" >
-											<Link href={`/users/${user.id}`} className="fw-bold text-body">
+											<Link href={`/users/${user.id}`}className={styles.cardInfo}>
 												<u>Back to profile</u>
 											</Link>
 										</p>
 									</div>
 								</div>
-							</div>
 						</div>
 					</div>
 				</div>
