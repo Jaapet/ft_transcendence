@@ -3,19 +3,19 @@ import styles from '../styles/base.module.css';
 
 const MatchScoreCardPlayerLink = ({ id, username }) => {
 	if (id === null) {
-		return (<span>{username}</span>);
+	  return (<span>{username}</span>);
 	}
-
+  
 	return (
-		<Link
-			href={`/users/${id}`}
-			passHref
-			className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
-		>
-			{username}
-		</Link>
+	  <Link
+		href={`/users/${id}`}
+		passHref
+		className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
+	  >
+		{username}
+	  </Link>
 	);
-}
+  }
 
 const Pong2MatchScoreCardPlayers = ({ user, match }) => {
 	if (match.winner_id === user.id) {
@@ -53,6 +53,30 @@ const Pong3MatchScoreCardPlayers = ({ match }) => {
 	);
 }
 
+
+
+  
+  const RoyalMatchScoreCardPlayers = ({ match }) => {
+	return (
+	  <div>
+		{match.players.sort((a, b) => a.position - b.position).map((player, index) => {
+		  // Calculer la couleur en fonction de la position
+		  const red = Math.round((index / (match.players.length - 1)) * 255);
+		  const green = 255 - red;
+		  const color = `rgb(${red}, ${green}, 0)`;
+  
+		  return (
+			<p key={player.id} className="fs-2 mb-0" style={{ display: 'flex', alignItems: 'center', marginLeft: '40%' }}>
+			  <span style={{ width: '30px', textAlign: 'left', color }}>{player.position}.</span>&nbsp;
+			  <MatchScoreCardPlayerLink id={player.id} username={player.username} />
+			</p>
+		  );
+		})}
+	  </div>
+	);
+  }
+  
+
 const Pong2MatchScoreCard = ({ user, match }) => {
 	return (
 		<li key={`pong2_${match.id}`} className={`list-group-item ${styles.customList}`}>
@@ -87,13 +111,13 @@ const Pong3MatchScoreCard = ({ user, match }) => {
 	}
 }
 
-const RoyalMatchScoreCard = ({ user, match }) => {
-	return (
-		<li key={`royal_${match.id}`} className={`list-group-item ${styles.customList}`}>
-			<p>WORK IN PROGRESS (ROYAL)</p>
-			<p className="fs-4 mb-0">{match.end_date}</p>
-		</li>
-	);
+const RoyalMatchScoreCard = ({ match }) => {
+  return (
+    <li key={`royal_${match.id}`} className={`list-group-item ${styles.customList}`}>
+      <RoyalMatchScoreCardPlayers match={match} />
+      <p className="fs-4 mb-0">{match.end_date}</p>
+    </li>
+  );
 }
 
 const MatchScoreCard = ({ user, match }) => {
