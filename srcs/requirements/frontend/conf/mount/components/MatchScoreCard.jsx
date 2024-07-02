@@ -10,7 +10,7 @@ const MatchScoreCardPlayerLink = ({ id, username }) => {
 	  <Link
 		href={`/users/${id}`}
 		passHref
-		className="link-offset-1-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
+		style={{color: '#38255faa', textDecoration: 'none'}}
 	  >
 		{username}
 	  </Link>
