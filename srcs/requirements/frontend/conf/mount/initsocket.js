@@ -50,6 +50,8 @@ const rooms = {
 	royal: {}
 };
 
+const connected = {};
+
 // Constants
 const PONG2_NB_PLAYERS = 2;
 const PONG3_NB_PLAYERS = 3;
@@ -75,25 +77,28 @@ const PONG2_BALL_MAX_Z_DIR = 0.6;
 // TODO: Make client send gameType and maxPlayers in new message that will set the player's room
 io.on('connection', socket => {
 	console.log(`New client connected: ${socket.id}`);
-	connected = true;
+	connected[socket.id] = true;
 
 	// DISCONNECT HANDLER
 	socket.on('disconnect', () => {
 		console.log(`Client disconnected: ${socket.id}`);
 		room = findRoomByPlayerIdSlow(socket.id);
 		if (room) {
+			console.log(`Found room ${room.id}`); // debug
 			if (room.lauched) {
+				console.log(`Room ${room.id} is launched`); // debug
 				removePlayerFromRoom(socket.id); // TODO: Something else that doesn't break everything please
 			} else {
+				console.log(`Room ${room.id} is not launched`); // debug
 				removePlayerFromRoom(socket.id);
 			}
 		}
-		connected = false;
+		connected[socket.id] = false;
 	});
 
 	// JOIN HANDLER (https://transcendence.gmcg.fr:50581/test)
 	socket.on('join', ({ gameType, userId, userELO, userAvatar }) => {
-		if (!connected)
+		if (!connected[socket.id])
 			return ;
 
 		console.log(`JOIN: New user ${userId}`); // debug
@@ -182,7 +187,7 @@ io.on('connection', socket => {
 
 	function FindRoomLoop(startTime, gameType, queue, queueType, userId, userELO, userAvatar)
 	{
-		if (!connected)
+		if (!connected[socket.id])
 			return ;
 
 		now = Date.now();
@@ -220,7 +225,7 @@ io.on('connection', socket => {
 	}
 
 	function getPlayerInRoom(room) {
-		if (!connected)
+		if (!connected[socket.id])
 			return null;
 
 		if (room && room.players[socket.id])
@@ -229,7 +234,7 @@ io.on('connection', socket => {
 	}
 
 	function pong2Input(room, input) {
-		if (!connected || !room || !input || !input.key || !input.type)
+		if (!connected[socket.id] || !room || !input || !input.key || !input.type)
 			return ;
 
 		player = getPlayerInRoom(room);
@@ -260,7 +265,7 @@ io.on('connection', socket => {
 	// INPUT HANDLER
 	// TODO: This is where the actual game logic will live :)
 	socket.on('input', ({ gameType, input }) => {
-		if (!connected)
+		if (!connected[socket.id])
 			return ;
 
 		// Find current room of player
@@ -281,7 +286,7 @@ io.on('connection', socket => {
 	});
 
 	function isELOInRoomRange(room, userELO) {
-		if (!connected)
+		if (!connected[socket.id])
 			return false;
 
 		const now = Date.now();
@@ -302,7 +307,7 @@ io.on('connection', socket => {
 
 	// Returns true if userELO matches roomELO, false if not
 	function checkElo(room, userELO) {
-		if (!connected)
+		if (!connected[socket.id])
 			return false;
 
 		io.to(socket.id).emit('info', { message:
@@ -315,7 +320,7 @@ io.on('connection', socket => {
 
 	// Finds room if there is one, null if not
 	function findRoom(gameType) {
-		if (!connected)
+		if (!connected[socket.id])
 			return null;
 
 		// For all rooms in selected game type, return the first one that is not full
@@ -329,7 +334,7 @@ io.on('connection', socket => {
 
 	// Finds room matching elo if ther is one, null if not
 	function findRoomElo(gameType, userELO) {
-		if (!connected)
+		if (!connected[socket.id])
 			return null;
 
 		for (const roomId in rooms[gameType]) {
@@ -342,7 +347,7 @@ io.on('connection', socket => {
 
 	// // Returns true if room was created at least 20s ago
 	// function checkTimeStamp(room) {
-	// 	if (!connected)
+	// 	if (!connected[socket.id])
 	// 		return false;
 
 	// 	const now = Date.now();
@@ -384,7 +389,7 @@ io.on('connection', socket => {
 	// }
 
 	function createPong2Room(gameType, newRoomId, now, userELO) {
-		if (!connected)
+		if (!connected[socket.id])
 			return ;
 
 		rooms[gameType][newRoomId] = {
@@ -412,7 +417,7 @@ io.on('connection', socket => {
 
 	// Creates a room for the player
 	function createRoom(gameType, userELO) {
-		if (!connected)
+		if (!connected[socket.id])
 			return null;
 
 		// Create a new room
@@ -527,7 +532,7 @@ io.on('connection', socket => {
 	// Does nothing if either room or socket does not exist
 	// Does nothing if elo doesn't match
 	function addPlayerToRoom(gameType, room, socket, userId, userELO, userAvatar) {
-		if (!connected)
+		if (!connected[socket.id])
 			return ;
 
 		role = '';
@@ -607,7 +612,7 @@ io.on('connection', socket => {
 
 	// Checks if all players in a room are ready for timer
 	function allPlayersReadyTimer(players) {
-		if (!connected)
+		if (!connected[socket.id])
 			return false;
 
 		for (const playerId in players) {
@@ -620,7 +625,7 @@ io.on('connection', socket => {
 
 	// Checks if all players in a room are ready for gameplay
 	function allPlayersReady(players) {
-		if (!connected)
+		if (!connected[socket.id])
 			return false;
 
 		for (const playerId in players) {
@@ -634,7 +639,7 @@ io.on('connection', socket => {
 	// Returns true if a room is full or if it doesn't exist
 	// Returns false otherwise
 	function isRoomFull(gameType, roomId) {
-		if (!connected)
+		if (!connected[socket.id])
 			return false;
 
 		// const playerNb = roomPlayerNb(gameType, roomId);
@@ -649,7 +654,7 @@ io.on('connection', socket => {
 	// Returns true if a room is launched or if it doesn't exist
 	// Returns false otherwise
 	function isRoomLaunched(gameType, roomId) {
-		if (!connected)
+		if (!connected[socket.id])
 			return true;
 
 		if (rooms[gameType][roomId]) {
@@ -661,7 +666,7 @@ io.on('connection', socket => {
 	// Returns the current number of players in a room
 	// Returns -1 if the room does not exist
 	function roomPlayerNb(gameType, roomId) {
-		if (!connected)
+		if (!connected[socket.id])
 			return -1;
 
 		if (rooms[gameType][roomId]) {
@@ -674,14 +679,20 @@ io.on('connection', socket => {
 	// Returns null if it can't find it
 	// Slower than findRoomByPlayerId but does not need gameType
 	function findRoomByPlayerIdSlow(playerId) {
-		if (!connected)
+		console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: Entered`); // debug
+		if (!connected[socket.id])
 			return null;
+
+		console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: Searching for ${playerId}`); // debug
 
 		for (const gameType in rooms) {
 			if (['queue2', 'queue3', 'queueR'].includes(gameType))
 				continue ;
+			console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: Checking ${gameType}`); // debug
 			for (const roomId in rooms[gameType]) {
+				console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: Checking room ${roomId}`); // debug
 				if (rooms[gameType][roomId].players[playerId]) {
+					console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: ${playerId} is in room ${roomId}`); // debug
 					return rooms[gameType][roomId];
 				}
 			}
@@ -692,7 +703,7 @@ io.on('connection', socket => {
 	// Returns the player's current room by player ID
 	// Returns null if it can't find it
 	function findRoomByPlayerId(gameType, playerId) {
-		if (!connected)
+		if (!connected[socket.id])
 			return null;
 
 		for (const roomId in rooms[gameType]) {
@@ -737,7 +748,7 @@ io.on('connection', socket => {
 
 	// Returns true if player in specified room, false if not
 	function playerInRoom(gameType, roomId) {
-		if (!connected)
+		if (!connected[socket.id])
 			return false;
 
 		if (rooms[gameType][roomId])
@@ -751,7 +762,7 @@ io.on('connection', socket => {
 	// Checks if a game can be started and starts it if the answer is yes
 	// Does nothing if room does not exist, is already launched, or if its players are not ready
 	function checkGameStart(room, gameType) {
-		if (!connected)
+		if (!connected[socket.id])
 			return ;
 
 		console.log(`CHECK_GAME_START: Checking ${gameType} room ${room.id}`); // debug
@@ -777,7 +788,7 @@ io.on('connection', socket => {
 	// Does nothing if room does not exist, is already launched, or if its players are not ready
 	// TODO: Check if all players have the right roles and reassign them in case not!
 	function startPongGame(room, gameType) {
-		if (!connected)
+		if (!connected[socket.id])
 			return ;
 
 		console.log(`START_PONG_GAME: Checking ${gameType} room ${room.id}`); // debug
@@ -802,7 +813,7 @@ io.on('connection', socket => {
 	// Does nothing if room does not exist, is already launched, or if its players are not ready
 	// TODO: Check if all players have the right roles and reassign them in case not!
 	function startRoyalGame(room, gameType) {
-		if (!connected)
+		if (!connected[socket.id])
 			return ;
 
 		if (!room || room.launched) {
@@ -829,7 +840,7 @@ io.on('connection', socket => {
 	// Sends a gameStart message to all players in the room and sets launched to true
 	// Does nothing if room does not exist, is already launched, or if its players are not ready
 	function launchGame(gameType, room) {
-		if (!connected)
+		if (!connected[socket.id])
 			return ;
 
 		console.log(`LAUNCH_GAME: Launching ${gameType} room ${room.id}`); // debug
@@ -871,7 +882,7 @@ io.on('connection', socket => {
 		if (!room)
 			return null;
 		console.log(`PONG2_LOOP: room ${room.id} exists`); // debug
-		if (!connected)
+		if (!connected[socket.id])
 			return LoopError(room, 'A player disconnected');
 
 		// Wait for timer start
@@ -892,7 +903,7 @@ io.on('connection', socket => {
 	}
 
 	function Pong2LoopReadyTimer(room) {
-		if (!connected)
+		if (!connected[socket.id])
 			return LoopError(room, 'A player disconnected');
 		io.to(room.id).emit('startTimer');
 		console.log(`PONG2_LOOP_READY_TIMER: Emitted startTimer to room ${room.id}`); // debug
@@ -915,7 +926,7 @@ io.on('connection', socket => {
 	}
 
 	function Pong2LoopReady(room) {
-		if (!connected)
+		if (!connected[socket.id])
 			return LoopError(room, 'A player disconnected');
 		room.runtime.started = true;
 		room.runtime.startTime = Date.now();
@@ -924,7 +935,7 @@ io.on('connection', socket => {
 		console.log(`PONG2_LOOP_READY: Emitted startGameplay to room ${room.id}`); // debug
 
 		function gameLoop() {
-			if (!connected)
+			if (!connected[socket.id])
 				return ;
 
 			// update ball speed
@@ -1018,7 +1029,7 @@ io.on('connection', socket => {
 
 	// Paddle bounce and goal
 	socket.on('ballHit', ({ gameType, hit }) => {
-		if (!connected || !hit)
+		if (!connected[socket.id] || !hit)
 			return ;
 
 		const room = findRoomByPlayerId(gameType, socket.id);
@@ -1043,7 +1054,7 @@ io.on('connection', socket => {
 	});
 
 	socket.on('ready', ({ gameType }) => {
-		if (!connected || ['queue2', 'queue3', 'queueR'].includes(gameType))
+		if (!connected[socket.id] || ['queue2', 'queue3', 'queueR'].includes(gameType))
 			return ;
 
 		const room = findRoomByPlayerId(gameType, socket.id);
@@ -1053,7 +1064,7 @@ io.on('connection', socket => {
 	});
 
 	socket.on('readyTimer', ({ gameType }) => {
-		if (!connected || ['queue2', 'queue3', 'queueR'].includes(gameType))
+		if (!connected[socket.id] || ['queue2', 'queue3', 'queueR'].includes(gameType))
 			return ;
 
 		const room = findRoomByPlayerId(gameType, socket.id);
