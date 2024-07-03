@@ -10,36 +10,39 @@ import { AnimationMixer } from "three";
 import { useAuth } from '../context/AuthenticationContext';
 
 const Pong = () => {
+	console.log(`PONG_CMPT: Entered Pong Component`); // debug
 	const { user } = useAuth();
-	const socketRef = useRef(null);
 	const canvasRef = useRef(null);
 
 	useEffect(() => {
-	const socket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`);
-	socket.emit('join', { gameType: 'pong2', userId: user.id, userELO: user.elo_pong, userAvatar: user.avatar });
-	// Gérer les événements de connexion et d'erreur
-	socket.on('connect', () => {
-		console.log('Connected to websocket server');
-	});
-	socket.on('connect_error', (error) => {
-		console.error('Connection error for websocket server:', error);
-	});
-	socket.on('disconnect', () => {
-		console.log('Disconnected from websocket server');
-	});
-	socketRef.current = socket;
+		if (!user)
+			return ;
+
+		console.log(`PONG_CMPT: Entered useEffect`); // debug
+		const socket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`);
+		console.log(`PONG_CMPT: Connected to ws server`); // debug
+		socket.emit('join', { gameType: 'pong2', userId: user.id, userELO: user.elo_pong, userAvatar: user.avatar });
+		console.log(`PONG_CMPT: Sent join msg`); // debug
+		// Gérer les événements de connexion et d'erreur
+		socket.on('connect', () => {
+			console.log('Connected to websocket server');
+		});
+		socket.on('connect_error', (error) => {
+			console.error('Connection error for websocket server:', error);
+		});
+		socket.on('disconnect', () => {
+			console.log('Disconnected from websocket server');
+		});
 
 
-	/// SCENE
-	const scene = new THREE.Scene();
-	scene.background = new THREE.Color(0x111111);
+		/// SCENE
+		const scene = new THREE.Scene();
+		scene.background = new THREE.Color(0x111111);
 
-	const canvas = canvasRef.current;
+		const canvas = canvasRef.current;
 
-	/// RENDERER
-	const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
-
-
+		/// RENDERER
+		const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
 
 			/// CANVAS
 
@@ -319,9 +322,6 @@ const Pong = () => {
 				function (error) { console.error(error); } 
 			);*/
 
-
-
-
 			/// TEXT
 			let text3, text3r, text2, text2r, text1, text1r, text0, text0r;
 			let textMesh1, font;
@@ -516,12 +516,15 @@ const Pong = () => {
 			const radius = 2;
 			const detail = 5;
 			const ball = new THREE.IcosahedronGeometry(radius, detail);
-			
-			// creation des tableaux pour les raquettes et les mouvements des raquettes
+
+			// creation des tableaux pour les paddles et les mouvements des paddles
 			var ballObj;
-			const raquettes = [];
-			const raquettesmove = [0, 0];
-			
+			const ballDir = [ 0.99999, 0.00001 ]
+			const paddles = [];
+			let role = 'pending';
+			let paddleUp = false;
+			let paddleDown = false;
+
 			// ajout des objets dans la scene et placement des objets
 			addball(0, 2, 0, makeObj(ball, texturesphere));
 			addraquette(-43, 2, 0, new THREE.Mesh(cube, raquettematerials));
@@ -557,13 +560,14 @@ const Pong = () => {
 			{
 				switch (event.key) {
 					case "ArrowUp":
-						raquettesmove[0] = -1.5;
+						paddleUp = true;
+						socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keydown' } });
 						break;
 					case "ArrowDown":
-						raquettesmove[1] = 1.5;
+						paddleDown = true;
+						socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keydown' } });
 						break;
 				}
-				socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keydown' } });
 			});
 
 			document.addEventListener('keyup', function(event)
@@ -571,13 +575,14 @@ const Pong = () => {
 				console.log(event.key);
 				switch (event.key) {
 					case "ArrowUp":
-						raquettesmove[0] = 0;
+						paddleUp = false;
+						socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keyup' } });
 						break;
 					case "ArrowDown":
-						raquettesmove[1] = 0;
+						paddleDown = false;
+						socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keyup' } });
 						break;
 				}
-				socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keyup' } });
 			});
 
 			/// RENDER
@@ -610,7 +615,7 @@ const Pong = () => {
 				obj.position.y = y;
 				obj.position.z = z;
 				scene.add(obj);
-				raquettes.push(obj);
+				paddles.push(obj);
 			}
 
 			function addwall(x, y, z, obj)
@@ -621,11 +626,11 @@ const Pong = () => {
 				scene.add(obj);
 			}
 
-			function raquetteHit(ball, raquettes)
+			function raquetteHit(ball, paddles)
 			{
 				const ballBox = new THREE.Box3().setFromObject(ball);
 				var hit = 0.0;
-				raquettes.forEach(raquette => {
+				paddles.forEach(raquette => {
 					const raquetteBox = new THREE.Box3().setFromObject(raquette);
 					if (ballBox.intersectsBox(raquetteBox))
 					{
@@ -635,43 +640,54 @@ const Pong = () => {
 						hit = hitVector.z;
 					}
 				});
-				socket.emit('ballHit', { hit: hit });
+				socket.emit('ballHit', { gameType: 'pong2', hit: hit });
 			}
 
 			socket.on('gameStart', ({ players }) => {
+				console.log(`PONG_CMPT: Received gameStart`); // debug
+				console.log(`PONG_CMPT: Received player list:`, players); // debug
+				for (const player in players) {
+					if (player.id === user.id) {
+						role = player.role;
+					}
+				}
 				gameStart = true;
 			});
 
 			socket.on('startTimer', () => {
 				startTimer = true;
+				console.log(`PONG_CMPT: Received startTimer`); // debug
 			});
 
 			socket.on('startGameplay', () => {
 				startGameplay = true;
+				console.log(`PONG_CMPT: Received startGameplay`); // debug
 			});
 
 			socket.on('gameStatus', ({
 				leftScore, rightScore,
-				ballX, ballZ,
-				resetRotation,
-				rotationX, rotationZ,
+				ballX, ballZ, ballSpeed,
 				leftPaddleZ, rightPaddleZ
 			}) => {
 				// Ball
+				ballSpeed = ballSpeed;
 				ballObj.position.x = ballX;
 				ballObj.position.z = ballZ;
-				if (resetRotation) {
-					ballObj.rotation.x = 0;
-					ballObj.rotation.y = 0;
-					ballObj.rotation.z = 0;
-				}
-				ballObj.rotateX(-rotationX);
-				ballObj.rotateZ(rotationZ);
 
 				// Paddles
-				raquettes[0].position.z = leftPaddleZ;
-				raquettes[1].position.z = rightPaddleZ;
+				paddles[0].position.z = leftPaddleZ;
+				paddles[1].position.z = rightPaddleZ;
 			});
+
+			// Gameplay constants
+			// TODO: Check if these are synced with server-side code
+			const PADDLE_SPEED = 1.5;
+			const BASE_BALL_SPEED = 2;
+			const BALL_MAX_X = 41;
+			const BALL_MAX_Z = 20;
+			const PADDLE_MAX_Z = 16.5;
+			const BALL_MAX_Z_DIR = 0.6;
+			let ballSpeed = BASE_BALL_SPEED;
 
 			let first = 0;
 			function render(time)
@@ -683,7 +699,7 @@ const Pong = () => {
 				}
 
 				if (first === 0) {
-					socket.emit('readyTimer');
+					socket.emit('readyTimer', { gameType: 'pong2' });
 					first = 1;
 				}
 
@@ -699,11 +715,91 @@ const Pong = () => {
 				if (frame > 5)
 				{
 					if (first === 1) {
-						socket.emit('ready');
+						socket.emit('ready', { gameType: 'pong2' });
 						first = 2;
 					}
-					if (startGameplay)
-						raquetteHit(ballObj, raquettes);
+					if (startGameplay) {
+						// Client-side game updates
+
+						// Paddle Movement
+						/// Left Paddle
+						if (role === 'leftPaddle') {
+							if (paddleUp)
+								paddles[0].position.z -= PADDLE_SPEED;
+							if (paddleDown)
+								paddles[0].position.z += PADDLE_SPEED;
+							paddles[0].position.z = Math.min(Math.max(paddles[0].position.z, -PADDLE_MAX_Z), PADDLE_MAX_Z);
+						}
+						/// Right Paddle
+						else if (role === 'rightPaddle') {
+							if (paddleUp)
+								paddles[1].position.z -= PADDLE_SPEED;
+							if (paddleDown)
+								paddles[1].position.z += PADDLE_SPEED;
+							paddles[1].position.z = Math.min(Math.max(paddles[1].position.z, -PADDLE_MAX_Z), PADDLE_MAX_Z);
+						}
+
+						// Ball movement
+						/// X
+						const displaceX = ballSpeed * Math.abs(ballDir[0]);
+						if (ballDir[0] > 0) {
+							ballObj.position.x += displaceX;
+						} else if (ballDir[0] < 0) {
+							ballObj.position.x -= displaceX;
+						}
+						ballObj.position.x = Math.min(Math.max(ballObj.position.x, -BALL_MAX_X), BALL_MAX_X);
+						/// Z
+						const displaceZ = ballSpeed * Math.abs(ballDir[1]);
+						if (ballDir[1] > 0) {
+							ballObj.position.z += displaceZ;
+						} else if (ballDir[1] < 0) {
+							ballObj.position.z -= displaceZ;
+						} else {
+							ballDir[1] *= -1;
+							ballObj.rotation.x = 0;
+							ballObj.rotation.y = 0;
+							ballObj.rotation.z = 0;
+						}
+						ballObj.position.z = Math.min(Math.max(ballObj.position.z, -BALL_MAX_Z), BALL_MAX_Z);
+						ballDir[1] = Math.min(Math.max(ballDir[1], -BALL_MAX_Z_DIR), BALL_MAX_Z_DIR);
+
+						const absSum = Math.abs(ballDir[0]) + Math.abs(ballDir[1]);
+						if (absSum !== 1)
+						{
+							const ratio = 1 / absSum;
+							ballDir[0] *= ratio;
+							ballDir[1] *= ratio;
+						}
+
+						// Ball Rotation
+						const angle = Math.atan2(ballDir[1], ballDir[0]);
+						const rotationX = Math.cos(angle) * (Math.PI / 4 / 5);
+						const rotationZ = Math.sin(angle) * (Math.PI / 4 / 5);
+						ballObj.rotateX(-rotationX);
+						ballObj.rotateZ(rotationZ);
+
+						// Paddle Bounce
+						let hit = raquetteHit(ballObj, paddles);
+						if (hit !== 0.0)
+							{
+								let offset = hit * 0.1;
+								ballDir[0] *= -1;
+								ballDir[1] += offset;
+								ballDir[0] -= offset;
+								const absSum = Math.abs(ballDir[0]) + Math.abs(ballDir[1]);
+								if (absSum !== 1)
+								{
+									const ratio = 1 / absSum;
+									ballDir[0] *= ratio;
+									ballDir[1] *= ratio;
+								}
+								ballObj.rotation.z = 0;
+								ballObj.rotation.x = 0;
+								ballObj.rotation.y = 0;
+							}
+					} else { // Scored a point
+						// TODO: Score a point, reset ball pos and speed
+					}
 				}
 				else if (frame > 4)
 				{
@@ -746,11 +842,20 @@ const Pong = () => {
 				renderer.render(scene, camera);
 				requestAnimationFrame(render);
 			}
-			while (!gameStart);
-			requestAnimationFrame(render);
+			console.log(`PONG_CMPT: Waiting for gameStart`); // debug
+			function waitForGameStart() {
+				if (gameStart) {
+					requestAnimationFrame(render);
+				} else {
+					setTimeout(waitForGameStart, 250); // Every 0.25 seconds
+				}
+			}
+			waitForGameStart();
 
 		return () =>
 		{
+			socket.disconnect();
+
 			// Dispose of Three.js objects
 			scene.traverse((object) =>
 			{
@@ -786,10 +891,8 @@ const Pong = () => {
 			renderer.dispose();
 			
 			cancelAnimationFrame(render); 
-
-			socketRef.current.disconnect();
 		};
-	}, []);
+	}, [user]);
 
 	return (
 		<div>

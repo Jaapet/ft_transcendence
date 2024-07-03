@@ -62,9 +62,11 @@ const FIND_ROOM_TIMEOUT = 10;		// Create your own room after trying to find one 
 const FIND_ROOM_RATE = 0.5;			// Try to find a room every 0.5 seconds
 
 // Gameplay constants
-const PADDLE_SPEED = 1.5;
-const BASE_BALL_SPEED = 2;
-const BALL_ACCELERATION_RATE = 0.01; // +0.01 speed every second
+// TODO: Check if these are synced with client-side code
+const PONG2_PADDLE_SPEED = 1.5;
+const PONG2_BASE_BALL_SPEED = 2;
+const PONG2_MAX_BALL_SPEED = 8;
+const PONG2_BALL_ACCELERATION_RATE = 0.01; // +0.01 speed every second
 const PONG2_BALL_MAX_X = 41;
 const PONG2_BALL_MAX_Z = 20;
 const PONG2_PADDLE_MAX_Z = 16.5;
@@ -78,7 +80,14 @@ io.on('connection', socket => {
 	// DISCONNECT HANDLER
 	socket.on('disconnect', () => {
 		console.log(`Client disconnected: ${socket.id}`);
-		removePlayerFromRoom(socket.id);
+		room = findRoomByPlayerIdSlow(socket.id);
+		if (room) {
+			if (room.lauched) {
+				removePlayerFromRoom(socket.id); // TODO: Something else that doesn't break everything please
+			} else {
+				removePlayerFromRoom(socket.id);
+			}
+		}
 		connected = false;
 	});
 
@@ -86,7 +95,9 @@ io.on('connection', socket => {
 	socket.on('join', ({ gameType, userId, userELO, userAvatar }) => {
 		if (!connected)
 			return ;
-		
+
+		console.log(`JOIN: New user ${userId}`); // debug
+
 		// Sets queueType depending on gameType
 		queueType = null;
 		switch (gameType){
@@ -100,10 +111,14 @@ io.on('connection', socket => {
 				queueType = "queue2";
 		}
 
+		console.log(`JOIN: Searching for ${queueType} for user ${userId}`); // debug
+		queue = null;
+		queue = findRoom(queueType);
 		// Create queue if !queue and join it
-		if (!findRoom(queueType, userELO))
+		if (!queue)
 			queue = createRoom(queueType, userELO);
 		addPlayerToRoom(gameType, queue, socket, userId, userELO, userAvatar);
+		console.log(`JOIN: User ${userId} now in waitlist`); // debug
 
 		room = null;
 		if (playerInRoom(queueType, queue.id))
@@ -111,21 +126,26 @@ io.on('connection', socket => {
 			// Join Existing Room
 			if (findRoom(gameType))
 			{
-				// io.to(socket.id).emit('info', { message: `joining` });
+				console.log(`JOIN: User ${userId} joining existing room`); // debug
 				room = findRoomElo(gameType, userELO);
 				if (room)
 				{
-					io.to(socket.id).emit('info', { message: `Found room ${room.id} (ELO=${room.elo})` }); // debug
+					console.log(`JOIN: User ${userId} found room ${room.id} (ELO=${room.elo})`); // debug
 					removePlayerFromQueue(queueType, queue.id, socket.id);
+					console.log(`JOIN: User ${userId} removed from queue`); // debug
 					addPlayerToRoom(gameType, room, socket, userId, userELO, userAvatar);
+					console.log(`JOIN: User ${userId} added to room ${room.id}`); // debug
 				}
 			}
 			else // Create New Room
 			{
-				// io.to(socket.id).emit('info', { message: `creating` });
+				console.log(`JOIN: User ${userId} creating new room`); // debug
 				room = createRoom(gameType, userELO);
+				console.log(`JOIN: User ${userId} created room ${room.id}`); // debug
 				removePlayerFromQueue(queueType, queue.id, socket.id);
+				console.log(`JOIN: User ${userId} removed from queue`); // debug
 				addPlayerToRoom(gameType, room, socket, userId, userELO, userAvatar);
+				console.log(`JOIN: User ${userId} added to room ${room.id}`); // debug
 			}
 			// // Create New Room
 			// if (/*roomPlayerNb(queueType, queue.id) === 1 &&*/ !findRoom(gameType))
@@ -151,10 +171,6 @@ io.on('connection', socket => {
 		// If player was put in a room
 		if (room)
 		{
-			io.to(socket.id).emit('info', { message: `passed filling` });
-			// Set player as ready
-			//room.players[socket.id].ready = true;			
-			// Start game if it can be started
 			checkGameStart(room, gameType);
 		}
 		else
@@ -386,8 +402,7 @@ io.on('connection', socket => {
 				score: { l: 0, r: 0 },
 				ballPosition: { x: 0, z: 0 },
 				ballDirection: { x: 0.99999, z: 0.00001 },
-				ballSpeed: BASE_BALL_SPEED,
-				resetBallRotation: false,
+				ballSpeed: PONG2_BASE_BALL_SPEED,
 				paddleZ: { l: 0, r: 0 },
 				goUp: { l: false, r: false },
 				goDown: { l: false, r: false }
@@ -423,7 +438,7 @@ io.on('connection', socket => {
 				rooms[gameType][newRoomId] = { id: newRoomId, launched: false, maxPlayers: ROYAL_MAX_PLAYERS, timeStamp: now, players: {}, elo: userELO };
 				break ;
 			default:
-				createPong2Room(newRoomId, now, userELO);
+				createPong2Room(gameType, newRoomId, now, userELO);
 		}
 		io.to(socket.id).emit('info', { message: `Room ${newRoomId} created, room elo ${userELO}` });
 		//io.to(socket.id).emit('info', { message: `created at ${now}` });
@@ -525,6 +540,9 @@ io.on('connection', socket => {
 				break ;
 			case 'pong2':
 				role = choosePong2Role(room);
+				break ;
+			default:
+				role = 'pending';
 		}
 
 		if (room && socket) {
@@ -564,9 +582,11 @@ io.on('connection', socket => {
 		for (const gameType in rooms) {
 			for (const roomId in rooms[gameType]) {
 				if (rooms[gameType][roomId].players[playerId]) {
+					console.log(`REMOVE_PLAYER_FROM_ROOM: Removing user ${rooms[gameType][roomId].players[playerId].id} from ${gameType} room ${roomId}`); // debug
 					delete rooms[gameType][roomId].players[playerId];
 					// If the room becomes empty, delete it
 					if (roomPlayerNb(gameType, roomId) === 0) {
+						console.log(`REMOVE_PLAYER_FROM_ROOM: Deleting ${gameType} room ${roomId}`); // debug
 						delete rooms[gameType][roomId];
 					}
 					return;
@@ -652,6 +672,25 @@ io.on('connection', socket => {
 
 	// Returns the player's current room by player ID
 	// Returns null if it can't find it
+	// Slower than findRoomByPlayerId but does not need gameType
+	function findRoomByPlayerIdSlow(playerId) {
+		if (!connected)
+			return null;
+
+		for (const gameType in rooms) {
+			if (['queue2', 'queue3', 'queueR'].includes(gameType))
+				continue ;
+			for (const roomId in rooms[gameType]) {
+				if (rooms[gameType][roomId].players[playerId]) {
+					return rooms[gameType][roomId];
+				}
+			}
+		}
+		return null;
+	}
+
+	// Returns the player's current room by player ID
+	// Returns null if it can't find it
 	function findRoomByPlayerId(gameType, playerId) {
 		if (!connected)
 			return null;
@@ -715,9 +754,13 @@ io.on('connection', socket => {
 		if (!connected)
 			return ;
 
+		console.log(`CHECK_GAME_START: Checking ${gameType} room ${room.id}`); // debug
+
 		if (!room || isRoomLaunched(gameType, room.id)) {
 			return ;
 		}
+
+		console.log(`CHECK_GAME_START: ${gameType} room ${room.id} exists and has not been launched`); // debug
 
 		switch (gameType) {
 			case 'royal':
@@ -737,13 +780,20 @@ io.on('connection', socket => {
 		if (!connected)
 			return ;
 
+		console.log(`START_PONG_GAME: Checking ${gameType} room ${room.id}`); // debug
+
 		if (!room || isRoomLaunched(gameType, room.id)) {
 			return ;
 		}
 
+		console.log(`START_PONG_GAME: ${gameType} room ${room.id} exists and has not been launched`); // debug
+
 		// If the room is full, launch the game
 		if (isRoomFull(gameType, room.id)) {
+			console.log(`START_PONG_GAME: ${gameType} room ${room.id} is full, launching game`); // debug
 			launchGame(gameType, room);
+		} else {
+			console.log(`START_PONG_GAME: ${gameType} room ${room.id} is not full`); // debug
 		}
 	}
 
@@ -782,12 +832,17 @@ io.on('connection', socket => {
 		if (!connected)
 			return ;
 
+		console.log(`LAUNCH_GAME: Launching ${gameType} room ${room.id}`); // debug
+
 		if (!room || room.launched) {
 			return ;
 		}
 
+		console.log(`LAUNCH_GAME: ${gameType} room ${room.id} exists and has not been launched`); // debug
+
 		room.launched = true;
 		io.to(room.id).emit('gameStart', { players: room.players });
+		console.log(`LAUNCH_GAME: Emitted gameStart to ${gameType} room ${room.id}`); // debug
 		switch (gameType) {
 			case 'royal':
 				RoyalLoop(room);
@@ -802,67 +857,106 @@ io.on('connection', socket => {
 	}
 
 	function LoopError(room, errorMsg) {
+		console.log(`LOOP_ERROR: Room ${room.id} failed (${errorMsg})`); // debug
 		io.to(room.id).emit('gameError', { stop: true, error: errorMsg });
 		return null;
+	}
+
+	function RoomStillExists(gameType, room) {
+		return (room && rooms[gameType][room.id]);
 	}
 
 	// TODO: See if this can continue while socket.id is diconnected
 	function Pong2Loop(room) {
 		if (!room)
 			return null;
+		console.log(`PONG2_LOOP: room ${room.id} exists`); // debug
 		if (!connected)
 			return LoopError(room, 'A player disconnected');
 
 		// Wait for timer start
-		while (!allPlayersReadyTimer(room.players));
+		console.log(`PONG2_LOOP: room ${room.id} waits for readyTimer`); // debug
+		function waitForReadyTimer() {
+			if (!RoomStillExists('pong2', room))
+				return ;
+			const test = allPlayersReadyTimer(room.players);
+			if (!test) {
+				console.log(`PONG2_LOOP: room ${room.id} is not readyTimer`); // debug
+				setTimeout(waitForReadyTimer, 1000); // Once every second
+			} else {
+				console.log(`PONG2_LOOP: room ${room.id} is readyTimer`); // debug
+				Pong2LoopReadyTimer(room);
+			}
+		}
+		waitForReadyTimer();
+	}
+
+	function Pong2LoopReadyTimer(room) {
 		if (!connected)
 			return LoopError(room, 'A player disconnected');
 		io.to(room.id).emit('startTimer');
+		console.log(`PONG2_LOOP_READY_TIMER: Emitted startTimer to room ${room.id}`); // debug
 
 		// Wait for gameplay start
-		while (!allPlayersReady(room.players));
+		console.log(`PONG2_LOOP_READY_TIMER: room ${room.id} waits for ready`); // debug
+		function waitForReady() {
+			if (!RoomStillExists('pong2', room))
+				return ;
+			const test = allPlayersReady(room.players);
+			if (!test) {
+				console.log(`PONG2_LOOP_READY_TIMER: room ${room.id} is not ready`); // debug
+				setTimeout(waitForReady, 1000); // Once every second
+			} else {
+				console.log(`PONG2_LOOP_READY_TIMER: room ${room.id} is ready`); // debug
+				Pong2LoopReady(room);
+			}
+		}
+		waitForReady();
+	}
+
+	function Pong2LoopReady(room) {
 		if (!connected)
 			return LoopError(room, 'A player disconnected');
 		room.runtime.started = true;
 		room.runtime.startTime = Date.now();
 		room.runtime.ZeroTime = room.runtime.startTime;
 		io.to(room.id).emit('startGameplay');
+		console.log(`PONG2_LOOP_READY: Emitted startGameplay to room ${room.id}`); // debug
 
 		function gameLoop() {
 			if (!connected)
 				return ;
 
-			room.runtime.resetBallRotation = false;
-
 			// update ball speed
 			room.runtime.elapsedTime = Date.now();
 			const currentBallTime = room.runtime.elapsedTime - room.runtime.startTime; // in ms
-			room.runtime.ballSpeed = BASE_BALL_SPEED + (currentBallTime * (BALL_ACCELERATION_RATE / 1000));
+			room.runtime.ballSpeed = PONG2_BASE_BALL_SPEED + (currentBallTime * (PONG2_BALL_ACCELERATION_RATE / 1000));
+			room.runtime.ballSpeed = Math.min(room.runtime.ballSpeed, PONG2_MAX_BALL_SPEED);
 
 			// update paddle positions
 			/// Left Paddle
 			//// Go Up
 			if (room.runtime.goUp.l) {
-				room.runtime.paddleZ.l -= PADDLE_SPEED;
+				room.runtime.paddleZ.l -= PONG2_PADDLE_SPEED;
 				if (room.runtime.paddleZ.l < -PONG2_PADDLE_MAX_Z)
 					room.runtime.paddleZ.l = -PONG2_PADDLE_MAX_Z;
 			}
 			//// Go Down
 			if (room.runtime.goDown.l) {
-				room.runtime.paddleZ.l += PADDLE_SPEED;
+				room.runtime.paddleZ.l += PONG2_PADDLE_SPEED;
 				if (room.runtime.paddleZ.l > PONG2_PADDLE_MAX_Z)
 					room.runtime.paddleZ.l = PONG2_PADDLE_MAX_Z;
 			}
 			/// Right Paddle
 			//// Go Up
 			if (room.runtime.goUp.r) {
-				room.runtime.paddleZ.r -= PADDLE_SPEED;
+				room.runtime.paddleZ.r -= PONG2_PADDLE_SPEED;
 				if (room.runtime.paddleZ.r < -PONG2_PADDLE_MAX_Z)
 					room.runtime.paddleZ.r = -PONG2_PADDLE_MAX_Z;
 			}
 			//// Go Down
 			if (room.runtime.goDown.r) {
-				room.runtime.paddleZ.r += PADDLE_SPEED;
+				room.runtime.paddleZ.r += PONG2_PADDLE_SPEED;
 				if (room.runtime.paddleZ.r > PONG2_PADDLE_MAX_Z)
 					room.runtime.paddleZ.r = PONG2_PADDLE_MAX_Z;
 			}
@@ -870,29 +964,28 @@ io.on('connection', socket => {
 			// update ball position
 			/// Update X
 			if (room.runtime.ballDirection.x > 0) {
-				room.runtime.ballPosition.x += speed * room.runtime.ballDirection.x;
+				room.runtime.ballPosition.x += room.runtime.ballSpeed * room.runtime.ballDirection.x;
 				if (room.runtime.ballPosition.x > PONG2_BALL_MAX_X)
 					room.runtime.ballPosition.x = PONG2_BALL_MAX_X;
 			}
 			else if (room.runtime.ballDirection.x < 0) {
-				room.runtime.ballPosition.x -= speed * Math.abs(room.runtime.ballDirection.x);
+				room.runtime.ballPosition.x -= room.runtime.ballSpeed * Math.abs(room.runtime.ballDirection.x);
 				if (room.runtime.ballPosition.x < -PONG2_BALL_MAX_X)
 					room.runtime.ballPosition.x = -PONG2_BALL_MAX_X;
 			}
 			/// Update Z
 			if (room.runtime.ballDirection.z > 0) {
-				room.runtime.ballPosition.z += speed * room.runtime.ballDirection.z;
+				room.runtime.ballPosition.z += room.runtime.ballSpeed * room.runtime.ballDirection.z;
 				if (room.runtime.ballPosition.z > PONG2_BALL_MAX_Z)
 					room.runtime.ballPosition.z = PONG2_BALL_MAX_Z;
 			}
 			else if (room.runtime.ballDirection.z < 0) {
-				room.runtime.ballPosition.z -= speed * Math.abs(room.runtime.ballDirection.z);
+				room.runtime.ballPosition.z -= room.runtime.ballSpeed * Math.abs(room.runtime.ballDirection.z);
 				if (room.runtime.ballPosition.z < -PONG2_BALL_MAX_Z)
 					room.runtime.ballPosition.z = -PONG2_BALL_MAX_Z;
 			} else
 			{
 				room.runtime.ballDirection.z *= -1;
-				room.runtime.resetBallRotation = true;
 			}
 
 			if (room.runtime.ballDirection.z > PONG2_BALL_MAX_Z_DIR)
@@ -908,19 +1001,12 @@ io.on('connection', socket => {
 				room.runtime.ballDirection.z *= ratio;
 			}
 
-			// update ball rotation
-			const angle = Math.atan2(room.runtime.ballDirection.z, room.runtime.ballDirection.x);
-			const rotationX = Math.cos(angle) * (Math.PI / 4 / 5);
-			const rotationZ = Math.sin(angle) * (Math.PI / 4 / 5);
-
 			io.to(room.id).emit('gameStatus', {
 				leftScore: room.runtime.score.l,
 				rightScore: room.runtime.score.r,
 				ballX: room.runtime.ballPosition.x,
 				ballZ: room.runtime.ballPosition.z,
-				resetRotation: room.runtime.resetBallRotation,
-				rotationX: rotationX,
-				rotationZ: rotationZ,
+				ballSpeed: room.runtime.ballSpeed,
 				leftPaddleZ: room.runtime.paddleZ.l,
 				rightPaddleZ: room.runtime.paddleZ.r
 			});
@@ -931,7 +1017,7 @@ io.on('connection', socket => {
 	}
 
 	// Paddle bounce and goal
-	socket.on('ballHit', ({ hit }) => {
+	socket.on('ballHit', ({ gameType, hit }) => {
 		if (!connected || !hit)
 			return ;
 
@@ -951,9 +1037,8 @@ io.on('connection', socket => {
 				room.runtime.ballDirection.x *= ratio;
 				room.runtime.ballDirection.z *= ratio;
 			}
-			room.runtime.resetBallRotation = true;
 		} else {						// Scored a point
-			// TODO: SCore a point, reset ball
+			// TODO: Score a point, reset ball pos and speed
 		}
 	});
 

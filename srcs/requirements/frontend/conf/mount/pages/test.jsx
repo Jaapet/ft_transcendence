@@ -65,7 +65,7 @@ const Royal = () => {
       // Iterate over the players object
       Object.keys(players).forEach(playerKey => {
         const player = players[playerKey];
-        console.log(`Player ${player.id} (${player.elo})`);
+        console.log(`Player ${player.id} (${player.elo}) (${player.role})`);
       });
     });
 
