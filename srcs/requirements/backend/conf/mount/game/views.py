@@ -34,6 +34,13 @@ from .serializers import (
 	MatchRSerializer
 )
 
+# Queries the health status of the backend
+class HealthCheckAPIView(APIView):
+	permission_classes = [permissions.AllowAny]
+
+	def get(self, request):
+		return Response({'detail': 'Healthy'}, status=status.HTTP_200_OK)
+
 # Enables 2FA for current user
 class Enable2FAView(APIView):
 	permission_classes = [permissions.IsAuthenticated]

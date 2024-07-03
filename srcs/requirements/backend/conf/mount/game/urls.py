@@ -1,6 +1,7 @@
 from django.urls import include, path
 from rest_framework import routers
 from .views import (
+	HealthCheckAPIView,
 	CustomTokenObtainPairView,
 	Enable2FAView,
 	Disable2FAView,
@@ -37,6 +38,7 @@ router.register(r'royal_matches', MatchRViewSet)
 
 urlpatterns = [
 	path('', include(router.urls)),
+	path('health/', HealthCheckAPIView.as_view(), name='health_check'),
 	path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
 	path('token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
 	path('user/', MemberAPIView.as_view(), name='login'),
