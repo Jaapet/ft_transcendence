@@ -485,8 +485,8 @@ const Pong = () => {
 		let startGameplay = false;
 
 		/// CONTROLS
-		document.addEventListener('keydown', function(event)
-		{
+		function handleKeyDown(event) {
+			console.log(event.key); // debug
 			switch (event.key) {
 				case "ArrowUp":
 					paddleUp = true;
@@ -497,11 +497,11 @@ const Pong = () => {
 					socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keydown' } });
 					break;
 			}
-		});
+		}
+		document.addEventListener('keydown', handleKeyDown);
 
-		document.addEventListener('keyup', function(event)
-		{
-			console.log(event.key);
+		function handleKeyUp(event) {
+			console.log(event.key); // debug
 			switch (event.key) {
 				case "ArrowUp":
 					paddleUp = false;
@@ -512,7 +512,8 @@ const Pong = () => {
 					socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keyup' } });
 					break;
 			}
-		});
+		}
+		document.addEventListener('keyup', handleKeyUp);
 
 		/// RENDER
 		var frame = 0;
@@ -611,7 +612,7 @@ const Pong = () => {
 		// TODO: Check if these are synced with server-side code
 		const PADDLE_SPEED = 1.5;
 		const BASE_BALL_SPEED = 2;
-		const BALL_MAX_X = 41;
+		const BALL_MAX_X = 41; // TODO: Augment this
 		const BALL_MAX_Z = 20;
 		const PADDLE_MAX_Z = 16.5;
 		const BALL_MAX_Z_DIR = 0.6;
@@ -782,7 +783,10 @@ const Pong = () => {
 
 		return () =>
 		{
+			console.log("Entered useEffect's return function"); // debug
 			socket.disconnect();
+			document.removeEventListener('keydown', handleKeyDown);
+			document.removeEventListener('keyup', handleKeyUp);
 
 			// Dispose of Three.js objects
 			scene.traverse((object) =>
