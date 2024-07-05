@@ -8,15 +8,32 @@ import styles from '../styles/game.module.css';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { AnimationMixer } from "three";
 import { useAuth } from '../context/AuthenticationContext';
+import { useGame } from '../context/GameContext';
 
 const Pong = () => {
 	console.log(`PONG_CMPT: Entered Pong Component`); // debug
 	const { user } = useAuth();
+	const {
+		inQueue,
+		inGame,
+		gameStarted,
+		gameType,
+		room,
+		players,
+		setGameStarted,
+		updateRoom,
+		updatePlayers,
+		resetAll
+	} = useGame();
 	const canvasRef = useRef(null);
 
 	useEffect(() => {
-		if (!user)
+		if (!user || !gameType || gameType !== 'pong2' || !setGameStarted || !updateRoom || !updatePlayers || !resetAll)
 			return ;
+
+		console.log('INQUEUE:', inQueue); // debug
+		console.log('INGAME:', inGame); // debug
+		console.log('GAMETYPE:', gameType); // debug
 
 		console.log(`PONG_CMPT: Entered useEffect`); // debug
 		const socket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`);
@@ -32,6 +49,12 @@ const Pong = () => {
 		});
 		socket.on('disconnect', () => {
 			console.log('Disconnected from websocket server');
+		});
+
+		socket.on('updateRoom', ({ room, players }) => {
+			console.log('Room updated to', room); // debug
+			console.log('With players:', players); // debug
+			updateRoom(room, players);
 		});
 
 		/// SCENE
@@ -796,10 +819,52 @@ const Pong = () => {
 		};
 	}, [user]);
 
+	// TODO: Waitlist is here
+
+	let testmessage = <></>;
+	let hidden = '';
+	if (!room) {
+		hidden = 'hidden';
+		testmessage = (
+			<div>
+				<p>Not in a room</p>
+			</div>
+		);
+	}
+	else if (inQueue) {
+		hidden = 'hidden';
+		testmessage = (
+			<div>
+				<p>In {gameType} waitlist</p>
+				<ul>
+					{ players.map(player => (
+						<li key={player.id}>{player.id}-{player.elo} ({player.role})</li>
+					)) }
+				</ul>
+			</div>
+		);
+	}
+	else if (!gameStarted) {
+		hidden = 'hidden';
+		testmessage = (
+			<div>
+				<p>In {gameType} room, game has not started</p>
+				<ul>
+					{ Object.entries(players).map(([key, player]) => (
+						<li key={key}>{player.id}-{player.elo} ({player.role})</li>
+					)) }
+				</ul>
+			</div>
+		);
+	} else {
+		hidden = '';
+	}
+
 	return (
 		<div>
+			{testmessage}
 			<div className={styles.canvasWrapper}>
-				<canvas ref={canvasRef} id="pong-canvas" className={styles.canvas} width="1000" height="700"></canvas>
+				<canvas hidden={hidden} ref={canvasRef} id="pong-canvas" className={styles.canvas} width="1000" height="700"></canvas>
 			</div>
 		</div>
 	);

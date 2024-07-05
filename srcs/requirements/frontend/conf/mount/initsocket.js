@@ -536,18 +536,23 @@ io.on('connection', socket => {
 			return ;
 
 		role = '';
+		roomType = '';
 		switch (gameType) {
 			case 'pong3':
 				role = choosePong3Role(room);
+				roomType = gameType;
 				break ;
 			case 'royal':
 				role = chooseRoyalRole(room);
+				roomType = gameType;
 				break ;
 			case 'pong2':
 				role = choosePong2Role(room);
+				roomType = gameType;
 				break ;
 			default:
 				role = 'pending';
+				roomType = 'queue';
 		}
 
 		if (room && socket) {
@@ -560,8 +565,15 @@ io.on('connection', socket => {
 				role: role,
 				readyTimer: false
 			};
-			// DEBUG
-			io.to(socket.id).emit('info', { message: `You (elo ${userELO}) joined room ${room.id}, room elo ${room.elo}` });//[${gameType}]
+			io.to(socket.id).emit('info', { message: `You (elo ${userELO}) joined room ${room.id}, room elo ${room.elo}` }); // debug
+			io.to(room.id).emit('updateRoom', {
+				room: {
+					type: roomType,
+					id: room.id,
+					elo: room.elo
+				},
+				players: room.players
+			});
 			console.log("\n\nCurrent rooms structure:", JSON.stringify(rooms, null, 2));
 		}
 	}

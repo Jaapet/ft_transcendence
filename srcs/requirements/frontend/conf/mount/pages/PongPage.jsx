@@ -1,10 +1,13 @@
 import React from 'react';
+import { useEffect } from 'react';
 import Pong from '../components/pong';
 import styles from '../styles/base.module.css';
 import { useAuth } from '../context/AuthenticationContext';
+import { useGame } from '../context/GameContext';
 
 export default function PongPage({ status, detail }) {
 	const { logout } = useAuth();
+	const { joinPong2Game } = useGame();
 
 	const handleLogout = async () => {
 		await logout();
@@ -22,6 +25,10 @@ export default function PongPage({ status, detail }) {
 			</div>
 		);
 	}
+
+	useEffect(() => {
+		joinPong2Game();
+	}, []);
 
 	return (
 	<div className={styles.container}>
