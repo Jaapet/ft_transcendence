@@ -209,7 +209,7 @@ export default function Edit2FAPage({ status, detail, current_user }) {
 	return (
 		<div className={styles.container}>
 
-		<section className={styles.backCard} style={{top: '5vh', paddingTop: '100px', paddingBottom: '100px', paddingRight: '100px'}}>
+		<section className={styles.backCard} style={{top: '5vh', paddingTop: '100px', paddingBottom: '100px', paddingRight: '140px'}}>
 			<Head>
 				<title>Edit 2FA Settings</title>
 			</Head>
