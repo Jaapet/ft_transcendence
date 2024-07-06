@@ -563,38 +563,6 @@ const Pong = () => {
 			scene.add(obj);
 		}
 
-/*
-		function paddleHit(ball, paddles)
-		{
-			function isBallAlignedWithPaddle(ball, paddle)
-			{
-				return (ball.position.z < paddle.position.z + 6 && ball.position.z > paddle.position.z - 6);
-			}
-
-			function paddleHitSafeHitbox(ball, paddle)
-			{
-				if (paddle.position.x < 0)
-					return (ball.position.x < -BALL_MAX_X + 2 && isBallAlignedWithPaddle(ball, paddle));
-				else
-					return (ball.position.x > BALL_MAX_X - 2 && isBallAlignedWithPaddle(ball, paddle));
-			}
-
-			console.log('CHECK PADDLE HIT'); // debug
-			const ballBox = new THREE.Box3().setFromObject(ball);
-			let hit = 0.0;
-			paddles.forEach(paddle => {
-				const paddleBox = new THREE.Box3().setFromObject(paddle);
-				if (ballBox.intersectsBox(paddleBox) || paddleHitSafeHitbox(ball, paddle))
-				{
-					const ballCenter = ballBox.getCenter(new THREE.Vector3());
-					const paddleCenter = paddleBox.getCenter(new THREE.Vector3());
-					const hitVector = ballCenter.clone().sub(paddleCenter);
-					hit = hitVector.z;
-				}
-			});
-			return hit;
-		}
-*/
 		let startRender = Date.now();
 
 		socket.on('gameStart', ({ players }) => {
@@ -632,10 +600,8 @@ const Pong = () => {
 			ballSpeed = ballSpeed;
 			/// X Pos
 			ballObj.position.x = ballX;
-			//ballObj.position.x = Math.min(Math.max(ballObj.position.x, -BALL_MAX_X), BALL_MAX_X);
 			/// Z Pos
 			ballObj.position.z = ballZ;
-			//ballObj.position.z = Math.min(Math.max(ballObj.position.z, -BALL_MAX_Z), BALL_MAX_Z);
 			/// X Dir
 			ballDir[0] = ballDirX;
 			/// Z Dir
