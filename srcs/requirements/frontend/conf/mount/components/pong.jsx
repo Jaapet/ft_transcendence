@@ -38,7 +38,7 @@ const Pong = () => {
 		console.log(`PONG_CMPT: Entered useEffect`); // debug
 		const socket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`);
 		console.log(`PONG_CMPT: Connected to ws server`); // debug
-		socket.emit('join', { gameType: 'pong2', userId: user.id, userELO: user.elo_pong, userAvatar: user.avatar });
+		socket.emit('join', { gameType: 'pong2', userId: user.id, userName: user.username, userELO: user.elo_pong, userAvatar: user.avatar });
 		console.log(`PONG_CMPT: Sent join msg`); // debug
 		// Gérer les événements de connexion et d'erreur
 		socket.on('connect', () => {
@@ -55,6 +55,11 @@ const Pong = () => {
 			console.log('Room updated to', room); // debug
 			console.log('With players:', players); // debug
 			updateRoom(room, players);
+		});
+
+		socket.on('updatePlayers', ({ players }) => {
+			console.log('Room updated with these new players:', players); // debug
+			updatePlayers(players);
 		});
 
 		/// SCENE
@@ -483,6 +488,9 @@ const Pong = () => {
 		let gameStart = false;
 		let startTimer = false;
 		let startGameplay = false;
+		let startTime = Date.now();
+		let currentTime = Date.now();
+		let lastBallBounce = Date.now();
 
 		/// CONTROLS
 		function handleKeyDown(event) {
@@ -555,32 +563,49 @@ const Pong = () => {
 			scene.add(obj);
 		}
 
-		function raquetteHit(ball, paddles)
+
+
+		function paddleHit(ball, paddles)
 		{
+			function isBallAlignedWithPaddle(ball, paddle)
+			{
+				return (ball.position.z < paddle.position.z + 6 && ball.position.z > paddle.position.z - 6);
+			}
+
+			function paddleHitSafeHitbox(ball, paddle)
+			{
+				if (paddle.position.x < 0)
+					return (ball.position.x < -BALL_MAX_X + 2 && isBallAlignedWithPaddle(ball, paddle));
+				else
+					return (ball.position.x > BALL_MAX_X - 2 && isBallAlignedWithPaddle(ball, paddle));
+			}
+
+			console.log('CHECK PADDLE HIT'); // debug
 			const ballBox = new THREE.Box3().setFromObject(ball);
-			var hit = 0.0;
-			paddles.forEach(raquette => {
-				const raquetteBox = new THREE.Box3().setFromObject(raquette);
-				if (ballBox.intersectsBox(raquetteBox))
+			let hit = 0.0;
+			paddles.forEach(paddle => {
+				const paddleBox = new THREE.Box3().setFromObject(paddle);
+				if (ballBox.intersectsBox(paddleBox) || paddleHitSafeHitbox(ball, paddle))
 				{
 					const ballCenter = ballBox.getCenter(new THREE.Vector3());
-					const raquetteCenter = raquetteBox.getCenter(new THREE.Vector3());
-					const hitVector = ballCenter.clone().sub(raquetteCenter);
+					const paddleCenter = paddleBox.getCenter(new THREE.Vector3());
+					const hitVector = ballCenter.clone().sub(paddleCenter);
 					hit = hitVector.z;
 				}
 			});
-			socket.emit('ballHit', { gameType: 'pong2', hit: hit });
+			return hit;
 		}
 
 		socket.on('gameStart', ({ players }) => {
 			console.log(`PONG_CMPT: Received gameStart`); // debug
 			console.log(`PONG_CMPT: Received player list:`, players); // debug
-			for (const player in players) {
-				if (player.id === user.id) {
-					role = player.role;
+			for (const playerKey in players) {
+				if (players[playerKey].id === user.id) {
+					role = players[playerKey].role;
 				}
 			}
 			gameStart = true;
+			setGameStarted(true);
 		});
 
 		socket.on('startTimer', () => {
@@ -590,6 +615,7 @@ const Pong = () => {
 
 		socket.on('startGameplay', () => {
 			startGameplay = true;
+			startTime = Date.now();
 			console.log(`PONG_CMPT: Received startGameplay`); // debug
 		});
 
@@ -601,7 +627,39 @@ const Pong = () => {
 			// Ball
 			ballSpeed = ballSpeed;
 			ballObj.position.x = ballX;
+			ballObj.position.x = Math.min(Math.max(ballObj.position.x, -BALL_MAX_X), BALL_MAX_X);
 			ballObj.position.z = ballZ;
+			ballObj.position.z = Math.min(Math.max(ballObj.position.z, -BALL_MAX_Z), BALL_MAX_Z);
+/*			if ((role === 'leftPaddle' && ballObj.position.x < -BALL_MAX_X + 2)
+				|| (role === 'rightPaddle' && ballObj.position.x > BALL_MAX_X - 2))
+			{
+				// Paddle Bounce
+				let hit = paddleHit(ballObj, paddles);
+				const now = Date.now();
+				if (hit !== 0.0 && now - lastBallBounce > BALL_BOUNCE_MERCY_PERIOD)
+				{
+					console.log("BOUNCE IN FRONT FROM BACK:", hit); // debug
+					socket.emit('ballHit', { gameType: 'pong2', hit: hit });
+					const offset = hit * 0.1;
+					ballDir[0] *= -1;
+					ballDir[1] += offset;
+					ballDir[0] -= offset;
+					const absSum = Math.abs(ballDir[0]) + Math.abs(ballDir[1]);
+					if (absSum !== 1)
+					{
+						const ratio = 1 / absSum;
+						ballDir[0] *= ratio;
+						ballDir[1] *= ratio;
+					}
+					lastBallBounce = Date.now();
+					ballObj.rotation.z = 0;
+					ballObj.rotation.x = 0;
+					ballObj.rotation.y = 0;
+				} else { // Scored a point
+					// TODO: Score a point, reset ball pos and speed
+				}
+			}*/
+			console.log('BACK BALL X:', ballX); // debug
 
 			// Paddles
 			paddles[0].position.z = leftPaddleZ;
@@ -610,12 +668,16 @@ const Pong = () => {
 
 		// Gameplay constants
 		// TODO: Check if these are synced with server-side code
+		const FPS = 50;
 		const PADDLE_SPEED = 1.5;
 		const BASE_BALL_SPEED = 2;
-		const BALL_MAX_X = 41; // TODO: Augment this
+		const MAX_BALL_SPEED = 8;
+		const BALL_ACCELERATION_RATE = 0.01; // +0.01 speed every second
+		const BALL_MAX_X = 42.5; // TODO: Augment this
 		const BALL_MAX_Z = 20;
 		const PADDLE_MAX_Z = 16.5;
 		const BALL_MAX_Z_DIR = 0.6;
+		const BALL_BOUNCE_MERCY_PERIOD = 100; // In ms
 		let ballSpeed = BASE_BALL_SPEED;
 
 		let first = 0;
@@ -648,86 +710,100 @@ const Pong = () => {
 					first = 2;
 				}
 				if (startGameplay) {
-					// Client-side game updates
-
-					// Paddle Movement
-					/// Left Paddle
-					if (role === 'leftPaddle') {
-						if (paddleUp)
-							paddles[0].position.z -= PADDLE_SPEED;
-						if (paddleDown)
-							paddles[0].position.z += PADDLE_SPEED;
-						paddles[0].position.z = Math.min(Math.max(paddles[0].position.z, -PADDLE_MAX_Z), PADDLE_MAX_Z);
-					}
-					/// Right Paddle
-					else if (role === 'rightPaddle') {
-						if (paddleUp)
-							paddles[1].position.z -= PADDLE_SPEED;
-						if (paddleDown)
-							paddles[1].position.z += PADDLE_SPEED;
-						paddles[1].position.z = Math.min(Math.max(paddles[1].position.z, -PADDLE_MAX_Z), PADDLE_MAX_Z);
-					}
-
-					// Ball movement
-					/// X
-					const displaceX = ballSpeed * Math.abs(ballDir[0]);
-					if (ballDir[0] > 0) {
-						ballObj.position.x += displaceX;
-					} else if (ballDir[0] < 0) {
-						ballObj.position.x -= displaceX;
-					}
-					ballObj.position.x = Math.min(Math.max(ballObj.position.x, -BALL_MAX_X), BALL_MAX_X);
-					/// Z
-					const displaceZ = ballSpeed * Math.abs(ballDir[1]);
-					if (ballDir[1] > 0) {
-						ballObj.position.z += displaceZ;
-					} else if (ballDir[1] < 0) {
-						ballObj.position.z -= displaceZ;
-					} else {
-						ballDir[1] *= -1;
-						ballObj.rotation.x = 0;
-						ballObj.rotation.y = 0;
-						ballObj.rotation.z = 0;
-					}
-					ballObj.position.z = Math.min(Math.max(ballObj.position.z, -BALL_MAX_Z), BALL_MAX_Z);
-					ballDir[1] = Math.min(Math.max(ballDir[1], -BALL_MAX_Z_DIR), BALL_MAX_Z_DIR);
-
-					const absSum = Math.abs(ballDir[0]) + Math.abs(ballDir[1]);
-					if (absSum !== 1)
+					currentTime = Date.now();
+					if (currentTime - startTime >= 1000 / FPS)
 					{
-						const ratio = 1 / absSum;
-						ballDir[0] *= ratio;
-						ballDir[1] *= ratio;
-					}
+						startTime = Date.now();
+						// Client-side game updates
 
-					// Ball Rotation
-					const angle = Math.atan2(ballDir[1], ballDir[0]);
-					const rotationX = Math.cos(angle) * (Math.PI / 4 / 5);
-					const rotationZ = Math.sin(angle) * (Math.PI / 4 / 5);
-					ballObj.rotateX(-rotationX);
-					ballObj.rotateZ(rotationZ);
+						// Paddle Movement
+						/// Left Paddle
+						if (role === 'leftPaddle') {
+							if (paddleUp)
+								paddles[0].position.z -= PADDLE_SPEED;
+							if (paddleDown)
+								paddles[0].position.z += PADDLE_SPEED;
+							paddles[0].position.z = Math.min(Math.max(paddles[0].position.z, -PADDLE_MAX_Z), PADDLE_MAX_Z);
+						}
+						/// Right Paddle
+						else if (role === 'rightPaddle') {
+							if (paddleUp)
+								paddles[1].position.z -= PADDLE_SPEED;
+							if (paddleDown)
+								paddles[1].position.z += PADDLE_SPEED;
+							paddles[1].position.z = Math.min(Math.max(paddles[1].position.z, -PADDLE_MAX_Z), PADDLE_MAX_Z);
+						}
 
-					// Paddle Bounce
-					let hit = raquetteHit(ballObj, paddles);
-					if (hit !== 0.0)
+						// Ball movement
+						/// X
+						const displaceX = ballSpeed * Math.abs(ballDir[0]);
+						if (ballDir[0] > 0)
+							ballObj.position.x += displaceX;
+						else if (ballDir[0] < 0)
+							ballObj.position.x -= displaceX;
+						console.log('FRONT BALL X:', ballObj.position.x); // debug
+						ballObj.position.x = Math.min(Math.max(ballObj.position.x, -BALL_MAX_X), BALL_MAX_X);
+						if ((role === 'leftPaddle' && ballObj.position.x < -BALL_MAX_X + 2)
+							|| (role === 'rightPaddle' && ballObj.position.x > BALL_MAX_X - 2))
 						{
-							let offset = hit * 0.1;
-							ballDir[0] *= -1;
-							ballDir[1] += offset;
-							ballDir[0] -= offset;
-							const absSum = Math.abs(ballDir[0]) + Math.abs(ballDir[1]);
-							if (absSum !== 1)
+							// Paddle Bounce
+							let hit = paddleHit(ballObj, paddles);
+							const now = Date.now();
+							if (hit !== 0.0 && now - lastBallBounce > BALL_BOUNCE_MERCY_PERIOD)
 							{
-								const ratio = 1 / absSum;
-								ballDir[0] *= ratio;
-								ballDir[1] *= ratio;
+								console.log("BOUNCE IN FRONT:", hit); // debug
+								socket.emit('ballHit', { gameType: 'pong2', hit: hit });
+								const offset = hit * 0.1;
+								ballDir[0] *= -1;
+								ballDir[1] += offset;
+								ballDir[0] -= offset;
+								const absSum = Math.abs(ballDir[0]) + Math.abs(ballDir[1]);
+								if (absSum !== 1)
+								{
+									const ratio = 1 / absSum;
+									ballDir[0] *= ratio;
+									ballDir[1] *= ratio;
+								}
+								lastBallBounce = Date.now();
+								ballObj.rotation.z = 0;
+								ballObj.rotation.x = 0;
+								ballObj.rotation.y = 0;
+							} else { // Scored a point
+								// TODO: Score a point, reset ball pos and speed
 							}
-							ballObj.rotation.z = 0;
+						}
+						/// Z
+						const displaceZ = ballSpeed * Math.abs(ballDir[1]);
+						if (ballDir[1] > 0) {
+							ballObj.position.z += displaceZ;
+						} else if (ballDir[1] < 0) {
+							ballObj.position.z -= displaceZ;
+						} else {
+							ballDir[1] *= -1;
 							ballObj.rotation.x = 0;
 							ballObj.rotation.y = 0;
+							ballObj.rotation.z = 0;
 						}
-				} else { // Scored a point
-					// TODO: Score a point, reset ball pos and speed
+						ballObj.position.z = Math.min(Math.max(ballObj.position.z, -BALL_MAX_Z), BALL_MAX_Z);
+
+						// Ball Rotation
+						const angle = Math.atan2(ballDir[1], ballDir[0]);
+						const rotationX = Math.cos(angle) * (Math.PI / 4 / 5);
+						const rotationZ = Math.sin(angle) * (Math.PI / 4 / 5);
+						ballObj.rotateX(-rotationX);
+						ballObj.rotateZ(rotationZ);
+
+						// Clamp Ball Z Direction
+						ballDir[1] = Math.min(Math.max(ballDir[1], -BALL_MAX_Z_DIR), BALL_MAX_Z_DIR);
+
+						const absSum = Math.abs(ballDir[0]) + Math.abs(ballDir[1]);
+						if (absSum !== 1)
+						{
+							const ratio = 1 / absSum;
+							ballDir[0] *= ratio;
+							ballDir[1] *= ratio;
+						}
+					}
 				}
 			}
 			else if (frame > 4)
@@ -830,7 +906,7 @@ const Pong = () => {
 	if (!room) {
 		hidden = 'hidden';
 		testmessage = (
-			<div>
+			<div className="card">
 				<p>Not in a room</p>
 			</div>
 		);
@@ -838,12 +914,12 @@ const Pong = () => {
 	else if (inQueue) {
 		hidden = 'hidden';
 		testmessage = (
-			<div>
+			<div className="card">
 				<p>In {gameType} waitlist</p>
 				<ul>
-					{ players.map(player => (
-						<li key={player.id}>{player.id}-{player.elo} ({player.role})</li>
-					)) }
+					{ players ? Object.entries(players).map(([key, player]) => (
+						<li key={key}>{player.username} ELO={player.elo} ({player.role})</li>
+					)) : <></> }
 				</ul>
 			</div>
 		);
@@ -851,12 +927,12 @@ const Pong = () => {
 	else if (!gameStarted) {
 		hidden = 'hidden';
 		testmessage = (
-			<div>
-				<p>In {gameType} room, game has not started</p>
+			<div className="card">
+				<p>In {gameType} room { room?.id }, game has not started</p>
 				<ul>
-					{ Object.entries(players).map(([key, player]) => (
-						<li key={key}>{player.id}-{player.elo} ({player.role})</li>
-					)) }
+					{ players ? Object.entries(players).map(([key, player]) => (
+						<li key={key}>{player.username} ELO={player.elo} ({player.role})</li>
+					)) : <></> }
 				</ul>
 			</div>
 		);

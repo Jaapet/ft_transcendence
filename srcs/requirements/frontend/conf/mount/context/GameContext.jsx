@@ -52,7 +52,7 @@ export const GameProvider = ({ children }) => {
 	}
 
 	// Sets Players
-	const updatePlayers = () => {
+	const updatePlayers = (players) => {
 		setPlayers(players)
 	}
 

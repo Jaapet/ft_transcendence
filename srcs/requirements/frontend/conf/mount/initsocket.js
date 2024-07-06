@@ -65,14 +65,21 @@ const FIND_ROOM_RATE = 0.5;			// Try to find a room every 0.5 seconds
 
 // Gameplay constants
 // TODO: Check if these are synced with client-side code
+/// PONG 2
+const PONG2_FPS = 40;
 const PONG2_PADDLE_SPEED = 1.5;
 const PONG2_BASE_BALL_SPEED = 2;
 const PONG2_MAX_BALL_SPEED = 8;
 const PONG2_BALL_ACCELERATION_RATE = 0.01; // +0.01 speed every second
-const PONG2_BALL_MAX_X = 41; // TODO: Augment this
+const PONG2_BALL_MAX_X = 42.5; // TODO: Augment this
 const PONG2_BALL_MAX_Z = 20;
 const PONG2_PADDLE_MAX_Z = 16.5;
 const PONG2_BALL_MAX_Z_DIR = 0.6;
+const PONG2_BALL_BOUNCE_MERCY_PERIOD = 100; // In ms
+
+/// PONG 3
+
+/// ROYAL
 
 // TODO: Make client send gameType and maxPlayers in new message that will set the player's room
 io.on('connection', socket => {
@@ -97,11 +104,11 @@ io.on('connection', socket => {
 	});
 
 	// JOIN HANDLER (https://transcendence.gmcg.fr:50581/test)
-	socket.on('join', ({ gameType, userId, userELO, userAvatar }) => {
+	socket.on('join', ({ gameType, userId, userName, userELO, userAvatar }) => {
 		if (!connected[socket.id])
 			return ;
 
-		console.log(`JOIN: New user ${userId}`); // debug
+		console.log(`JOIN: New user ${userName}`); // debug
 
 		// Sets queueType depending on gameType
 		queueType = null;
@@ -116,14 +123,14 @@ io.on('connection', socket => {
 				queueType = "queue2";
 		}
 
-		console.log(`JOIN: Searching for ${queueType} for user ${userId}`); // debug
+		console.log(`JOIN: Searching for ${queueType} for user ${userName}`); // debug
 		queue = null;
 		queue = findRoom(queueType);
 		// Create queue if !queue and join it
 		if (!queue)
 			queue = createRoom(queueType, userELO);
-		addPlayerToRoom(gameType, queue, socket, userId, userELO, userAvatar);
-		console.log(`JOIN: User ${userId} now in waitlist`); // debug
+		addPlayerToRoom(gameType, queue, socket, userId, userName, userELO, userAvatar);
+		console.log(`JOIN: User ${userName} now in waitlist`); // debug
 
 		room = null;
 		if (playerInRoom(queueType, queue.id))
@@ -131,26 +138,26 @@ io.on('connection', socket => {
 			// Join Existing Room
 			if (findRoom(gameType))
 			{
-				console.log(`JOIN: User ${userId} joining existing room`); // debug
+				console.log(`JOIN: User ${userName} joining existing room`); // debug
 				room = findRoomElo(gameType, userELO);
 				if (room)
 				{
-					console.log(`JOIN: User ${userId} found room ${room.id} (ELO=${room.elo})`); // debug
+					console.log(`JOIN: User ${userName} found room ${room.id} (ELO=${room.elo})`); // debug
 					removePlayerFromQueue(queueType, queue.id, socket.id);
-					console.log(`JOIN: User ${userId} removed from queue`); // debug
-					addPlayerToRoom(gameType, room, socket, userId, userELO, userAvatar);
-					console.log(`JOIN: User ${userId} added to room ${room.id}`); // debug
+					console.log(`JOIN: User ${userName} removed from queue`); // debug
+					addPlayerToRoom(gameType, room, socket, userId, userName, userELO, userAvatar);
+					console.log(`JOIN: User ${userName} added to room ${room.id}`); // debug
 				}
 			}
 			else // Create New Room
 			{
-				console.log(`JOIN: User ${userId} creating new room`); // debug
+				console.log(`JOIN: User ${userName} creating new room`); // debug
 				room = createRoom(gameType, userELO);
-				console.log(`JOIN: User ${userId} created room ${room.id}`); // debug
+				console.log(`JOIN: User ${userName} created room ${room.id}`); // debug
 				removePlayerFromQueue(queueType, queue.id, socket.id);
-				console.log(`JOIN: User ${userId} removed from queue`); // debug
-				addPlayerToRoom(gameType, room, socket, userId, userELO, userAvatar);
-				console.log(`JOIN: User ${userId} added to room ${room.id}`); // debug
+				console.log(`JOIN: User ${userName} removed from queue`); // debug
+				addPlayerToRoom(gameType, room, socket, userId, userName, userELO, userAvatar);
+				console.log(`JOIN: User ${userName} added to room ${room.id}`); // debug
 			}
 			// // Create New Room
 			// if (/*roomPlayerNb(queueType, queue.id) === 1 &&*/ !findRoom(gameType))
@@ -158,7 +165,7 @@ io.on('connection', socket => {
 			// 	// io.to(socket.id).emit('info', { message: `creating` });
 			// 	room = createRoom(gameType, userELO);
 			// 	removePlayerFromQueue(queueType, queue.id, socket.id);
-			// 	addPlayerToRoom(gameType, room, socket, userId, userELO, userAvatar);
+			// 	addPlayerToRoom(gameType, room, socket, userId, userName, userELO, userAvatar);
 			// }
 			// else // Join Existing Room
 			// {
@@ -181,11 +188,11 @@ io.on('connection', socket => {
 		else
 		{
 			now = Date.now();
-			FindRoomLoop(now, gameType, queue, queueType, userId, userELO, userAvatar);
+			FindRoomLoop(now, gameType, queue, queueType, userId, userName, userELO, userAvatar);
 		}
 	});
 
-	function FindRoomLoop(startTime, gameType, queue, queueType, userId, userELO, userAvatar)
+	function FindRoomLoop(startTime, gameType, queue, queueType, userId, userName, userELO, userAvatar)
 	{
 		if (!connected[socket.id])
 			return ;
@@ -199,7 +206,7 @@ io.on('connection', socket => {
 		{
 			room = createRoom(gameType, userELO);
 			removePlayerFromQueue(queueType, queue.id, socket.id);
-			addPlayerToRoom(gameType, room, socket, userId, userELO, userAvatar);
+			addPlayerToRoom(gameType, room, socket, userId, userName, userELO, userAvatar);
 		}
 		else // Try to find a room
 		{
@@ -208,7 +215,7 @@ io.on('connection', socket => {
 			{
 				io.to(socket.id).emit('info', { message: `Found room ${room.id} (ELO=${room.elo})` }); // debug
 				removePlayerFromQueue(queueType, queue.id, socket.id);
-				addPlayerToRoom(gameType, room, socket, userId, userELO, userAvatar);
+				addPlayerToRoom(gameType, room, socket, userId, userName, userELO, userAvatar);
 			}
 		}
 
@@ -220,7 +227,7 @@ io.on('connection', socket => {
 			return ;
 		}
 		setTimeout(() => {
-			FindRoomLoop(startTime, gameType, queue, queueType, userId, userELO, userAvatar);
+			FindRoomLoop(startTime, gameType, queue, queueType, userId, userName, userELO, userAvatar);
 		}, FIND_ROOM_RATE * 1000);
 	}
 
@@ -408,6 +415,7 @@ io.on('connection', socket => {
 				ballPosition: { x: 0, z: 0 },
 				ballDirection: { x: 0.99999, z: 0.00001 },
 				ballSpeed: PONG2_BASE_BALL_SPEED,
+				lastBallBounce: now,
 				paddleZ: { l: 0, r: 0 },
 				goUp: { l: false, r: false },
 				goDown: { l: false, r: false }
@@ -531,7 +539,7 @@ io.on('connection', socket => {
 	// Adds a player to a room
 	// Does nothing if either room or socket does not exist
 	// Does nothing if elo doesn't match
-	function addPlayerToRoom(gameType, room, socket, userId, userELO, userAvatar) {
+	function addPlayerToRoom(gameType, room, socket, userId, userName, userELO, userAvatar) {
 		if (!connected[socket.id])
 			return ;
 
@@ -559,14 +567,16 @@ io.on('connection', socket => {
 			socket.join(room.id);
 			room.players[socket.id] = {
 				id: userId,
+				username: userName,
 				ready: false,
 				elo: userELO,
 				avatar: userAvatar,
 				role: role,
 				readyTimer: false
 			};
-			io.to(socket.id).emit('info', { message: `You (elo ${userELO}) joined room ${room.id}, room elo ${room.elo}` }); // debug
-			io.to(room.id).emit('updateRoom', {
+			io.to(socket.id).emit('info', { message: `You (${userName} ELO ${userELO}) joined room ${room.id}, room elo ${room.elo}` }); // debug
+			// Send new room and its players to new user
+			io.to(socket.id).emit('updateRoom', {
 				room: {
 					type: roomType,
 					id: room.id,
@@ -574,7 +584,9 @@ io.on('connection', socket => {
 				},
 				players: room.players
 			});
-			console.log("\n\nCurrent rooms structure:", JSON.stringify(rooms, null, 2));
+			// Update all players of new player
+			io.to(room.id).emit('updatePlayers', { players: room.players });
+			console.log("\n\nCurrent rooms structure:", JSON.stringify(rooms, null, 2)); // debug
 		}
 	}
 
@@ -959,62 +971,41 @@ io.on('connection', socket => {
 			// update paddle positions
 			/// Left Paddle
 			//// Go Up
-			if (room.runtime.goUp.l) {
+			if (room.runtime.goUp.l)
 				room.runtime.paddleZ.l -= PONG2_PADDLE_SPEED;
-				if (room.runtime.paddleZ.l < -PONG2_PADDLE_MAX_Z)
-					room.runtime.paddleZ.l = -PONG2_PADDLE_MAX_Z;
-			}
 			//// Go Down
-			if (room.runtime.goDown.l) {
+			if (room.runtime.goDown.l)
 				room.runtime.paddleZ.l += PONG2_PADDLE_SPEED;
-				if (room.runtime.paddleZ.l > PONG2_PADDLE_MAX_Z)
-					room.runtime.paddleZ.l = PONG2_PADDLE_MAX_Z;
-			}
+			room.runtime.paddleZ.l = Math.min(Math.max(room.runtime.paddleZ.l, -PONG2_PADDLE_MAX_Z), PONG2_PADDLE_MAX_Z);
 			/// Right Paddle
 			//// Go Up
-			if (room.runtime.goUp.r) {
+			if (room.runtime.goUp.r)
 				room.runtime.paddleZ.r -= PONG2_PADDLE_SPEED;
-				if (room.runtime.paddleZ.r < -PONG2_PADDLE_MAX_Z)
-					room.runtime.paddleZ.r = -PONG2_PADDLE_MAX_Z;
-			}
 			//// Go Down
-			if (room.runtime.goDown.r) {
+			if (room.runtime.goDown.r)
 				room.runtime.paddleZ.r += PONG2_PADDLE_SPEED;
-				if (room.runtime.paddleZ.r > PONG2_PADDLE_MAX_Z)
-					room.runtime.paddleZ.r = PONG2_PADDLE_MAX_Z;
-			}
+			room.runtime.paddleZ.r = Math.min(Math.max(room.runtime.paddleZ.r, -PONG2_PADDLE_MAX_Z), PONG2_PADDLE_MAX_Z);
 
 			// update ball position
 			/// Update X
-			if (room.runtime.ballDirection.x > 0) {
-				room.runtime.ballPosition.x += room.runtime.ballSpeed * room.runtime.ballDirection.x;
-				if (room.runtime.ballPosition.x > PONG2_BALL_MAX_X)
-					room.runtime.ballPosition.x = PONG2_BALL_MAX_X;
-			}
-			else if (room.runtime.ballDirection.x < 0) {
-				room.runtime.ballPosition.x -= room.runtime.ballSpeed * Math.abs(room.runtime.ballDirection.x);
-				if (room.runtime.ballPosition.x < -PONG2_BALL_MAX_X)
-					room.runtime.ballPosition.x = -PONG2_BALL_MAX_X;
-			}
-			/// Update Z
-			if (room.runtime.ballDirection.z > 0) {
-				room.runtime.ballPosition.z += room.runtime.ballSpeed * room.runtime.ballDirection.z;
-				if (room.runtime.ballPosition.z > PONG2_BALL_MAX_Z)
-					room.runtime.ballPosition.z = PONG2_BALL_MAX_Z;
-			}
-			else if (room.runtime.ballDirection.z < 0) {
-				room.runtime.ballPosition.z -= room.runtime.ballSpeed * Math.abs(room.runtime.ballDirection.z);
-				if (room.runtime.ballPosition.z < -PONG2_BALL_MAX_Z)
-					room.runtime.ballPosition.z = -PONG2_BALL_MAX_Z;
-			} else
-			{
-				room.runtime.ballDirection.z *= -1;
-			}
+			const displaceX = room.runtime.ballSpeed * Math.abs(room.runtime.ballDirection.x);
+			if (room.runtime.ballDirection.x > 0)
+				room.runtime.ballPosition.x += displaceX;
+			else if (room.runtime.ballDirection.x < 0)
+				room.runtime.ballPosition.x -= displaceX;
+			room.runtime.ballDirection.x = Math.min(Math.max(room.runtime.ballDirection.x, -PONG2_BALL_MAX_X), PONG2_BALL_MAX_X);
 
-			if (room.runtime.ballDirection.z > PONG2_BALL_MAX_Z_DIR)
-				room.runtime.ballDirection.z = PONG2_BALL_MAX_Z_DIR;
-			if (room.runtime.ballDirection.z < -PONG2_BALL_MAX_Z_DIR)
-				room.runtime.ballDirection.z = -PONG2_BALL_MAX_Z_DIR;
+			/// Update Z
+			const displaceZ = room.runtime.ballSpeed * Math.abs(room.runtime.ballDirection.z);
+			if (room.runtime.ballDirection.z > 0)
+				room.runtime.ballPosition.z += displaceZ;
+			else if (room.runtime.ballDirection.z < 0)
+				room.runtime.ballPosition.z -= displaceZ;
+			else
+				room.runtime.ballDirection.z *= -1;
+			room.runtime.ballPosition.z = Math.min(Math.max(room.runtime.ballPosition.z, -PONG2_BALL_MAX_Z), PONG2_BALL_MAX_Z);
+			/// Clamp Ball Z Direction
+			room.runtime.ballDirection.z = Math.min(Math.max(room.runtime.ballDirection.z, -PONG2_BALL_MAX_Z_DIR), PONG2_BALL_MAX_Z_DIR);
 
 			const absSum = Math.abs(room.runtime.ballDirection.x) + Math.abs(room.runtime.ballDirection.z);
 			if (absSum !== 1)
@@ -1034,34 +1025,35 @@ io.on('connection', socket => {
 				rightPaddleZ: room.runtime.paddleZ.r
 			});
 
-			setTimeout(gameLoop, 20); // 50 fps
+			setTimeout(gameLoop, 1000 / PONG2_FPS);
 		}
 		gameLoop();
 	}
 
 	// Paddle bounce and goal
 	socket.on('ballHit', ({ gameType, hit }) => {
-		if (!connected[socket.id] || !hit)
+		if (!connected[socket.id])
 			return ;
 
 		const room = findRoomByPlayerId(gameType, socket.id);
 		if (!room)
 			return ;
 
-		if (hit !== 0.0) {	// Bounced on paddle
+		/// Check bounce
+		const now = Date.now();
+		if (hit !== 0.0 && now - room.runtime.lastBallBounce > PONG2_BALL_BOUNCE_MERCY_PERIOD) {
+			console.log('BOUNCE IN BACK:', hit); // debug
 			const offset = hit * 0.1;
 			room.runtime.ballDirection.x *= -1;
 			room.runtime.ballDirection.z += offset;
 			room.runtime.ballDirection.x -= offset;
 			const absSum = Math.abs(room.runtime.ballDirection.x) + Math.abs(room.runtime.ballDirection.z);
-			if (absSum !== 1)
-			{
+			if (absSum !== 1) {
 				const ratio = 1 / absSum;
 				room.runtime.ballDirection.x *= ratio;
 				room.runtime.ballDirection.z *= ratio;
 			}
-		} else {						// Scored a point
-			// TODO: Score a point, reset ball pos and speed
+			room.lastBallBounce = Date.now();
 		}
 	});
 
