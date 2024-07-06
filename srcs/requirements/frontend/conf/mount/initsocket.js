@@ -415,7 +415,7 @@ io.on('connection', socket => {
 				ballPosition: { x: 0, z: 0 },
 				ballDirection: { x: 0.99999, z: 0.00001 },
 				ballSpeed: PONG2_BASE_BALL_SPEED,
-				lastBallBounce: now,
+				lastBallBounce: { happened: false, when: now },
 				paddleZ: { l: 0, r: 0 },
 				goUp: { l: false, r: false },
 				goDown: { l: false, r: false }
@@ -958,6 +958,22 @@ io.on('connection', socket => {
 		io.to(room.id).emit('startGameplay');
 		console.log(`PONG2_LOOP_READY: Emitted startGameplay to room ${room.id}`); // debug
 
+		// Checks intersection between two non-rotated rectangles
+		// rectangles should be represented as [left, top, right, bottom]
+		// Returns { happened, hit } where happened is a boolean (collided or not)
+		// and hit is the z difference between the two rectangles' centers
+		const checkBounce = (rect1, rect2) => {
+			const [left1, top1, right1, bottom1] = [...rect1];
+			const [left2, top2, right2, bottom2] = [...rect2];
+
+			if (!(top1 < bottom2 || top2 < bottom1 || right1 < left2 || right2 < left1)) {
+				const center1 = bottom1 + ((top1 - bottom1) / 2);
+				const center2 = bottom2 + ((top2 - bottom2) / 2);
+				return ({ happened: true, hit: center1 - center2 });
+			}
+			return ({ happened: false, hit: 0.0 });
+		}
+
 		function gameLoop() {
 			if (!connected[socket.id])
 				return ;
@@ -993,7 +1009,7 @@ io.on('connection', socket => {
 				room.runtime.ballPosition.x += displaceX;
 			else if (room.runtime.ballDirection.x < 0)
 				room.runtime.ballPosition.x -= displaceX;
-			room.runtime.ballDirection.x = Math.min(Math.max(room.runtime.ballDirection.x, -PONG2_BALL_MAX_X), PONG2_BALL_MAX_X);
+			room.runtime.ballPosition.x = Math.min(Math.max(room.runtime.ballPosition.x, -PONG2_BALL_MAX_X), PONG2_BALL_MAX_X);
 
 			/// Update Z
 			const displaceZ = room.runtime.ballSpeed * Math.abs(room.runtime.ballDirection.z);
@@ -1001,12 +1017,66 @@ io.on('connection', socket => {
 				room.runtime.ballPosition.z += displaceZ;
 			else if (room.runtime.ballDirection.z < 0)
 				room.runtime.ballPosition.z -= displaceZ;
-			else
+			/// Bounce on top and bottom walls
+			if (room.runtime.ballPosition.z > PONG2_BALL_MAX_Z
+				|| room.runtime.ballPosition.z < -PONG2_BALL_MAX_Z)
 				room.runtime.ballDirection.z *= -1;
 			room.runtime.ballPosition.z = Math.min(Math.max(room.runtime.ballPosition.z, -PONG2_BALL_MAX_Z), PONG2_BALL_MAX_Z);
+
+			/// Check Bounces
+			function bounce() {
+				// TODO: Check data consistency with client-side
+				//// - Ball has radius of 2
+				const ballRad = 2;
+				const ballX = room.runtime.ballPosition.x;
+				const ballZ = room.runtime.ballPosition.z;
+				//// - Paddle has X-length of 2 and Z-length of 10
+				const paddleRadX = 1;
+				const paddleRadZ = 5;
+				//// - Paddle is either on X = -43 or X = 43
+				let paddleX = -43;
+				let paddleZ = room.runtime.paddleZ.l;
+				if (ballX > 0) {
+					paddleX *= -1;
+					paddleZ = room.runtime.paddleZ.r;
+				}
+				// Only check collision if ball is going in direction of paddle
+				// TODO: Check if Bounce Mercy Period is useful
+				//console.log(`PADDLE=( ${paddleX}, ${paddleZ} ) BALL_DIR_X=${room.runtime.ballDirection.x}`); // debug
+				if (
+					Date.now() - room.runtime.lastBallBounce.when > PONG2_BALL_BOUNCE_MERCY_PERIOD
+					&& ((paddleX < 0 && room.runtime.ballDirection.x < 0)
+						|| (paddleX > 0 && room.runtime.ballDirection.x > 0))
+				) {
+					//// Left, Top, Right, Bottom
+					const { happened, hit } = checkBounce(
+						[ballX - ballRad,				ballZ + ballRad,			ballX + ballRad,			ballZ - ballRad],
+						[paddleX - paddleRadX,	paddleZ + paddleRadZ,	paddleX + paddleRadX,	paddleZ - paddleRadZ]
+					);
+					if (happened) {
+						room.runtime.ballDirection.x *= -1;
+						const offset = hit * 0.1;
+						room.runtime.ballDirection.z += offset;
+						room.runtime.ballDirection.x -= offset;
+						const absSum = Math.abs(room.runtime.ballDirection.x) + Math.abs(room.runtime.ballDirection.z);
+						if (absSum !== 1)
+						{
+							const ratio = 1 / absSum;
+							room.runtime.ballDirection.x *= ratio;
+							room.runtime.ballDirection.z *= ratio;
+						}
+						room.runtime.lastBallBounce.happened = true;
+						room.runtime.lastBallBounce.when = Date.now();
+					}
+				}
+			}
+			if (room.runtime.ballPosition.x > PONG2_BALL_MAX_X - 2.5
+				|| room.runtime.ballPosition.x < -PONG2_BALL_MAX_X + 2.5) {
+					bounce();
+				}
+
 			/// Clamp Ball Z Direction
 			room.runtime.ballDirection.z = Math.min(Math.max(room.runtime.ballDirection.z, -PONG2_BALL_MAX_Z_DIR), PONG2_BALL_MAX_Z_DIR);
-
 			const absSum = Math.abs(room.runtime.ballDirection.x) + Math.abs(room.runtime.ballDirection.z);
 			if (absSum !== 1)
 			{
@@ -1015,22 +1085,28 @@ io.on('connection', socket => {
 				room.runtime.ballDirection.z *= ratio;
 			}
 
+			/// Check if someone scored (if ballX is behind a paddleX and going towards wall)
+
 			io.to(room.id).emit('gameStatus', {
 				leftScore: room.runtime.score.l,
 				rightScore: room.runtime.score.r,
 				ballX: room.runtime.ballPosition.x,
 				ballZ: room.runtime.ballPosition.z,
 				ballSpeed: room.runtime.ballSpeed,
+				ballDirX: room.runtime.ballDirection.x,
+				ballDirZ: room.runtime.ballDirection.z,
+				resetRotation: room.runtime.lastBallBounce.happened,
 				leftPaddleZ: room.runtime.paddleZ.l,
 				rightPaddleZ: room.runtime.paddleZ.r
 			});
+			room.runtime.lastBallBounce.happened = false;
 
 			setTimeout(gameLoop, 1000 / PONG2_FPS);
 		}
 		gameLoop();
 	}
 
-	// Paddle bounce and goal
+/*
 	socket.on('ballHit', ({ gameType, hit }) => {
 		if (!connected[socket.id])
 			return ;
@@ -1056,6 +1132,7 @@ io.on('connection', socket => {
 			room.lastBallBounce = Date.now();
 		}
 	});
+*/
 
 	socket.on('ready', ({ gameType }) => {
 		if (!connected[socket.id] || ['queue2', 'queue3', 'queueR'].includes(gameType))

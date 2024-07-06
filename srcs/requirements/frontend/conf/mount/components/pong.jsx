@@ -563,8 +563,7 @@ const Pong = () => {
 			scene.add(obj);
 		}
 
-
-
+/*
 		function paddleHit(ball, paddles)
 		{
 			function isBallAlignedWithPaddle(ball, paddle)
@@ -595,6 +594,8 @@ const Pong = () => {
 			});
 			return hit;
 		}
+*/
+		let startRender = Date.now();
 
 		socket.on('gameStart', ({ players }) => {
 			console.log(`PONG_CMPT: Received gameStart`); // debug
@@ -610,6 +611,7 @@ const Pong = () => {
 
 		socket.on('startTimer', () => {
 			startTimer = true;
+			startRender = Date.now();
 			console.log(`PONG_CMPT: Received startTimer`); // debug
 		});
 
@@ -622,44 +624,28 @@ const Pong = () => {
 		socket.on('gameStatus', ({
 			leftScore, rightScore,
 			ballX, ballZ, ballSpeed,
+			ballDirX, ballDirZ, resetRotation,
 			leftPaddleZ, rightPaddleZ
 		}) => {
 			// Ball
+			/// Speed
 			ballSpeed = ballSpeed;
+			/// X Pos
 			ballObj.position.x = ballX;
-			ballObj.position.x = Math.min(Math.max(ballObj.position.x, -BALL_MAX_X), BALL_MAX_X);
+			//ballObj.position.x = Math.min(Math.max(ballObj.position.x, -BALL_MAX_X), BALL_MAX_X);
+			/// Z Pos
 			ballObj.position.z = ballZ;
-			ballObj.position.z = Math.min(Math.max(ballObj.position.z, -BALL_MAX_Z), BALL_MAX_Z);
-/*			if ((role === 'leftPaddle' && ballObj.position.x < -BALL_MAX_X + 2)
-				|| (role === 'rightPaddle' && ballObj.position.x > BALL_MAX_X - 2))
-			{
-				// Paddle Bounce
-				let hit = paddleHit(ballObj, paddles);
-				const now = Date.now();
-				if (hit !== 0.0 && now - lastBallBounce > BALL_BOUNCE_MERCY_PERIOD)
-				{
-					console.log("BOUNCE IN FRONT FROM BACK:", hit); // debug
-					socket.emit('ballHit', { gameType: 'pong2', hit: hit });
-					const offset = hit * 0.1;
-					ballDir[0] *= -1;
-					ballDir[1] += offset;
-					ballDir[0] -= offset;
-					const absSum = Math.abs(ballDir[0]) + Math.abs(ballDir[1]);
-					if (absSum !== 1)
-					{
-						const ratio = 1 / absSum;
-						ballDir[0] *= ratio;
-						ballDir[1] *= ratio;
-					}
-					lastBallBounce = Date.now();
-					ballObj.rotation.z = 0;
-					ballObj.rotation.x = 0;
-					ballObj.rotation.y = 0;
-				} else { // Scored a point
-					// TODO: Score a point, reset ball pos and speed
-				}
-			}*/
-			console.log('BACK BALL X:', ballX); // debug
+			//ballObj.position.z = Math.min(Math.max(ballObj.position.z, -BALL_MAX_Z), BALL_MAX_Z);
+			/// X Dir
+			ballDir[0] = ballDirX;
+			/// Z Dir
+			ballDir[1] = ballDirZ;
+			/// Rotation
+			if (resetRotation) {
+				ballObj.rotation.z = 0;
+				ballObj.rotation.x = 0;
+				ballObj.rotation.y = 0;
+			}
 
 			// Paddles
 			paddles[0].position.z = leftPaddleZ;
@@ -702,17 +688,19 @@ const Pong = () => {
 
 			time *= 0.0001;
 			frame += 0.1;
-
-			if (frame > 5)
+			
+			currentTime = Date.now();
+			const timeRendered = (currentTime - startRender) / 1000; // In seconds
+			// Rendering at FPS frames per second
+			if (currentTime - startTime >= 1000 / FPS)
 			{
-				if (first === 1) {
-					socket.emit('ready', { gameType: 'pong2' });
-					first = 2;
-				}
-				if (startGameplay) {
-					currentTime = Date.now();
-					if (currentTime - startTime >= 1000 / FPS)
-					{
+				if (timeRendered > 5)
+				{
+					if (first === 1) {
+						socket.emit('ready', { gameType: 'pong2' });
+						first = 2;
+					}
+					if (startGameplay) {
 						startTime = Date.now();
 						// Client-side game updates
 
@@ -741,44 +729,16 @@ const Pong = () => {
 							ballObj.position.x += displaceX;
 						else if (ballDir[0] < 0)
 							ballObj.position.x -= displaceX;
-						console.log('FRONT BALL X:', ballObj.position.x); // debug
 						ballObj.position.x = Math.min(Math.max(ballObj.position.x, -BALL_MAX_X), BALL_MAX_X);
-						if ((role === 'leftPaddle' && ballObj.position.x < -BALL_MAX_X + 2)
-							|| (role === 'rightPaddle' && ballObj.position.x > BALL_MAX_X - 2))
-						{
-							// Paddle Bounce
-							let hit = paddleHit(ballObj, paddles);
-							const now = Date.now();
-							if (hit !== 0.0 && now - lastBallBounce > BALL_BOUNCE_MERCY_PERIOD)
-							{
-								console.log("BOUNCE IN FRONT:", hit); // debug
-								socket.emit('ballHit', { gameType: 'pong2', hit: hit });
-								const offset = hit * 0.1;
-								ballDir[0] *= -1;
-								ballDir[1] += offset;
-								ballDir[0] -= offset;
-								const absSum = Math.abs(ballDir[0]) + Math.abs(ballDir[1]);
-								if (absSum !== 1)
-								{
-									const ratio = 1 / absSum;
-									ballDir[0] *= ratio;
-									ballDir[1] *= ratio;
-								}
-								lastBallBounce = Date.now();
-								ballObj.rotation.z = 0;
-								ballObj.rotation.x = 0;
-								ballObj.rotation.y = 0;
-							} else { // Scored a point
-								// TODO: Score a point, reset ball pos and speed
-							}
-						}
 						/// Z
 						const displaceZ = ballSpeed * Math.abs(ballDir[1]);
 						if (ballDir[1] > 0) {
 							ballObj.position.z += displaceZ;
 						} else if (ballDir[1] < 0) {
 							ballObj.position.z -= displaceZ;
-						} else {
+						}
+						/// Bounce on top and bottom walls
+						if (ballObj.position.z > BALL_MAX_Z || ballObj.position.z < -BALL_MAX_Z) {
 							ballDir[1] *= -1;
 							ballObj.rotation.x = 0;
 							ballObj.rotation.y = 0;
@@ -805,43 +765,43 @@ const Pong = () => {
 						}
 					}
 				}
-			}
-			else if (frame > 4)
-			{
-				scene.remove(text0);
-				scene.remove(text0r);
-				scene.remove(text1);
-				scene.remove(text1r);
-				scene.remove(text2);
-				scene.remove(text2r);
-				scene.remove(text3);
-				scene.remove(text3r);
-			}
-			else if (frame > 3)
-			{
-				scene.remove(text1);
-				scene.remove(text1r);
-				scene.add(text0);
-				scene.add(text0r);
-			}
-			else if (frame > 2)
-			{
-				scene.remove(text2);
-				scene.remove(text2r);
-				scene.add(text1);
-				scene.add(text1r);
-			}
-			else if (frame > 1)
-			{
-				scene.remove(text3);
-				scene.remove(text3r);
-				scene.add(text2);
-				scene.add(text2r);
-			}
-			else
-			{
-				scene.add(text3);
-				scene.add(text3r);
+				else if (timeRendered > 4)
+				{
+					scene.remove(text0);
+					scene.remove(text0r);
+					scene.remove(text1);
+					scene.remove(text1r);
+					scene.remove(text2);
+					scene.remove(text2r);
+					scene.remove(text3);
+					scene.remove(text3r);
+				}
+				else if (timeRendered > 3)
+				{
+					scene.remove(text1);
+					scene.remove(text1r);
+					scene.add(text0);
+					scene.add(text0r);
+				}
+				else if (timeRendered > 2)
+				{
+					scene.remove(text2);
+					scene.remove(text2r);
+					scene.add(text1);
+					scene.add(text1r);
+				}
+				else if (timeRendered > 1)
+				{
+					scene.remove(text3);
+					scene.remove(text3r);
+					scene.add(text2);
+					scene.add(text2r);
+				}
+				else
+				{
+					scene.add(text3);
+					scene.add(text3r);
+				}
 			}
 
 			renderer.render(scene, camera);
@@ -897,9 +857,9 @@ const Pong = () => {
 			renderer.dispose();
 			cancelAnimationFrame(render); 
 		};
-	}, [user]);
+	}, [user, gameType]);
 
-	// TODO: Waitlist is here
+	// TODO: Waitlist should be here
 
 	let testmessage = <></>;
 	let hidden = '';
