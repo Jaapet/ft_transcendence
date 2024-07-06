@@ -92,7 +92,7 @@ const Pong = () => {
 		camera.position.z = 10;
 
 		/// MODEL 3D
-		const totalmodel = 11;
+		const totalmodel = 0;
 		let actualmodel = 0;
 		let modelsLoaded = false;
 
@@ -102,7 +102,8 @@ const Pong = () => {
 			if (actualmodel === totalmodel)
 				modelsLoaded = true;
 		}
-
+		checkModelsLoaded();
+/*
 		const loadermodel = new GLTFLoader();
 
 		loadermodel.load(
@@ -290,6 +291,7 @@ const Pong = () => {
 			undefined,
 			function (error) { console.error(error); } 
 		);
+*/
 
 		/// TEXT
 		let text3, text3r, text2, text2r, text1, text1r, text0, text0r;
@@ -490,34 +492,46 @@ const Pong = () => {
 		let startGameplay = false;
 		let startTime = Date.now();
 		let currentTime = Date.now();
-		let lastBallBounce = Date.now();
+		let lastLoopTime = Date.now();
 
 		/// CONTROLS
 		function handleKeyDown(event) {
+			if (event.repeat)
+				return ;
 			console.log(event.key); // debug
 			switch (event.key) {
 				case "ArrowUp":
-					paddleUp = true;
-					socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keydown' } });
+					if (!paddleUp) {
+						paddleUp = true;
+						socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keydown' } });
+					}
 					break;
 				case "ArrowDown":
-					paddleDown = true;
-					socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keydown' } });
+					if (!paddleDown) {
+						paddleDown = true;
+						socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keydown' } });
+					}
 					break;
 			}
 		}
 		document.addEventListener('keydown', handleKeyDown);
 
 		function handleKeyUp(event) {
+			if (event.repeat)
+				return ;
 			console.log(event.key); // debug
 			switch (event.key) {
 				case "ArrowUp":
-					paddleUp = false;
-					socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keyup' } });
+					if (paddleUp) {
+						paddleUp = false;
+						socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keyup' } });
+					}
 					break;
 				case "ArrowDown":
-					paddleDown = false;
-					socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keyup' } });
+					if (paddleDown) {
+						paddleDown = false;
+						socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keyup' } });
+					}
 					break;
 			}
 		}
@@ -589,15 +603,16 @@ const Pong = () => {
 			console.log(`PONG_CMPT: Received startGameplay`); // debug
 		});
 
+		let last = Date.now(); // debug
 		socket.on('gameStatus', ({
 			leftScore, rightScore,
-			ballX, ballZ, ballSpeed,
+			ballX, ballZ, newBallSpeed,
 			ballDirX, ballDirZ, resetRotation,
 			leftPaddleZ, rightPaddleZ
 		}) => {
 			// Ball
 			/// Speed
-			ballSpeed = ballSpeed;
+			ballSpeed = newBallSpeed;
 			/// X Pos
 			ballObj.position.x = ballX;
 			/// Z Pos
@@ -620,12 +635,12 @@ const Pong = () => {
 
 		// Gameplay constants
 		// TODO: Check if these are synced with server-side code
-		const FPS = 50;
-		const PADDLE_SPEED = 1.5;
-		const BASE_BALL_SPEED = 2;
-		const MAX_BALL_SPEED = 8;
-		const BALL_ACCELERATION_RATE = 0.01; // +0.01 speed every second
-		const BALL_MAX_X = 42.5; // TODO: Augment this
+		const FPS = 60;
+		const PADDLE_SPEED = 37; // units per second
+		const BASE_BALL_SPEED = 65; // units per second
+		const MAX_BALL_SPEED = 105; // units per second
+		const BALL_ACCELERATION_RATE = 0.6; // unit/s/s
+		const BALL_MAX_X = 42.5;
 		const BALL_MAX_Z = 20;
 		const PADDLE_MAX_Z = 16.5;
 		const BALL_MAX_Z_DIR = 0.6;
@@ -668,36 +683,38 @@ const Pong = () => {
 					}
 					if (startGameplay) {
 						startTime = Date.now();
+						const timeSinceLastLoop = (startTime - lastLoopTime) / 1000; // In seconds
 						// Client-side game updates
 
 						// Paddle Movement
+						const displaceP = PADDLE_SPEED * timeSinceLastLoop;
 						/// Left Paddle
 						if (role === 'leftPaddle') {
 							if (paddleUp)
-								paddles[0].position.z -= PADDLE_SPEED;
+								paddles[0].position.z -= displaceP;
 							if (paddleDown)
-								paddles[0].position.z += PADDLE_SPEED;
+								paddles[0].position.z += displaceP;
 							paddles[0].position.z = Math.min(Math.max(paddles[0].position.z, -PADDLE_MAX_Z), PADDLE_MAX_Z);
 						}
 						/// Right Paddle
 						else if (role === 'rightPaddle') {
 							if (paddleUp)
-								paddles[1].position.z -= PADDLE_SPEED;
+								paddles[1].position.z -= displaceP;
 							if (paddleDown)
-								paddles[1].position.z += PADDLE_SPEED;
+								paddles[1].position.z += displaceP;
 							paddles[1].position.z = Math.min(Math.max(paddles[1].position.z, -PADDLE_MAX_Z), PADDLE_MAX_Z);
 						}
 
 						// Ball movement
 						/// X
-						const displaceX = ballSpeed * Math.abs(ballDir[0]);
+						const displaceX = (ballSpeed * timeSinceLastLoop) * Math.abs(ballDir[0]);
 						if (ballDir[0] > 0)
 							ballObj.position.x += displaceX;
 						else if (ballDir[0] < 0)
 							ballObj.position.x -= displaceX;
 						ballObj.position.x = Math.min(Math.max(ballObj.position.x, -BALL_MAX_X), BALL_MAX_X);
 						/// Z
-						const displaceZ = ballSpeed * Math.abs(ballDir[1]);
+						const displaceZ = (ballSpeed * timeSinceLastLoop) * Math.abs(ballDir[1]);
 						if (ballDir[1] > 0) {
 							ballObj.position.z += displaceZ;
 						} else if (ballDir[1] < 0) {
@@ -712,13 +729,6 @@ const Pong = () => {
 						}
 						ballObj.position.z = Math.min(Math.max(ballObj.position.z, -BALL_MAX_Z), BALL_MAX_Z);
 
-						// Ball Rotation
-						const angle = Math.atan2(ballDir[1], ballDir[0]);
-						const rotationX = Math.cos(angle) * (Math.PI / 4 / 5);
-						const rotationZ = Math.sin(angle) * (Math.PI / 4 / 5);
-						ballObj.rotateX(-rotationX);
-						ballObj.rotateZ(rotationZ);
-
 						// Clamp Ball Z Direction
 						ballDir[1] = Math.min(Math.max(ballDir[1], -BALL_MAX_Z_DIR), BALL_MAX_Z_DIR);
 
@@ -729,6 +739,13 @@ const Pong = () => {
 							ballDir[0] *= ratio;
 							ballDir[1] *= ratio;
 						}
+
+						// Ball Rotation
+						const angle = Math.atan2(ballDir[1], ballDir[0]);
+						const rotationX = Math.cos(angle) * (Math.PI / 4 / 5);
+						const rotationZ = Math.sin(angle) * (Math.PI / 4 / 5);
+						ballObj.rotateX(-rotationX);
+						ballObj.rotateZ(rotationZ);
 					}
 				}
 				else if (timeRendered > 4)
@@ -770,12 +787,14 @@ const Pong = () => {
 				}
 			}
 
+			lastLoopTime = Date.now();
 			renderer.render(scene, camera);
 			requestAnimationFrame(render);
 		}
 		console.log(`PONG_CMPT: Waiting for gameStart`); // debug
 		function waitForGameStart() {
 			if (gameStart) {
+				lastLoopTime = Date.now();
 				requestAnimationFrame(render);
 			} else {
 				setTimeout(waitForGameStart, 250); // Every 0.25 seconds
@@ -870,7 +889,7 @@ const Pong = () => {
 		<div>
 			{testmessage}
 			<div className={styles.canvasWrapper}>
-				<canvas hidden={hidden} ref={canvasRef} id="pong-canvas" className={styles.canvas} width="1000" height="700"></canvas>
+				<canvas hidden={hidden} ref={canvasRef} id="pong-canvas" className={styles.canvas} width="1080" height="720"></canvas>
 			</div>
 		</div>
 	);

@@ -66,12 +66,12 @@ const FIND_ROOM_RATE = 0.5;			// Try to find a room every 0.5 seconds
 // Gameplay constants
 // TODO: Check if these are synced with client-side code
 /// PONG 2
-const PONG2_FPS = 40;
-const PONG2_PADDLE_SPEED = 1.5;
-const PONG2_BASE_BALL_SPEED = 2;
-const PONG2_MAX_BALL_SPEED = 8;
-const PONG2_BALL_ACCELERATION_RATE = 0.01; // +0.01 speed every second
-const PONG2_BALL_MAX_X = 42.5; // TODO: Augment this
+const PONG2_FPS = 60;
+const PONG2_PADDLE_SPEED = 37; // units per second
+const PONG2_BASE_BALL_SPEED = 65; // units per second
+const PONG2_MAX_BALL_SPEED = 150; // units per second
+const PONG2_BALL_ACCELERATION_RATE = 0.6; // unit/s/s
+const PONG2_BALL_MAX_X = 42.5;
 const PONG2_BALL_MAX_Z = 20;
 const PONG2_PADDLE_MAX_Z = 16.5;
 const PONG2_BALL_MAX_Z_DIR = 0.6;
@@ -347,7 +347,7 @@ io.on('connection', socket => {
 			runtime: {
 				startTime: now,
 				ballZeroTime: now,
-				elapsedTime: now,
+				lastLoopTime: now,
 				started: false,
 				score: { l: 0, r: 0 },
 				ballPosition: { x: 0, z: 0 },
@@ -824,32 +824,34 @@ io.on('connection', socket => {
 				return ;
 
 			// update ball speed
-			room.runtime.elapsedTime = Date.now();
-			const currentBallTime = room.runtime.elapsedTime - room.runtime.startTime; // in ms
+			const elapsedTime = Date.now();
+			const timeSinceLastLoop = (elapsedTime - room.runtime.lastLoopTime) / 1000; // In seconds
+			const currentBallTime = elapsedTime - room.runtime.startTime; // in ms
 			room.runtime.ballSpeed = PONG2_BASE_BALL_SPEED + (currentBallTime * (PONG2_BALL_ACCELERATION_RATE / 1000));
 			room.runtime.ballSpeed = Math.min(room.runtime.ballSpeed, PONG2_MAX_BALL_SPEED);
 
 			// update paddle positions
+			const displaceP = PONG2_PADDLE_SPEED * timeSinceLastLoop;
 			/// Left Paddle
 			//// Go Up
 			if (room.runtime.goUp.l)
-				room.runtime.paddleZ.l -= PONG2_PADDLE_SPEED;
+				room.runtime.paddleZ.l -= displaceP;
 			//// Go Down
 			if (room.runtime.goDown.l)
-				room.runtime.paddleZ.l += PONG2_PADDLE_SPEED;
+				room.runtime.paddleZ.l += displaceP;
 			room.runtime.paddleZ.l = Math.min(Math.max(room.runtime.paddleZ.l, -PONG2_PADDLE_MAX_Z), PONG2_PADDLE_MAX_Z);
 			/// Right Paddle
 			//// Go Up
 			if (room.runtime.goUp.r)
-				room.runtime.paddleZ.r -= PONG2_PADDLE_SPEED;
+				room.runtime.paddleZ.r -= displaceP;
 			//// Go Down
 			if (room.runtime.goDown.r)
-				room.runtime.paddleZ.r += PONG2_PADDLE_SPEED;
+				room.runtime.paddleZ.r += displaceP;
 			room.runtime.paddleZ.r = Math.min(Math.max(room.runtime.paddleZ.r, -PONG2_PADDLE_MAX_Z), PONG2_PADDLE_MAX_Z);
 
 			// update ball position
 			/// Update X
-			const displaceX = room.runtime.ballSpeed * Math.abs(room.runtime.ballDirection.x);
+			const displaceX = (room.runtime.ballSpeed * timeSinceLastLoop) * Math.abs(room.runtime.ballDirection.x);
 			if (room.runtime.ballDirection.x > 0)
 				room.runtime.ballPosition.x += displaceX;
 			else if (room.runtime.ballDirection.x < 0)
@@ -857,7 +859,7 @@ io.on('connection', socket => {
 			room.runtime.ballPosition.x = Math.min(Math.max(room.runtime.ballPosition.x, -PONG2_BALL_MAX_X), PONG2_BALL_MAX_X);
 
 			/// Update Z
-			const displaceZ = room.runtime.ballSpeed * Math.abs(room.runtime.ballDirection.z);
+			const displaceZ = (room.runtime.ballSpeed * timeSinceLastLoop) * Math.abs(room.runtime.ballDirection.z);
 			if (room.runtime.ballDirection.z > 0)
 				room.runtime.ballPosition.z += displaceZ;
 			else if (room.runtime.ballDirection.z < 0)
@@ -930,13 +932,17 @@ io.on('connection', socket => {
 			}
 
 			/// Check if someone scored (if ballX is behind a paddleX and going towards wall)
+			if ((room.runtime.ballPosition.x > PONG2_BALL_MAX_X - 2 && room.runtime.ballDirection.x > 0)
+				|| (room.runtime.ballPosition.x < -PONG2_BALL_MAX_X + 2 && room.runtime.ballDirection.x < 0)) {
+					// TODO: Score
+				}
 
 			io.to(room.id).emit('gameStatus', {
 				leftScore: room.runtime.score.l,
 				rightScore: room.runtime.score.r,
 				ballX: room.runtime.ballPosition.x,
 				ballZ: room.runtime.ballPosition.z,
-				ballSpeed: room.runtime.ballSpeed,
+				newBallSpeed: room.runtime.ballSpeed,
 				ballDirX: room.runtime.ballDirection.x,
 				ballDirZ: room.runtime.ballDirection.z,
 				resetRotation: room.runtime.lastBallBounce.happened,
@@ -944,9 +950,11 @@ io.on('connection', socket => {
 				rightPaddleZ: room.runtime.paddleZ.r
 			});
 			room.runtime.lastBallBounce.happened = false;
+			room.runtime.lastLoopTime = Date.now();
 
 			setTimeout(gameLoop, 1000 / PONG2_FPS);
 		}
+		room.runtime.lastLoopTime = Date.now();
 		gameLoop();
 	}
 
