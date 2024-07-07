@@ -12,6 +12,8 @@ const UserTableHead = () => {
 				<th scope="col">ID</th>
 				<th scope="col">Username</th>
 				<th scope="col">Online?</th>
+				<th scope="col">Pong ELO</th>
+				<th scope="col">Royal ELO</th>
 				<th scope="col">Join date</th>
 				<th scope="col">Role</th>
 			</tr>
@@ -54,6 +56,8 @@ const UserTableRow = ({ user }) => {
 				></span>
 			</td>
 
+			<td>{user.elo_pong}</td>
+			<td>{user.elo_royal}</td>
 			<td>{user.join_date}</td>
 			<td>{user.is_admin ? 'Admin' : 'User'}</td>
 		</tr>
