@@ -22,7 +22,7 @@ export default async (req, res) => {
 		}
 
 		// Fetch user
-		const userRes = await fetch(`http://backend:8000/api/members/${id}`, {
+		const userRes = await fetch(`https://backend:8000/api/members/${id}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -45,8 +45,8 @@ export default async (req, res) => {
 			throw new Error(userData.detail || `Could not fetch data for user ${id}`);
 		}
 
-		// Fetch user's last 3 matches
-		const matchRes = await fetch(`http://backend:8000/api/matches/last_player_matches/?player_id=${id}`, {
+		// Fetch user's last 3 pong2 matches
+		const matchRes = await fetch(`https://backend:8000/api/last_matches/?target_id=${id}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',

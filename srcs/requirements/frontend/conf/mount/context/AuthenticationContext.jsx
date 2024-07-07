@@ -2,23 +2,6 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
 const AuthenticationContext = createContext();
-/*
-Member objects contain:
-- username		(CharField)
-- email			(EmailField)
-- avatar		(ImageField)
-- join_date	(DateField)
-- is_admin		(booleanField)
-
-From Match objects:
-- matches_lost
-- matches_won
-
-Indexed on:
-- username
-- join_date + username
-- DESC join_date + username
-*/
 
 export const AuthenticationProvider = ({ children }) => {
 	const [user, setUser] = useState(null);
@@ -124,10 +107,10 @@ export const AuthenticationProvider = ({ children }) => {
 				throw new Error(data.message, 'Logout failed');
 			}
 
-			await router.push('/');
-
 			setAccessToken(null);
 			setUser(null);
+
+			router.push('/account/login');
 		} catch (error) {
 			console.error('CONTEXT LOGOUT:', error);
 			setError(error.message);
@@ -188,7 +171,7 @@ export const AuthenticationProvider = ({ children }) => {
 		} catch (error) {
 			console.error('CONTEXT LOGIN REFRESH:', error);
 			// We don't set user error here cause not being logged in is not an error
-			router.push('/account/login');
+			await logout();
 		}
 	}
 

@@ -3,22 +3,10 @@ tls:
     default:
       minVersion: "VersionTLS12"                          # Minimum TLS Version
   certificates:
-    - certFile: /ssl/transcendence.gmcg.fr.crt
+    - certFile: /ssl/transcendence.gmcg.fr.crt #TODO WHEN SUBMITING CHANGE THIS CERT TO HOSTNAME
       keyFile: /ssl/transcendence.gmcg.fr.key
     - certFile: /ssl/proxy.crt
       keyFile: /ssl/proxy.key
-
-# http:
-#   routers:
-#     websocket:
-#       rule: Host(`transcendence.gmcg.fr`)
-#       tls: true
-#       entrypoints: websocket
-#   services:
-#     websocket:
-#       loadbalancer:
-#         servers:
-#           - url: "http://frontend:3001"
 http:
   serversTransports:
     transport_prometheus:
@@ -27,5 +15,9 @@ http:
         - /ssl/CA.crt
     transport_grafana:
       serverName: "grafana"
+      rootCAs:
+        - /ssl/CA.crt
+    transport_kibana:
+      serverName: "kibana"
       rootCAs:
         - /ssl/CA.crt

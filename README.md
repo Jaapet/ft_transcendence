@@ -8,46 +8,34 @@ Our group is called ***"Comment devenir millionaire" par Rachid*** and is compri
 > 📝 9.5 major modules are required to validate with a grade of 125%.  
 > 📝 Note that 2 minor modules count for 1 major module.  
 
-As we are not required to complete all modules, here is our temporary selection:
+As we are not required to complete all modules, here is our definitive selection:
 ### Major modules
-#### Validated
-- Back-end in Django
-- Standard user management, authentification and tournaments
-- Advanced 3D with ThreeJS
-- A second game with user history and match-making
-- Distant players (playing on 2 different computers)
-- Multiple players (more than 2 in one game)
-- Log management (ELK)
-- 2FA + JSON Web Tokens
-#### Maybe
-- WAF or Mod Security + HashiCorp Vault
-- AI-controlled player
-- Remote authentification (OAuth 42)
+- ✅ Back-end in Django
+- ✅ Standard user management, ✅ authentification and 🛠️ tournaments
+- ✅ Advanced 3D with ThreeJS
+- 🛠️ A second game with ✅ user history and ✅ match-making
+- 🛠️ Distant players (playing on 2 different computers)
+- 🛠️ Multiple players (more than 2 in one game)
+- 🛠️ Log management (ELK)
+- ✅ 2FA + JSON Web Tokens
 ---
 ### Minor modules
-#### Validated
-- PostgreSQL DB in back-end
-- Bootstrap toolkit and Next.js in front-end
-- Multiple browser support
-- Monitoring system
-#### Maybe
-- Dashboards for users and game stats
-- RGPD compliance
-
-> 📝 Note that we will not do all of them.  
-> 📝 This is just the first selection, it will be trimmed down.  
+- ✅ PostgreSQL DB in back-end
+- ✅ Bootstrap toolkit and Next.js in front-end
+- 🛠️ Multiple browser support
+- 🛠️ Monitoring system 
 
 ## How to use
 
-- `make`: Builds and launches the project
-- `make f`: Build and launches the project with containers in foreground
-- `make clean`: Stops the project
-- `make rmcert`: Removes certificates
-- `make fclean`: Stops the project and deletes volumes, images and certificates
-- `make re`: clean + all
-- `make fre`: clean + f
-- `make reset`: fclean + all
-- `make freset`: fclean + f
+- `./init.sh all`: Builds and launches the project
+- `./init.sh f`: Build and launches the project with containers in foreground
+- `./init.sh clean`: Stops the project
+- `./init.sh rmcert`: Removes certificates
+- `./init.sh fclean`: Stops the project and deletes volumes, images and certificates
+- `./init.sh re`: clean + all
+- `./init.sh fre`: clean + f
+- `./init.sh reset`: fclean + all
+- `./init.sh freset`: fclean + f
 
 ## Useful links
 

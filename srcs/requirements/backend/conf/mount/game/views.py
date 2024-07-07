@@ -1,9 +1,12 @@
 import os
-from .models import Member, FriendRequest, Match
+from .models import Member, FriendRequest, Match, Match3, MatchR
+from django.db import transaction
 from django.conf import settings
+from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.db.models import Q
-from django.http import HttpResponse, JsonResponse
+from django.contrib.auth import get_user_model
+from django.core.files.storage import default_storage
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework import viewsets, permissions, status
@@ -19,27 +22,48 @@ import qrcode
 from io import BytesIO
 from .serializers import (
 	CustomTokenObtainPairSerializer,
-	MemberSerializer,
+	RestrictedMemberSerializer,
 	RegisterMemberSerializer,
 	UpdateMemberSerializer,
-	FriendSerializer,
 	FriendRequestSerializer,
 	SendFriendRequestSerializer,
 	InteractFriendRequestSerializer,
 	RemoveFriendSerializer,
-	MatchSerializer
+	MatchSerializer,
+	Match3Serializer,
+	MatchRSerializer
 )
 
+# Queries the health status of the backend
+class HealthCheckAPIView(APIView):
+	permission_classes = [permissions.AllowAny]
+
+	def get(self, request):
+		return Response({'detail': 'Healthy'}, status=status.HTTP_200_OK)
+
+# Enables 2FA for current user
 class Enable2FAView(APIView):
 	permission_classes = [permissions.IsAuthenticated]
 
 	def post(self, request, *args, **kwargs):
 		user = request.user
 
+		# Check if the user already has a TOTP device
+		ex_device = TOTPDevice.objects.filter(user=user, confirmed=True).first()
+		if ex_device and user.qr_2fa and default_storage.exists(user.qr_2fa[user.qr_2fa.startswith('/media/') and len('/media/'):]):
+			ex_secret = ex_device.config_url
+			return JsonResponse({
+				'detail': '2FA is already enabled for this user',
+				'secret_key': ex_secret.split('secret=')[1].split('&')[0],
+				'qr_code_url': user.qr_2fa
+			}, status=status.HTTP_200_OK)
+
 		# Create or Get the user's TOTP device
-		device, created = TOTPDevice.objects.get_or_create(user=user, confirmed=True)
+		if ex_device:
+			device = ex_device
+		else:
+			device = TOTPDevice.objects.create(user=user, confirmed=True)
 		secret = device.config_url
-		print(f'device config url: {secret}') # debug
 
 		# Generate a QR code for the TOTP secret
 		qr_img = qrcode.make(secret)
@@ -47,24 +71,69 @@ class Enable2FAView(APIView):
 		qr_img.save(buffer, format='PNG')
 		buffer.seek(0)
 
-		file_name = f'{user.id}_{timezone.now()}_qr.png'
-
-		file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-		with open(file_path, 'wb') as f:
+		file_dir = os.path.join(settings.MEDIA_ROOT, f'qr_codes/{user.id}')
+		os.makedirs(file_dir, exist_ok=True)
+		file_name = f'{timezone.now().strftime("%Y%m%d_%H%M%S")}_qr.png'
+		file_path = os.path.join(file_dir, file_name)
+	
+		with default_storage.open(file_path, 'wb') as f:
 			f.write(buffer.getvalue())
 
-		file_url = os.path.join(settings.MEDIA_URL, file_name)
+		file_url = os.path.join(settings.MEDIA_URL, f'qr_codes/{user.id}', file_name)
 
-		return JsonResponse({'secret_key': secret.split('secret=')[1].split('&')[0], 'qr_code_url': file_url},status=status.HTTP_201_CREATED)
+		with transaction.atomic():
+			user.qr_2fa = file_url
+			user.save(update_fields=['qr_2fa'])
 
+		return JsonResponse({
+			'detail': '2FA has been enabled for this user',
+			'secret_key': secret.split('secret=')[1].split('&')[0],
+			'qr_code_url': file_url
+		}, status=status.HTTP_201_CREATED)
+
+# Disables 2FA for current user
+class Disable2FAView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def post(self, request, *args, **kwargs):
+		user = request.user
+
+		device = user.totpdevice_set.filter(confirmed=True).first()
+		if not device:
+			return Response({'detail': '2FA is already disabled for this user'}, status=status.HTTP_400_BAD_REQUEST)
+
+		try:
+			with transaction.atomic():
+				if user.qr_2fa:
+					path = user.qr_2fa[user.qr_2fa.startswith('/media/') and len('/media/'):]
+					if default_storage.exists(path):
+						default_storage.delete(path)
+				user.qr_2fa = None
+				user.save(update_fields=['qr_2fa'])
+				device.delete()
+		except Exception as e:
+			return Response({'detail': f'Could not disable 2FA for this user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+		return Response({'detail': '2FA has been disabled for this user'}, status=status.HTTP_200_OK)
+
+# Verifies 2FA token for user login and returns JWT
 class Verify2FAView(APIView):
 	permission_classes = [permissions.AllowAny]
 
 	def post(self, request, *args, **kwargs):
 		user_id = request.data.get('user_id')
 		otp = request.data.get('otp')
-		user = Member.objects.get(id=user_id)
+		if not user_id or not otp:
+			return Response({'detail': 'Both user_id and otp are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+		try:
+			user = get_user_model().objects.get(id=user_id)
+		except get_user_model().DoesNotExist:
+			return Response({'detail': 'Invalid user_id'}, status=status.HTTP_400_BAD_REQUEST)
+
 		device = user.totpdevice_set.filter(confirmed=True).first()
+		if not device:
+			return Response({'detail': 'User does not have 2FA enabled'}, status=status.HTTP_400_BAD_REQUEST)
 
 		if device and device.verify_token(otp):
 			refresh = RefreshToken.for_user(user)
@@ -72,29 +141,53 @@ class Verify2FAView(APIView):
 				'refresh': str(refresh),
 				'access': str(refresh.access_token),
 			}, status=status.HTTP_200_OK)
+
 		return Response({'detail': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
 
+# Checks username and password validity for login
+# Logs in directly if 2FA is disabled
+# Notifies that 2FA is required otherwise
 class CustomTokenObtainPairView(TokenObtainPairView):
 	serializer_class = CustomTokenObtainPairSerializer
 
-# TODO: Check if this uses the index
+# Custom permissions for MemberViewSet
+class MemberViewSetPermissions(permissions.BasePermission):
+	def has_permission(self, request, view):
+		# Admins have full access
+		if request.user and request.user.is_staff:
+			return True
+		# Users can only use these actions (all users, 1 user)
+		if request.user and view.action in ['list', 'retrieve']:
+			return True
+		return False
+
+	def has_object_permission(self, request, view, obj):
+		# Admins have full access
+		if request.user and request.user.is_staff:
+			return True
+		# Users can only access the user list, and specific users
+		if view.action in ['list', 'retrieve']:
+			return True
+		return False
+
 # Queries all members ordered by username
 # Requires authentication
 class MemberViewSet(viewsets.ModelViewSet):
-	permission_classes = [permissions.IsAuthenticated]
-	serializer_class = MemberSerializer
+	permission_classes = [permissions.IsAuthenticated, MemberViewSetPermissions]
+	serializer_class = RestrictedMemberSerializer
 	queryset = Member.objects.all().order_by('username')
 
-# Queries one member
+# Queries the currently logged-in user
 # Used for authentication
 class MemberAPIView(RetrieveAPIView):
 	permission_classes = [permissions.IsAuthenticated]
-	serializer_class = MemberSerializer
+	serializer_class = RestrictedMemberSerializer
 
 	def get_object(self):
 		return self.request.user
 
-# Creates one member
+# TODO: Better user input validation and attempts logging
+# Creates a user
 # Used for registration
 class RegisterMemberAPIView(APIView):
 	permission_classes = [permissions.AllowAny]
@@ -107,39 +200,59 @@ class RegisterMemberAPIView(APIView):
 			avatar_data = request.data.get('avatar')
 			serializer.save(avatar=avatar_data)
 			return Response(serializer.data, status=status.HTTP_201_CREATED)
-		print("Invalid Serializer:")
-		print(serializer)
-		print(serializer.errors)
-		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+		else:
+			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# TODO: Better user input validation
+# Edits the currently logged-in user
 class UpdateMemberAPIView(UpdateAPIView):
 	permission_classes = [permissions.IsAuthenticated]
 	serializer_class = UpdateMemberSerializer
 	parser_classes = [MultiPartParser]
 
 	def put(self, request, *args, **kwargs):
-		serializer = self.serializer_class(data=request.data, instance=request.user, context={'request': request})
+		serializer = self.serializer_class(data=request.data, instance=request.user, context={ 'request': request })
 		if serializer.is_valid():
 			serializer.save()
 			return Response(serializer.data, status=status.HTTP_200_OK)
-		print("Invalid Serializer:")
-		print(serializer)
-		print(serializer.errors)
-		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+		else:
+			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# Queries the currently logged-in user's friend list
 class FriendListAPIView(APIView):
 	permission_classes = [permissions.IsAuthenticated]
 
 	def get(self, request):
 		user = request.user
 		friends = user.friends.all()
-		serializer = FriendSerializer(friends, many=True, context={'request': request})
+		serializer = RestrictedMemberSerializer(friends, many=True, context={'request': request})
 		return Response(serializer.data)
+
+# Custom permissions for FriendRequestViewSet
+class FriendRequestViewSetPermissions(permissions.BasePermission):
+	def has_permission(self, request, view):
+		# Admins have full access
+		if request.user and request.user.is_staff:
+			return True
+		# Users can only use these actions (1 F reqs, all F reqs by 1 user, all F reqs for 1 user)
+		if request.user and view.action in ['retrieve', 'requests_sent', 'requests_received']:
+			return True
+		return False
+
+	def has_object_permission(self, request, view, obj):
+		# Admins have full access
+		if request.user and request.user.is_staff:
+			return True
+		# Users can only access their own friend requests through retrieve
+		# For custom actions permissions, check them in FriendRequestViewSet
+		if view.action in ['retrieve']:
+			return obj.sender == request.user or obj.recipient == request.user
+		return False
 
 # Queries all friend requests ordered by most recent
 # Requires authentication
 class FriendRequestViewSet(viewsets.ModelViewSet):
-	permission_classes = [permissions.IsAuthenticated]
+	permission_classes = [permissions.IsAuthenticated, FriendRequestViewSetPermissions]
 	serializer_class = FriendRequestSerializer
 	queryset = FriendRequest.objects.all().select_related("sender", "recipient").order_by('-datetime')
 
@@ -148,7 +261,12 @@ class FriendRequestViewSet(viewsets.ModelViewSet):
 	def requests_sent(self, request, pk=None):
 		user_id = request.query_params.get('user_id', None)
 		if (user_id is None):
-			return Response({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+			return Response({'detail': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+		# Only allow user to see their own sent requests
+		if request.user.id != int(user_id):
+			return Response({'detail': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+
 		user_requests = FriendRequest.objects.filter(Q(sender_id=user_id)).select_related("sender", "recipient").order_by('-datetime')
 		serializer = self.get_serializer(user_requests, many=True)
 		return Response(serializer.data)
@@ -158,13 +276,34 @@ class FriendRequestViewSet(viewsets.ModelViewSet):
 	def requests_received(self, request, pk=None):
 		user_id = request.query_params.get('user_id', None)
 		if (user_id is None):
-			return Response({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+			return Response({'detail': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+		# Only allow user to see their own received requests
+		if request.user.id != int(user_id):
+			return Response({'detail': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+
 		user_requests = FriendRequest.objects.filter(Q(recipient_id=user_id)).select_related("sender", "recipient").order_by('-datetime')
 		serializer = self.get_serializer(user_requests, many=True)
 		return Response(serializer.data)
 
+# Custom permissions for CheckFriendshipStatusAPIView
+class CheckFriendshipStatusAPIViewPermissions(permissions.BasePermission):
+	def has_object_permission(self, request, view, obj):
+		# Allow admins to bypass permission check
+		if request.user and request.user.is_staff:
+			return True
+
+		# Allow users to check only their own friendship status
+		user1_id = int(request.query_params.get('user1_id'))
+		user2_id = int(request.query_params.get('user2_id'))
+		user_id = request.user.id
+		if user1_id and user2_id and (user1_id == user_id or user2_id == user_id):
+			return True
+		return False
+
+# Checks friendship status between 2 users
 class CheckFriendshipStatusAPIView(APIView):
-	permission_classes = [permissions.IsAuthenticated]
+	permission_classes = [permissions.IsAuthenticated, CheckFriendshipStatusAPIViewPermissions]
 
 	def get(self, request):
 		user1_id = request.query_params.get('user1_id')
@@ -245,10 +384,21 @@ class RemoveFriendAPIView(APIView):
 		except ValueError as err:
 			return Response({"detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
-# Queries all matches ordered by most recently finished
+# Custom permissions for MatchViewSet
+class MatchViewSetPermissions(permissions.BasePermission):
+	def has_permission(self, request, view):
+		# Admins have full access
+		if request.user and request.user.is_staff:
+			return True
+		# Users can only use these actions (all matches, 1 match, all matches for 1 user, 3 last matches for 1 user)
+		if request.user and view.action in ['list', 'retrieve', 'player_matches', 'last_player_matches']:
+			return True
+		return False
+
+# Queries all pong2 matches ordered by most recently finished
 # Requires authentication
 class MatchViewSet(viewsets.ModelViewSet):
-	permission_classes = [permissions.IsAuthenticated]
+	permission_classes = [permissions.IsAuthenticated, MatchViewSetPermissions]
 	serializer_class = MatchSerializer
 	queryset = Match.objects.all().select_related("winner", "loser").order_by('-end_datetime')
 
@@ -272,13 +422,126 @@ class MatchViewSet(viewsets.ModelViewSet):
 		serializer = self.get_serializer(player_matches, many=True)
 		return Response(serializer.data)
 
+# Custom permissions for Match3ViewSet
+class Match3ViewSetPermissions(permissions.BasePermission):
+	def has_permission(self, request, view):
+		# Admins have full access
+		if request.user and request.user.is_staff:
+			return True
+		# Users can only use these actions (all matches, 1 match, all matches for 1 user, 3 last matches for 1 user)
+		if request.user and view.action in ['list', 'retrieve', 'player_matches', 'last_player_matches']:
+			return True
+		return False
+
+# Queries all pong3 matches ordered by most recently finished
+# Requires authentication
+class Match3ViewSet(viewsets.ModelViewSet):
+	permission_classes = [permissions.IsAuthenticated, Match3ViewSetPermissions]
+	serializer_class = Match3Serializer
+	queryset = Match3.objects.all().select_related("paddle1", "paddle2", "ball").order_by('-end_datetime')
+
+	# Get all matches involving 1 player
+	@action(detail=False, methods=['get'])
+	def player_matches(self, request, pk=None):
+		player_id = request.query_params.get('player_id', None)
+		if (player_id is None):
+			return Response({'error': 'Player ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+		player_matches = Match3.objects.filter(Q(paddle1_id=player_id) | Q(paddle2_id=player_id) | Q(ball_id=player_id)).select_related("paddle1", "paddle2", "ball").order_by('-end_datetime')
+		serializer = self.get_serializer(player_matches, many=True)
+		return Response(serializer.data)
+
+	# Get a player's last 3 matches
+	@action(detail=False, methods=['get'])
+	def last_player_matches(self, request, pk=None):
+		player_id = request.query_params.get('player_id', None)
+		if (player_id is None):
+			return Response({'error': 'Player ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+		player_matches = Match3.objects.filter(Q(paddle1_id=player_id) | Q(paddle2_id=player_id) | Q(ball_id=player_id)).select_related("paddle1", "paddle2", "ball").order_by('-end_datetime')[:3]
+		serializer = self.get_serializer(player_matches, many=True)
+		return Response(serializer.data)
+
+# Custom permissions for MatchRViewSet
+class MatchRViewSetPermissions(permissions.BasePermission):
+	def has_permission(self, request, view):
+		# Admins have full access
+		if request.user and request.user.is_staff:
+			return True
+		# Users can only use these actions (all matches, 1 match, all matches for 1 user, 3 last matches for 1 user)
+		if request.user and view.action in ['list', 'retrieve', 'player_matches', 'last_player_matches']:
+			return True
+		return False
+
+# Queries all royal matches ordered by most recently finished
+# Requires authentication
+class MatchRViewSet(viewsets.ModelViewSet):
+	permission_classes = [permissions.IsAuthenticated, MatchRViewSetPermissions]
+	serializer_class = MatchRSerializer
+	queryset = MatchR.objects.all().order_by('-end_datetime')
+
+	# Get all matches involving 1 player
+	@action(detail=False, methods=['get'])
+	def player_matches(self, request, pk=None):
+		player_id = request.query_params.get('player_id', None)
+		if (player_id is None):
+			return Response({'error': 'Player ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+		player_matches = MatchR.objects.filter(players__member_id=player_id).distinct().order_by('-end_datetime')
+		serializer = self.get_serializer(player_matches, many=True)
+		return Response(serializer.data)
+
+	# Get a player's last 3 matches
+	@action(detail=False, methods=['get'])
+	def last_player_matches(self, request, pk=None):
+		player_id = request.query_params.get('player_id', None)
+		if (player_id is None):
+			return Response({'error': 'Player ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+		player_matches = MatchR.objects.filter(players__member_id=player_id).distinct().order_by('-end_datetime')[:3]
+		serializer = self.get_serializer(player_matches, many=True)
+		return Response(serializer.data)
+
+class LastThreeMatchesAPIView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def get(self, request, *args, **kwargs):
+		target_id = request.query_params.get('target_id')
+		if not target_id:
+			return Response({"detail": "target_id parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+		try:
+			user = Member.objects.get(id=target_id)
+		except Member.DoesNotExist:
+			return Response({"detail": "User does not exist."}, status=status.HTTP_404_NOT_FOUND)
+
+		# Fetch the last 3 matches of each type
+		matches2 = list(Match.objects.filter(Q(winner=user) | Q(loser=user)).select_related("winner", "loser").order_by('-end_datetime')[:3])
+		matches3 = list(Match3.objects.filter(Q(paddle1=user) | Q(paddle2=user) | Q(ball=user)).select_related("paddle1", "paddle2", "ball").order_by('-end_datetime')[:3])
+		matchesR = list(MatchR.objects.filter(players__member=user).distinct().order_by('-end_datetime')[:3])
+
+		# Combine and sort the matches by date
+		all_matches = matches2 + matches3 + matchesR
+		all_matches_sorted = sorted(all_matches, key=lambda x: x.end_datetime, reverse=True)
+
+		# Get the last 3 matches
+		last_three_matches = all_matches_sorted[:3]
+
+		serialized_matches = []
+		for match in last_three_matches:
+			if isinstance(match, Match):
+				serialized_matches.append(MatchSerializer(match, context={'request': request}).data)
+			elif isinstance(match, Match3):
+				serialized_matches.append(Match3Serializer(match, context={'request': request}).data)
+			elif isinstance(match, MatchR):
+				serialized_matches.append(MatchRSerializer(match, context={'request': request}).data)
+
+		return Response(serialized_matches)
+
+# Custom authentication specific to Prometheus
 class PrometheusAuthentication(BaseAuthentication):
 	def authenticate(self, request):
 		# Check if the request contains the expected header
 		if 'Authorization' not in request.headers:
 			return None
 
-		# Validate the value of the header (you can implement your own logic here)
+		# Validate the token contained in the header and the expected syntax
 		auth_token = request.headers['Authorization']
 		if auth_token != 'Bearer ' + os.environ.get('METRICS_TOKEN_BACKEND'):
 			raise AuthenticationFailed('Invalid token')
@@ -287,9 +550,11 @@ class PrometheusAuthentication(BaseAuthentication):
 		return (self.dummy_user(), None)
 
 	def dummy_user(self):
-		# Create a dummy user object since we don't have real user authentication
+		# Create a dummy user with impossible username for regular users
 		return Member(username=';prometheus;')
 
+# Queries all metrics and returns it in Prometheus format
+# Only for Prometheus, hence the custom PrometheusAuthentication class
 class MetricsView(APIView):
 	authentication_classes = [PrometheusAuthentication]
 	permission_classes = [permissions.IsAuthenticated]
@@ -299,12 +564,15 @@ class MetricsView(APIView):
 		return HttpResponse(metrics, content_type='text/plain')
 
 	def collect_metrics(self):
-		# Collect metrics here and format them as Prometheus exposition format
+		# Collect metrics here and format them with Prometheus format
 		metrics = []
 		metrics += self.collect_total_users()
+		metrics += self.collect_total_2fa_users()
 		metrics += self.collect_online_users()
 		metrics += self.collect_total_friend_requests()
-		metrics += self.collect_total_pong_matches()
+		metrics += self.collect_total_pong2_matches()
+		metrics += self.collect_total_pong3_matches()
+		metrics += self.collect_total_royal_matches()
 		return '\n'.join(metrics)
 
 	def collect_total_users(self):
@@ -313,6 +581,15 @@ class MetricsView(APIView):
 			'# HELP back_total_users Number of accounts created in the database',
 			'# TYPE back_total_users counter',
 			f'back_total_users {total_users}'
+		]
+		return metric
+
+	def collect_total_2fa_users(self):
+		total_2fa_users = TOTPDevice.objects.count()
+		metric = [
+			'# HELP back_total_2fa_users Number of accounts that have 2FA enabled',
+			'# TYPE back_total_2fa_users counter',
+			f'back_total_2fa_users {total_2fa_users}'
 		]
 		return metric
 
@@ -334,11 +611,29 @@ class MetricsView(APIView):
 		]
 		return metric
 
-	def collect_total_pong_matches(self):
-		total_pong_matches = Match.objects.count()
+	def collect_total_pong2_matches(self):
+		total_pong2_matches = Match.objects.count()
 		metric = [
-			'# HELP back_total_pong_matches Number of played pong matches',
-			'# TYPE back_total_pong_matches counter',
-			f'back_total_pong_matches {total_pong_matches}'
+			'# HELP back_total_pong2_matches Number of played 1v1 pong matches',
+			'# TYPE back_total_pong2_matches counter',
+			f'back_total_pong2_matches {total_pong2_matches}'
+		]
+		return metric
+
+	def collect_total_pong3_matches(self):
+		total_pong3_matches = Match3.objects.count()
+		metric = [
+			'# HELP back_total_pong3_matches Number of played 1v2 pong matches',
+			'# TYPE back_total_pong3_matches counter',
+			f'back_total_pong3_matches {total_pong3_matches}'
+		]
+		return metric
+
+	def collect_total_royal_matches(self):
+		total_royal_matches = MatchR.objects.count()
+		metric = [
+			'# HELP back_total_royal_matches Number of played royal matches',
+			'# TYPE back_total_royal_matches counter',
+			f'back_total_royal_matches {total_royal_matches}'
 		]
 		return metric

@@ -38,25 +38,29 @@ ENV			PYTHONUNBUFFERED 1
 
 #COPY		conf/backend /usr/app
 
-WORKDIR		/usr/app
+WORKDIR	/usr/app
 
 RUN			apk add --no-cache \
-				build-base \
-				libpq-dev \
-			&& \
-			pip install --upgrade \
-				pip \
-			&& \
-			pip install --no-cache-dir \
-				django \
-				djangorestframework \
-				djangorestframework_simplejwt \
-				django-otp \
-				qrcode \
-				django-cors-headers \
-				psycopg2 \
-				pillow
-#				django-sslserver
+					build-base \
+					libpq-dev \
+					libffi \
+					libffi-dev \
+				&& \
+				pip install --upgrade \
+					pip \
+				&& \
+				pip install --no-cache-dir \
+					django \
+					djangorestframework \
+					djangorestframework_simplejwt \
+					django-otp \
+					qrcode \
+					django-cors-headers \
+					psycopg2 \
+					pillow \
+					werkzeug \
+					django-extensions \
+					pyOpenSSL
 
 # psycopg2 if for postgres
 # pillow is required for ImageField to work

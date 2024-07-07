@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import styles from '../styles/game.module.css';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
 
 const Royal = () => {
   useEffect(() => {
@@ -36,6 +38,35 @@ const Royal = () => {
     camera.position.z = 150;
 
 
+/*
+    /// MODEL 3D
+    const totalmodel = 1;
+    let actualmodel = 0;
+    let modelsLoaded = false;
+
+    // Fonction pour vérifier si tous les modèles sont chargés
+    function checkModelsLoaded()
+    {
+      if (actualmodel === totalmodel)
+        modelsLoaded = true;
+    }
+
+    const loadermodel = new GLTFLoader();
+
+    loadermodel.load
+    (
+      'games/pong/models/Building.glb',
+      function (gltf)
+      {
+        scene.add( gltf.scene );
+        actualmodel += 1;
+        checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
+      },
+      undefined,
+      function (error) { console.error(error); } 
+    );
+    
+*/
 
     /// FLOOR
 
@@ -185,9 +216,6 @@ const Royal = () => {
                 
                 ballmove[1] = 0.1;
                 break;
-            case " ":
-                space = 1;
-                break;
       }
     });
 
@@ -210,8 +238,6 @@ const Royal = () => {
             case "D":
                 
                 ballmove[1] = 0;
-                break;
-            case " ":
                 break;
       }
     });
@@ -277,8 +303,14 @@ const Royal = () => {
 
     function render(time)
     {
-      time *= 0.001;  
       
+      /*if (!modelsLoaded)
+      {
+        requestAnimationFrame(render);
+        return;
+      }*/
+      
+      time *= 0.001; 
       const canvas = renderer.domElement;
       camera.aspect = canvas.clientWidth / canvas.clientHeight;
       camera.updateProjectionMatrix();
@@ -290,15 +322,6 @@ const Royal = () => {
       objects.forEach(objtab => {
         // ce deplace dans une direction et s'arrete au bord et repart dans l'autre sens
         const obj = objtab[0];
-
-        if (space == 1 && obj.position.y < 10)
-          obj.position.y = obj.position.y * 1.1;
-        else if (obj.position.y > 2)
-          {
-          obj.position.y = obj.position.y - 1;
-          space = 0;
-          }
-
 
         
         ballspeed[0] = objtab[1];

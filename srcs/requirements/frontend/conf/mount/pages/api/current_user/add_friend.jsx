@@ -21,7 +21,7 @@ export default async (req, res) => {
 			throw new Error('No user id provided');
 		}
 
-		const reqRes = await fetch(`http://backend:8000/api/friend_request/send`, {
+		const reqRes = await fetch(`https://backend:8000/api/friend_request/send`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',

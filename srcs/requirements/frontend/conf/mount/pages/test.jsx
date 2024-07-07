@@ -20,7 +20,7 @@ const Royal = () => {
     }
 
 		const socket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`); // Connect to server on port 3001
-		socket.emit('join', { gameType: 'pong2', userId: user.id, userELO: getRandomInt(500, 1500), userAvatar: user.avatar });
+		socket.emit('join', { gameType: 'pong2', userId: user.id, userName: user.username, userELO: getRandomInt(500, 1500), userAvatar: user.avatar });
 
 		socket.on('connect', () => {
 			console.log('Connected to websocket server');
@@ -65,7 +65,7 @@ const Royal = () => {
       // Iterate over the players object
       Object.keys(players).forEach(playerKey => {
         const player = players[playerKey];
-        console.log(`Player ${player.id} (${player.elo})`);
+        console.log(`Player ${player.id} (${player.elo}) (${player.role})`);
       });
     });
 

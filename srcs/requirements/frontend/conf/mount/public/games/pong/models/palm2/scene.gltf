@@ -1,0 +1,269 @@
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 317,
+      "max": [
+        305.2030944824219,
+        712.9436645507813,
+        308.2057800292969
+      ],
+      "min": [
+        -283.9028625488281,
+        0.5563483834266663,
+        -312.5535888671875
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 3804,
+      "componentType": 5126,
+      "count": 317,
+      "max": [
+        0.9558144211769104,
+        0.9999026656150818,
+        0.9998640418052673
+      ],
+      "min": [
+        -0.8761408925056458,
+        -0.5989404916763306,
+        -0.9990777373313904
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 317,
+      "max": [
+        0.9999943971633911,
+        0.7526803016662598,
+        0.998843789100647,
+        1.0
+      ],
+      "min": [
+        -0.9999004602432251,
+        -0.5964934229850769,
+        -0.9994593858718872,
+        1.0
+      ],
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 317,
+      "max": [
+        0.8422669172286987,
+        0.99951171875
+      ],
+      "min": [
+        0.00048828125,
+        0.00048828125
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 1128,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "KrazzyElf (https://sketchfab.com/KrazzyElf)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/stylized-palm-tree-22c3a3d3fb7146cfa22850fa31390e5d",
+      "title": "Stylized Palm Tree"
+    },
+    "generator": "Sketchfab-15.1.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 4512,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2536,
+      "byteOffset": 4512,
+      "byteStride": 8,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 7608,
+      "byteOffset": 7048,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 5072,
+      "byteOffset": 14656,
+      "byteStride": 16,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 19728,
+      "uri": "scene.bin"
+    }
+  ],
+  "images": [
+    {
+      "uri": "textures/Plam_Tree_baseColor.png"
+    },
+    {
+      "uri": "textures/Plam_Tree_metallicRoughness.png"
+    },
+    {
+      "uri": "textures/Plam_Tree_normal.png"
+    }
+  ],
+  "materials": [
+    {
+      "alphaCutoff": 0.30933427606636515,
+      "alphaMode": "MASK",
+      "doubleSided": true,
+      "name": "Plam_Tree",
+      "normalTexture": {
+        "index": 2
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicRoughnessTexture": {
+          "index": 1
+        },
+        "roughnessFactor": 0.8211145618000169
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Palm Tree 1_Plam Tree_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TANGENT": 2,
+            "TEXCOORD_0": 3
+          },
+          "indices": 4,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        0.4513058662414551,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0021003276993292e-16,
+        -0.4513058662414551,
+        0.0,
+        0.0,
+        0.4513058662414551,
+        1.0021003276993292e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2
+      ],
+      "matrix": [
+        0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.009999999776482582,
+        0.0,
+        0.0,
+        -0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "2881b3de343b4c7badfd7281b6fb2334.fbx"
+    },
+    {
+      "children": [
+        3
+      ],
+      "name": "RootNode"
+    },
+    {
+      "children": [
+        4
+      ],
+      "name": "Palm Tree 1"
+    },
+    {
+      "mesh": 0,
+      "name": "Palm Tree 1_Plam Tree_0"
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    },
+    {
+      "sampler": 0,
+      "source": 2
+    }
+  ]
+}

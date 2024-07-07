@@ -9,7 +9,7 @@ export default async (req, res) => {
 
 	try {
 		// Fetch tokens
-		const tokRes = await fetch(`http://backend:8000/api/token/`, {
+		const tokRes = await fetch(`https://backend:8000/api/token/`, {
 			method: 'POST',
 			headers: {
 				'Accept': 'application/json',
@@ -41,7 +41,7 @@ export default async (req, res) => {
 
 		// Fetch user data
 		const accessToken = tokData.access;
-		const userRes = await fetch(`http://backend:8000/api/user/`, {
+		const userRes = await fetch(`https://backend:8000/api/user/`, {
 			headers: {
 				'Authorization': 'Bearer ' + accessToken
 			}

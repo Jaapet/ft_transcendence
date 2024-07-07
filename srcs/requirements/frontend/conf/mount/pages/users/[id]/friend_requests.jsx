@@ -241,6 +241,15 @@ const UserFriendRequestsTable = ({ sent, recv, setSent, setRecv, setShowError, s
 		setActiveTab(eventKey);
 	}
 
+	if (!sent || !recv) {
+		return (
+			<div className={styles.container}>
+				<p className="bg-light text-black">Something went wrong...</p>
+				<p className="bg-light text-black">Please reload the page.</p>
+			</div>
+		);
+	}
+
 	return (
 		<Card
 			className="bg-dark text-white mt-3"
@@ -300,8 +309,8 @@ const FriendRequestsToasts = ({ showError, setShowError, errorMsg, setErrorMsg, 
 	);
 }
 
-export default function UserFriendRequests({ status, current_user, requests_sent, requests_received }) {
-	const { user } = useAuth();
+export default function UserFriendRequests({ status, detail, current_user, requests_sent, requests_received }) {
+	const { user, logout } = useAuth();
 	const { userError, userMsg, clearUserError, clearUserMsg } = useUser();
 
 	const [showError, setShowError] = useState(false);
@@ -310,6 +319,10 @@ export default function UserFriendRequests({ status, current_user, requests_sent
 	const [msg, setMsg] = useState('');
 	const [sentRequests, setSentRequests] = useState(requests_sent);
 	const [receivedRequests, setReceivedRequests] = useState(requests_received);
+
+	const handleLogout = async () => {
+		await logout();
+	}
 
 	useEffect(() => {
 		if (userError) {
@@ -324,19 +337,15 @@ export default function UserFriendRequests({ status, current_user, requests_sent
 		}
 	}, [userError, userMsg, setErrorMsg, setShowError, setMsg, setShowMsg, clearUserError, clearUserMsg]);
 
-	/* TODO: Implement redirect here
-	if (status === 404) {
-		// redirect here
+	if (status === 401 && detail === 'Not logged in') {
+		handleLogout();
 	}
-	*/
 
-	if (!current_user || !current_user.id || !user || !user.id || status === 401 || status === 404) {
+	if (status !== 200 || !current_user || !current_user.id || !user || !user.id) {
 		return (
 			<div className={styles.container}>
-				<Head>
-					<title>Error</title>
-				</Head>
-				<p>Something went wrong...</p>
+				<p className="bg-light text-black">Something went wrong...</p>
+				<p className="bg-light text-black">Please reload the page.</p>
 			</div>
 		);
 	}
@@ -344,9 +353,6 @@ export default function UserFriendRequests({ status, current_user, requests_sent
 	if (current_user.id !== user.id) {
 		return (
 			<div className={styles.container}>
-				<Head>
-					<title>Forbidden</title>
-				</Head>
 				<p className="bg-light text-black">Forbidden</p>
 			</div>
 		);
@@ -433,6 +439,7 @@ export async function getServerSideProps(context) {
 			return {
 				props: {
 					status: 404,
+					detail: 'Resource not found',
 					current_user: null,
 					requests_sent: null,
 					requests_received: null
@@ -451,6 +458,7 @@ export async function getServerSideProps(context) {
 		return {
 			props: {
 				status: 200,
+				detail: 'Success',
 				current_user: data.user,
 				requests_sent: data.requests_sent,
 				requests_received: data.requests_received
@@ -461,6 +469,7 @@ export async function getServerSideProps(context) {
 		return {
 			props: {
 				status: 401,
+				detail: error.message,
 				current_user: null,
 				requests_sent: null,
 				requests_received: null

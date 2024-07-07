@@ -18,4 +18,6 @@ Makefile
 .ssl_is_gen
 openssl.cnf
 .env
-token_backendt
+token_backend
+inited_*
+*.secret

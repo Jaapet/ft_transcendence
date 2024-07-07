@@ -7,7 +7,7 @@ export default async (req, res) => {
 	const { user_id, otp } = req.body;
 
 	try {
-		const verifyRes = await fetch(`http://backend:8000/api/verify_2fa/`, {
+		const verifyRes = await fetch(`https://backend:8000/api/verify_2fa/`, {
 			method: 'POST',
 			headers: {
 				'Accept': 'application/json',
@@ -31,7 +31,7 @@ export default async (req, res) => {
 
 		// Fetch user data
 		const accessToken = verifyData.access;
-		const userRes = await fetch(`http://backend:8000/api/user/`, {
+		const userRes = await fetch(`https://backend:8000/api/user/`, {
 			headers: {
 				'Authorization': 'Bearer ' + accessToken
 			}

@@ -194,8 +194,8 @@ const EditToasts = ({ showError, setShowError, errorMsg, setErrorMsg, showMsg, s
 	);
 }
 
-export default function EditPage({ status, current_user }) {
-	const { user } = useAuth();
+export default function EditPage({ status, detail, current_user }) {
+	const { user, logout } = useAuth();
 	const { edit, userError, setUserError, clearUserError, userMsg, clearUserMsg } = useUser();
 
 	const [username, setUsername] = useState('');
@@ -207,6 +207,10 @@ export default function EditPage({ status, current_user }) {
 	const [errorMsg, setErrorMsg] = useState('');
 	const [showMsg, setShowMsg] = useState(false);
 	const [msg, setMsg] = useState('');
+
+	const handleLogout = async () => {
+		await logout();
+	}
 
 	useEffect(() => {
 		if (userError) {
@@ -221,19 +225,15 @@ export default function EditPage({ status, current_user }) {
 		}
 	}, [userError, userMsg, setErrorMsg, setShowError, setMsg, setShowMsg, clearUserError, clearUserMsg]);
 
-	/* TODO: Implement redirect here
-	if (status === 404) {
-		// redirect here
+	if (errorMsg === 'Not logged in' || (status === 401 && detail === 'Not logged in')) {
+		handleLogout();
 	}
-	*/
 
-	if (!current_user || !current_user.id || !user || !user.id || status === 401 || status === 404) {
+	if (status !== 200 || !current_user || !current_user.id || !user || !user.id) {
 		return (
-			<div>
-				<Head>
-					<title>Error</title>
-				</Head>
+			<div className={styles.container}>
 				<p className="bg-light text-black">Something went wrong...</p>
+				<p className="bg-light text-black">Please reload the page.</p>
 			</div>
 		);
 	}
@@ -241,9 +241,6 @@ export default function EditPage({ status, current_user }) {
 	if (current_user.id !== user.id) {
 		return (
 			<div>
-				<Head>
-					<title>Forbidden</title>
-				</Head>
 				<p className="bg-light text-black">Forbidden</p>
 			</div>
 		);
@@ -263,7 +260,6 @@ export default function EditPage({ status, current_user }) {
 	}
 
 	return (
-		
 		<section className="vh-100" style={{backgroundColor: '#38255f'}}>
 			<Head>
 				<title>Edit profile</title>
@@ -298,6 +294,11 @@ export default function EditPage({ status, current_user }) {
 											setUserError={setUserError}
 										/>
 
+										<p className="text-center text-muted mt-0 mb-0" >
+											<Link href={`/users/${user.id}/edit_2fa`} className="fw-bold text-body">
+												<u>To 2FA settings page</u>
+											</Link>
+										</p>
 										<p className="text-center text-muted mt-0 mb-0" >
 											<Link href={`/users/${user.id}`} className="fw-bold text-body">
 												<u>Back to profile</u>
@@ -334,6 +335,7 @@ export async function getServerSideProps(context) {
 			return {
 				props: {
 					status: 404,
+					detail: 'Resource not found',
 					current_user: null
 				}
 			}
@@ -350,6 +352,7 @@ export async function getServerSideProps(context) {
 		return {
 			props: {
 				status: 200,
+				detail: 'Success',
 				current_user: data.user
 			}
 		}
@@ -358,6 +361,7 @@ export async function getServerSideProps(context) {
 		return {
 			props: {
 				status: 401,
+				detail: error.message,
 				current_user: null
 			}
 		}
