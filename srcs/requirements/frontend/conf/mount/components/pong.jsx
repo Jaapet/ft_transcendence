@@ -498,7 +498,7 @@ const Pong = () => {
 		function handleKeyDown(event) {
 			if (event.repeat)
 				return ;
-			console.log(event.key); // debug
+			//console.log(event.key); // debug
 			switch (event.key) {
 				case "ArrowUp":
 					if (!paddleUp) {
@@ -519,7 +519,7 @@ const Pong = () => {
 		function handleKeyUp(event) {
 			if (event.repeat)
 				return ;
-			console.log(event.key); // debug
+			//console.log(event.key); // debug
 			switch (event.key) {
 				case "ArrowUp":
 					if (paddleUp) {
@@ -603,7 +603,7 @@ const Pong = () => {
 			console.log(`PONG_CMPT: Received startGameplay`); // debug
 		});
 
-		let last = Date.now(); // debug
+		//let last = Date.now(); // debug
 		socket.on('gameStatus', ({
 			leftScore, rightScore,
 			ballX, ballZ, newBallSpeed,
@@ -613,6 +613,10 @@ const Pong = () => {
 			// Ball
 			/// Speed
 			ballSpeed = newBallSpeed;
+			//if (Date.now() - last > 500) {
+			//	console.log(`BALL SPEED = ${ballSpeed}`); // debug
+			//	last = Date.now(); // debug
+			//}
 			/// X Pos
 			ballObj.position.x = ballX;
 			/// Z Pos
@@ -636,15 +640,15 @@ const Pong = () => {
 		// Gameplay constants
 		// TODO: Check if these are synced with server-side code
 		const FPS = 60;
-		const PADDLE_SPEED = 37; // units per second
-		const BASE_BALL_SPEED = 65; // units per second
-		const MAX_BALL_SPEED = 105; // units per second
-		const BALL_ACCELERATION_RATE = 0.6; // unit/s/s
+		const PADDLE_SPEED = 37;							// units per second
+		const BASE_BALL_SPEED = 60;						// units per second
+		const MAX_BALL_SPEED = 120;						// units per second
+		const BALL_ACCELERATION_RATE = 0.6;		// unit/s/s
 		const BALL_MAX_X = 42.5;
 		const BALL_MAX_Z = 20;
 		const PADDLE_MAX_Z = 16.5;
 		const BALL_MAX_Z_DIR = 0.6;
-		const BALL_BOUNCE_MERCY_PERIOD = 100; // In ms
+		const BALL_BOUNCE_MERCY_PERIOD = 100;	// In ms
 		let ballSpeed = BASE_BALL_SPEED;
 
 		let first = 0;

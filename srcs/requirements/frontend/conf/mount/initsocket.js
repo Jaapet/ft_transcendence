@@ -58,24 +58,24 @@ const PONG3_NB_PLAYERS = 3;
 const ROYAL_MIN_PLAYERS = 2;
 const ROYAL_MAX_PLAYERS = 8;
 const ROYAL_START_TIMEOUT = 30000;	// Start a Royal game after 30 seconds of waiting for a full room
-const ELO_RANGE = 100;				// Base range of accepted ELO in a room (room.elo+-ELO_RANGE)
-const ELO_RANGE_MAX = 1000;			// Limit for ELO_RANGE
-const FIND_ROOM_TIMEOUT = 10;		// Create your own room after trying to find one for 10 seconds
-const FIND_ROOM_RATE = 0.5;			// Try to find a room every 0.5 seconds
+const ELO_RANGE = 100;							// Base range of accepted ELO in a room (room.elo+-ELO_RANGE)
+const ELO_RANGE_MAX = 1000;					// Limit for ELO_RANGE
+const FIND_ROOM_TIMEOUT = 10;				// Create your own room after trying to find one for 10 seconds
+const FIND_ROOM_RATE = 0.5;					// Try to find a room every 0.5 seconds
 
 // Gameplay constants
 // TODO: Check if these are synced with client-side code
 /// PONG 2
 const PONG2_FPS = 60;
-const PONG2_PADDLE_SPEED = 37; // units per second
-const PONG2_BASE_BALL_SPEED = 65; // units per second
-const PONG2_MAX_BALL_SPEED = 150; // units per second
-const PONG2_BALL_ACCELERATION_RATE = 0.6; // unit/s/s
+const PONG2_PADDLE_SPEED = 37;							// units per second
+const PONG2_BASE_BALL_SPEED = 60;						// units per second
+const PONG2_MAX_BALL_SPEED = 120;						// units per second
+const PONG2_BALL_ACCELERATION_RATE = 0.6;		// unit/s/s
 const PONG2_BALL_MAX_X = 42.5;
 const PONG2_BALL_MAX_Z = 20;
 const PONG2_PADDLE_MAX_Z = 16.5;
 const PONG2_BALL_MAX_Z_DIR = 0.6;
-const PONG2_BALL_BOUNCE_MERCY_PERIOD = 100; // In ms
+const PONG2_BALL_BOUNCE_MERCY_PERIOD = 100;	// In ms
 
 /// PONG 3
 
@@ -111,7 +111,7 @@ io.on('connection', socket => {
 		console.log(`JOIN: New user ${userName}`); // debug
 
 		// Sets queueType depending on gameType
-		queueType = null;
+		let queueType = null;
 		switch (gameType){
 			case 'pong3':
 				queueType = "queue3";
@@ -124,7 +124,7 @@ io.on('connection', socket => {
 		}
 
 		console.log(`JOIN: Searching for ${queueType} for user ${userName}`); // debug
-		queue = null;
+		let queue = null;
 		queue = findRoom(queueType);
 		// Create queue if !queue and join it
 		if (!queue)
@@ -132,7 +132,7 @@ io.on('connection', socket => {
 		addPlayerToRoom(gameType, queue, socket, userId, userName, userELO, userAvatar);
 		console.log(`JOIN: User ${userName} now in waitlist`); // debug
 
-		room = null;
+		let room = null;
 		if (playerInRoom(queueType, queue.id))
 		{
 			// Join Existing Room
@@ -163,12 +163,10 @@ io.on('connection', socket => {
 
 		// If player was put in a room
 		if (room)
-		{
 			checkGameStart(room, gameType);
-		}
 		else
 		{
-			now = Date.now();
+			const now = Date.now();
 			FindRoomLoop(now, gameType, queue, queueType, userId, userName, userELO, userAvatar);
 		}
 	});
@@ -178,10 +176,10 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return ;
 
-		now = Date.now();
-		deltaSeconds = (now - startTime) / 1000;
+		let now = Date.now();
+		let deltaSeconds = (now - startTime) / 1000;
 
-		room = null;
+		let room = null;
 		// Timeout: Create your own room
 		if (deltaSeconds >= FIND_ROOM_TIMEOUT)
 		{
@@ -225,12 +223,12 @@ io.on('connection', socket => {
 		if (!connected[socket.id] || !room || !input || !input.key || !input.type)
 			return ;
 
-		player = getPlayerInRoom(room);
+		const player = getPlayerInRoom(room);
 		if (!player)
 			return ;
 
 		const { key, type } = input;
-		move = false;
+		let move = false;
 		if (type === 'keydown') {
 			move = true;
 		}
@@ -279,14 +277,13 @@ io.on('connection', socket => {
 
 		const now = Date.now();
 		const deltaTime = (now - room.timeStamp) * 0.03; // +30 ELO every 10 seconds
-		range = ELO_RANGE + deltaTime;
+		let range = ELO_RANGE + deltaTime;
 		range = Math.max(Math.min(range, room.elo + ELO_RANGE_MAX), Math.max(room.elo - ELO_RANGE_MAX, 0));
 		io.to(socket.id).emit('info', { message:
 			`Checking ELO for room ${room.id}: Range = ${range}`
 		}); // debug
-		roomMax = room.elo + range;
-		roomMin = room.elo - range;
-		roomMin = Math.max(roomMin, 0);
+		const roomMax = room.elo + range;
+		const roomMin = Math.max(room.elo - range, 0);
 		io.to(socket.id).emit('info', { message:
 			`Checking ELO for room ${room.id} between ${roomMin} and ${roomMax}`
 		}); // debug
@@ -436,8 +433,8 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return ;
 
-		role = '';
-		roomType = '';
+		let role = '';
+		let roomType = '';
 		switch (gameType) {
 			case 'pong3':
 				role = choosePong3Role(room);
@@ -495,7 +492,7 @@ io.on('connection', socket => {
 						console.log(`REMOVE_PLAYER_FROM_ROOM: Deleting ${gameType} room ${roomId}`); // debug
 						delete rooms[gameType][roomId];
 					}
-					return;
+					return ;
 				}
 			}
 		}
@@ -507,7 +504,7 @@ io.on('connection', socket => {
 		{
 			delete rooms[queueType][queueId].players[playerSocket];
 			io.to(playerSocket).emit('info', { message: `You left room ${queueId}` });
-			return;
+			return ;
 		}
 	}
 
@@ -543,13 +540,11 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return false;
 
-		// const playerNb = roomPlayerNb(gameType, roomId);
-		// return (playerNb === -1 || playerNb >= rooms[gameType][roomId].maxPlayers)
-		if (!rooms[gameType] || !rooms[gameType][roomId]) {
-			//console.error(`Room with gameType: ${gameType} and roomId: ${roomId} does not exist.`);
-			return false;
-		}
-		return roomPlayerNb(gameType, roomId) >= rooms[gameType][roomId].maxPlayers;
+		return (
+			rooms[gameType]
+			&& rooms[gameType][roomId]
+			&& roomPlayerNb(gameType, roomId) >= rooms[gameType][roomId].maxPlayers
+		);
 	}
 
 	// Returns true if a room is launched or if it doesn't exist
@@ -558,9 +553,9 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return true;
 
-		if (rooms[gameType][roomId]) {
+		if (rooms[gameType][roomId])
 			return rooms[gameType][roomId].launched;
-		}
+
 		return true;
 	}
 
@@ -570,9 +565,9 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return -1;
 
-		if (rooms[gameType][roomId]) {
+		if (rooms[gameType][roomId])
 			return Object.keys(rooms[gameType][roomId].players).length;
-		}
+
 		return -1;
 	}
 
@@ -580,20 +575,20 @@ io.on('connection', socket => {
 	// Returns null if it can't find it
 	// Slower than findRoomByPlayerId but does not need gameType
 	function findRoomByPlayerIdSlow(playerId) {
-		console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: Entered`); // debug
+		//console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: Entered`); // debug
 		if (!connected[socket.id])
 			return null;
 
-		console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: Searching for ${playerId}`); // debug
+		//console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: Searching for ${playerId}`); // debug
 
 		for (const gameType in rooms) {
 			if (['queue2', 'queue3', 'queueR'].includes(gameType))
 				continue ;
-			console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: Checking ${gameType}`); // debug
+			//console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: Checking ${gameType}`); // debug
 			for (const roomId in rooms[gameType]) {
-				console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: Checking room ${roomId}`); // debug
+				//console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: Checking room ${roomId}`); // debug
 				if (rooms[gameType][roomId].players[playerId]) {
-					console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: ${playerId} is in room ${roomId}`); // debug
+					//console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: ${playerId} is in room ${roomId}`); // debug
 					return rooms[gameType][roomId];
 				}
 			}
@@ -608,9 +603,8 @@ io.on('connection', socket => {
 			return null;
 
 		for (const roomId in rooms[gameType]) {
-			if (rooms[gameType][roomId].players[playerId]) {
+			if (rooms[gameType][roomId].players[playerId])
 				return rooms[gameType][roomId];
-			}
 		}
 		return null;
 	}
@@ -620,12 +614,7 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return false;
 
-		if (rooms[gameType][roomId])
-		{
-			if (rooms[gameType][roomId].players[socket.id])
-				return true;
-		}
-		return false;
+		return (rooms[gameType][roomId] && rooms[gameType][roomId].players[socket.id]);
 	}
 
 	// Checks if a game can be started and starts it if the answer is yes
@@ -634,13 +623,13 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return ;
 
-		console.log(`CHECK_GAME_START: Checking ${gameType} room ${room.id}`); // debug
+		//console.log(`CHECK_GAME_START: Checking ${gameType} room ${room.id}`); // debug
 
 		if (!room || isRoomLaunched(gameType, room.id)) {
 			return ;
 		}
 
-		console.log(`CHECK_GAME_START: ${gameType} room ${room.id} exists and has not been launched`); // debug
+		//console.log(`CHECK_GAME_START: ${gameType} room ${room.id} exists and has not been launched`); // debug
 
 		switch (gameType) {
 			case 'royal':
@@ -660,21 +649,21 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return ;
 
-		console.log(`START_PONG_GAME: Checking ${gameType} room ${room.id}`); // debug
+		//console.log(`START_PONG_GAME: Checking ${gameType} room ${room.id}`); // debug
 
 		if (!room || isRoomLaunched(gameType, room.id)) {
 			return ;
 		}
 
-		console.log(`START_PONG_GAME: ${gameType} room ${room.id} exists and has not been launched`); // debug
+		//console.log(`START_PONG_GAME: ${gameType} room ${room.id} exists and has not been launched`); // debug
 
 		// If the room is full, launch the game
 		if (isRoomFull(gameType, room.id)) {
-			console.log(`START_PONG_GAME: ${gameType} room ${room.id} is full, launching game`); // debug
+			//console.log(`START_PONG_GAME: ${gameType} room ${room.id} is full, launching game`); // debug
 			launchGame(gameType, room);
-		} else {
-			console.log(`START_PONG_GAME: ${gameType} room ${room.id} is not full`); // debug
-		}
+		}// else {
+			//console.log(`START_PONG_GAME: ${gameType} room ${room.id} is not full`); // debug
+		//}
 	}
 
 	// Starts a game of royal
@@ -712,17 +701,17 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return ;
 
-		console.log(`LAUNCH_GAME: Launching ${gameType} room ${room.id}`); // debug
+		//console.log(`LAUNCH_GAME: Launching ${gameType} room ${room.id}`); // debug
 
 		if (!room || room.launched) {
 			return ;
 		}
 
-		console.log(`LAUNCH_GAME: ${gameType} room ${room.id} exists and has not been launched`); // debug
+		//console.log(`LAUNCH_GAME: ${gameType} room ${room.id} exists and has not been launched`); // debug
 
 		room.launched = true;
 		io.to(room.id).emit('gameStart', { players: room.players });
-		console.log(`LAUNCH_GAME: Emitted gameStart to ${gameType} room ${room.id}`); // debug
+		//console.log(`LAUNCH_GAME: Emitted gameStart to ${gameType} room ${room.id}`); // debug
 		switch (gameType) {
 			case 'royal':
 				RoyalLoop(room);
@@ -750,18 +739,18 @@ io.on('connection', socket => {
 	function Pong2Loop(room) {
 		if (!room)
 			return null;
-		console.log(`PONG2_LOOP: room ${room.id} exists`); // debug
+		//console.log(`PONG2_LOOP: room ${room.id} exists`); // debug
 		if (!connected[socket.id])
 			return LoopError(room, 'A player disconnected');
 
 		// Wait for timer start
-		console.log(`PONG2_LOOP: room ${room.id} waits for readyTimer`); // debug
+		//console.log(`PONG2_LOOP: room ${room.id} waits for readyTimer`); // debug
 		function waitForReadyTimer() {
 			if (!RoomStillExists('pong2', room))
 				return ;
 			const test = allPlayersReadyTimer(room.players);
 			if (!test) {
-				console.log(`PONG2_LOOP: room ${room.id} is not readyTimer`); // debug
+				//console.log(`PONG2_LOOP: room ${room.id} is not readyTimer`); // debug
 				setTimeout(waitForReadyTimer, 1000); // Once every second
 			} else {
 				console.log(`PONG2_LOOP: room ${room.id} is readyTimer`); // debug
@@ -775,16 +764,16 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return LoopError(room, 'A player disconnected');
 		io.to(room.id).emit('startTimer');
-		console.log(`PONG2_LOOP_READY_TIMER: Emitted startTimer to room ${room.id}`); // debug
+		//console.log(`PONG2_LOOP_READY_TIMER: Emitted startTimer to room ${room.id}`); // debug
 
 		// Wait for gameplay start
-		console.log(`PONG2_LOOP_READY_TIMER: room ${room.id} waits for ready`); // debug
+		//console.log(`PONG2_LOOP_READY_TIMER: room ${room.id} waits for ready`); // debug
 		function waitForReady() {
 			if (!RoomStillExists('pong2', room))
 				return ;
 			const test = allPlayersReady(room.players);
 			if (!test) {
-				console.log(`PONG2_LOOP_READY_TIMER: room ${room.id} is not ready`); // debug
+				//console.log(`PONG2_LOOP_READY_TIMER: room ${room.id} is not ready`); // debug
 				setTimeout(waitForReady, 1000); // Once every second
 			} else {
 				console.log(`PONG2_LOOP_READY_TIMER: room ${room.id} is ready`); // debug
@@ -801,7 +790,7 @@ io.on('connection', socket => {
 		room.runtime.startTime = Date.now();
 		room.runtime.ZeroTime = room.runtime.startTime;
 		io.to(room.id).emit('startGameplay');
-		console.log(`PONG2_LOOP_READY: Emitted startGameplay to room ${room.id}`); // debug
+		//console.log(`PONG2_LOOP_READY: Emitted startGameplay to room ${room.id}`); // debug
 
 		// Checks intersection between two non-rotated rectangles
 		// rectangles should be represented as [left, top, right, bottom]

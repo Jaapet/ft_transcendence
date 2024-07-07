@@ -14,7 +14,7 @@ As we are not required to complete all modules, here is our definitive selection
 - ✅ Standard user management, ✅ authentification and 🛠️ tournaments
 - ✅ Advanced 3D with ThreeJS
 - 🛠️ A second game with ✅ user history and ✅ match-making
-- 🛠️ Distant players (playing on 2 different computers)
+- ✅ Distant players (playing online from different computers)
 - 🛠️ Multiple players (more than 2 in one game)
 - 🛠️ Log management (ELK)
 - ✅ 2FA + JSON Web Tokens
@@ -23,7 +23,7 @@ As we are not required to complete all modules, here is our definitive selection
 - ✅ PostgreSQL DB in back-end
 - ✅ Bootstrap toolkit and Next.js in front-end
 - 🛠️ Multiple browser support
-- 🛠️ Monitoring system 
+- ✅ Monitoring system and 🛠️ metrics
 
 ## How to use
 
