@@ -4,13 +4,14 @@ import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import io from 'socket.io-client';
+import WaitList from './WaitList';
 import styles from '../styles/game.module.css';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { AnimationMixer } from "three";
 import { useAuth } from '../context/AuthenticationContext';
 import { useGame } from '../context/GameContext';
 
-const Pong = () => {
+const Pong = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
 	console.log(`PONG_CMPT: Entered Pong Component`); // debug
 	const { user } = useAuth();
 	const {
@@ -610,6 +611,12 @@ const Pong = () => {
 			ballDirX, ballDirZ, resetRotation,
 			leftPaddleZ, rightPaddleZ
 		}) => {
+			// Score
+			if (leftScore !== scoreL)
+				setScoreL(leftScore);
+			if (rightScore !== scoreR)
+				setScoreR(rightScore);
+
 			// Ball
 			/// Speed
 			ballSpeed = newBallSpeed;
@@ -809,6 +816,7 @@ const Pong = () => {
 		return () =>
 		{
 			console.log("Entered useEffect's return function"); // debug
+			gameStart = false;
 			socket.disconnect();
 			document.removeEventListener('keydown', handleKeyDown);
 			document.removeEventListener('keyup', handleKeyUp);
@@ -848,15 +856,13 @@ const Pong = () => {
 		};
 	}, [user, gameType]);
 
-	// TODO: Waitlist should be here
-
 	let testmessage = <></>;
 	let hidden = '';
 	if (!room) {
 		hidden = 'hidden';
 		testmessage = (
 			<div className="card">
-				<p>Not in a room</p>
+				<p>Connecting...</p>
 			</div>
 		);
 	}
@@ -865,11 +871,7 @@ const Pong = () => {
 		testmessage = (
 			<div className="card">
 				<p>In {gameType} waitlist</p>
-				<ul>
-					{ players ? Object.entries(players).map(([key, player]) => (
-						<li key={key}>{player.username} ELO={player.elo} ({player.role})</li>
-					)) : <></> }
-				</ul>
+				<WaitList players={players} />
 			</div>
 		);
 	}
@@ -877,12 +879,7 @@ const Pong = () => {
 		hidden = 'hidden';
 		testmessage = (
 			<div className="card">
-				<p>In {gameType} room { room?.id }, game has not started</p>
-				<ul>
-					{ players ? Object.entries(players).map(([key, player]) => (
-						<li key={key}>{player.username} ELO={player.elo} ({player.role})</li>
-					)) : <></> }
-				</ul>
+				<p>In room {room?.id}, waiting for an opponent</p>
 			</div>
 		);
 	} else {

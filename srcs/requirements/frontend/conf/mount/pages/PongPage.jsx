@@ -8,9 +8,11 @@ import { useGame } from '../context/GameContext';
 
 export default function PongPage({ status, detail }) {
 	const { logout } = useAuth();
-	const { joinPong2Game, players } = useGame();
+	const { joinPong2Game, inQueue, room, players } = useGame();
 	const [playerL, setPlayerL] = useState(null);
 	const [playerR, setPlayerR] = useState(null);
+	const [scoreL, setScoreL] = useState(0);
+	const [scoreR, setScoreR] = useState(0);
 
 	const handleLogout = async () => {
 		await logout();
@@ -69,64 +71,80 @@ export default function PongPage({ status, detail }) {
 			}}
 		>
 
-		{/* Player info */}
-		<div
-			className={`card ${styles.customCard}`}
-			style={{
-			  width: '200px', 
-			  marginRight: 'auto',
-			}}
-		  >
-			<div className={`card-body ${styles.cardInfo}`}>
-			{ playerL ?
-				<>
-					<h5>{playerL.username}</h5>
-					<Image
-						src={playerL.avatar}
-						alt={`${playerL.username}'s avatar`}
-						width={100}
-						height={100}
-					/>
-					<p>{`ELO: ${playerL.elo}`}</p>
-				</>
-			:
-				<h5>Player 1</h5>
-			}
-			</div>
-		  </div>
+		{/* Players */}
+		{ room && !inQueue ?
+			<>
+				{/* Player 1 */}
+				<div
+					className={`card ${styles.customCard}`}
+					style={{
+						width: '200px', 
+						marginRight: 'auto',
+					}}
+				>
+					<div className={`card-body ${styles.cardInfo}`}>
+						{ playerL ?
+							<>
+								<h5>{playerL.username}</h5>
+								<Image
+									src={playerL.avatar}
+									alt={`${playerL.username}'s avatar`}
+									width={100}
+									height={100}
+								/>
+								<p>{`ELO: ${playerL.elo}`}</p>
+								<h1>{scoreL}</h1>
+							</>
+						:
+							<>
+								<h5>Player 1</h5>
+								<h1>{scoreL}</h1>
+							</>
+						}
+					</div>
+				</div>
 
-
-		  {/* Current leaderboard */}
-		  <div
-			className={`card ${styles.customCard}`}
-			style={{
-			  width: '200px', 
-			  marginLeft: 'auto', 
-			}}
-		  >
-			<div className={`card-body ${styles.cardInfo}`}>
-			{ playerR ?
-				<>
-					<h5>{playerR.username}</h5>
-					<Image
-						src={playerR.avatar}
-						alt={`${playerR.username}'s avatar`}
-						width={100}
-						height={100}
-					/>
-					<p>{`ELO: ${playerR.elo}`}</p>
-				</>
-			:
-				<h5>Player 2</h5>
-			}
-			</div>
-		  </div>
+				{/* Player 2 */}
+				<div
+					className={`card ${styles.customCard}`}
+					style={{
+						width: '200px', 
+						marginLeft: 'auto', 
+					}}
+				>
+					<div className={`card-body ${styles.cardInfo}`}>
+						{ playerR ?
+							<>
+								<h5>{playerR.username}</h5>
+								<Image
+									src={playerR.avatar}
+									alt={`${playerR.username}'s avatar`}
+									width={100}
+									height={100}
+								/>
+								<p>{`ELO: ${playerR.elo}`}</p>
+								<h1>{scoreR}</h1>
+							</>
+						:
+							<>
+								<h5>Player 2</h5>
+								<h1>{scoreR}</h1>
+							</>
+						}
+					</div>
+				</div>
+			</>
+		:
+			<></>
+		}
 		</div>
-
 
 		{/* Game canvas */}
 		<div>
-			<Pong />
+			<Pong
+				scoreL={scoreL} setScoreL={setScoreL}
+				scoreR={scoreR} setScoreR={setScoreR}
+			/>
 		</div>
 	</div>
 	);

@@ -76,6 +76,7 @@ const PONG2_BALL_MAX_Z = 20;
 const PONG2_PADDLE_MAX_Z = 16.5;
 const PONG2_BALL_MAX_Z_DIR = 0.6;
 const PONG2_BALL_BOUNCE_MERCY_PERIOD = 100;	// In ms
+const PONG2_SCORE_TO_WIN = 11;
 
 /// PONG 3
 
@@ -315,6 +316,22 @@ io.on('connection', socket => {
 			}
 		}
 		return null;
+	}
+
+	// Finds launched rooms to spectate, empty if there are none
+	function findWatcherRooms(gameType) {
+		if (!connected[socket.id])
+			return {};
+
+		const ret = rooms[gameType];
+
+		// Removed rooms that have yet to be launched
+		for (const roomId in ret) {
+			if (!isRoomLaunched(gameType, roomId)) {
+				delete ret[roomId];
+			}
+		}
+		return ret;
 	}
 
 	// Finds room matching elo if ther is one, null if not
@@ -788,7 +805,7 @@ io.on('connection', socket => {
 			return LoopError(room, 'A player disconnected');
 		room.runtime.started = true;
 		room.runtime.startTime = Date.now();
-		room.runtime.ZeroTime = room.runtime.startTime;
+		room.runtime.ballZeroTime = room.runtime.startTime;
 		io.to(room.id).emit('startGameplay');
 		//console.log(`PONG2_LOOP_READY: Emitted startGameplay to room ${room.id}`); // debug
 
@@ -815,7 +832,7 @@ io.on('connection', socket => {
 			// update ball speed
 			const elapsedTime = Date.now();
 			const timeSinceLastLoop = (elapsedTime - room.runtime.lastLoopTime) / 1000; // In seconds
-			const currentBallTime = elapsedTime - room.runtime.startTime; // in ms
+			const currentBallTime = elapsedTime - room.runtime.ballZeroTime; // in ms
 			room.runtime.ballSpeed = PONG2_BASE_BALL_SPEED + (currentBallTime * (PONG2_BALL_ACCELERATION_RATE / 1000));
 			room.runtime.ballSpeed = Math.min(room.runtime.ballSpeed, PONG2_MAX_BALL_SPEED);
 
@@ -921,9 +938,28 @@ io.on('connection', socket => {
 			}
 
 			/// Check if someone scored (if ballX is behind a paddleX and going towards wall)
-			if ((room.runtime.ballPosition.x > PONG2_BALL_MAX_X - 2 && room.runtime.ballDirection.x > 0)
-				|| (room.runtime.ballPosition.x < -PONG2_BALL_MAX_X + 2 && room.runtime.ballDirection.x < 0)) {
-					// TODO: Score
+			if ((room.runtime.ballPosition.x > PONG2_BALL_MAX_X - 0.5 && room.runtime.ballDirection.x > 0)
+				|| (room.runtime.ballPosition.x < -PONG2_BALL_MAX_X + 0.5 && room.runtime.ballDirection.x < 0)) {
+					const leftScored = room.runtime.ballPosition.x > 0;
+					room.runtime.ballPosition.x = 0;
+					room.runtime.ballPosition.z = 0;
+					room.runtime.ballDirection.z = 0.00001;
+					room.runtime.ballSpeed = PONG2_BASE_BALL_SPEED;
+					room.runtime.ballZeroTime = Date.now();
+					room.runtime.resetRotation = true;
+					if (leftScored) {
+						room.runtime.score.l += 1;
+						room.runtime.ballDirection.x = -0.99999;
+						if (room.runtime.score.l >= PONG2_SCORE_TO_WIN) {
+							// TODO: Left won the game
+						}
+					} else {
+						room.runtime.score.r += 1;
+						room.runtime.ballDirection.x = 0.99999;
+						if (room.runtime.score.r >= PONG2_SCORE_TO_WIN) {
+							// TODO: Right won the game
+						}
+					}
 				}
 
 			io.to(room.id).emit('gameStatus', {
