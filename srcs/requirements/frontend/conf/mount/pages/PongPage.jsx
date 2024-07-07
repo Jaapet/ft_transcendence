@@ -1,13 +1,16 @@
 import React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Pong from '../components/pong';
+import Image from 'next/image';
 import styles from '../styles/base.module.css';
 import { useAuth } from '../context/AuthenticationContext';
 import { useGame } from '../context/GameContext';
 
 export default function PongPage({ status, detail }) {
 	const { logout } = useAuth();
-	const { joinPong2Game } = useGame();
+	const { joinPong2Game, players } = useGame();
+	const [playerL, setPlayerL] = useState(null);
+	const [playerR, setPlayerR] = useState(null);
 
 	const handleLogout = async () => {
 		await logout();
@@ -30,6 +33,30 @@ export default function PongPage({ status, detail }) {
 		joinPong2Game();
 	}, []);
 
+/*
+	player = {
+		id,
+		username,
+		ready,
+		elo,
+		avatar,
+		role,
+		readyTimer
+	}
+*/
+	useEffect(() => {
+		console.log('PONG PAGE PLAYERS:', players); // debug
+		if (players) {
+			Object.entries(players).map(([key, player]) => {
+				console.log('PONG PAGE PLAYER ROLE:', player.role); // debug
+				if (player.role === 'leftPaddle')
+					setPlayerL(player);
+				else if (player.role === 'rightPaddle')
+					setPlayerR(player);
+			});
+		}
+	}, [players]);
+
 	return (
 	<div className={styles.container}>
 		<div
@@ -51,8 +78,20 @@ export default function PongPage({ status, detail }) {
 			}}
 		  >
 			<div className={`card-body ${styles.cardInfo}`}>
-			  <h5>Player 1</h5>
-			  {/* Put the ball texture here */}
+			{ playerL ?
+				<>
+					<h5>{playerL.username}</h5>
+					<Image
+						src={playerL.avatar}
+						alt={`${playerL.username}'s avatar`}
+						width={100}
+						height={100}
+					/>
+					<p>{`ELO: ${playerL.elo}`}</p>
+				</>
+			:
+				<h5>Player 1</h5>
+			}
 			</div>
 		  </div>
 
@@ -66,8 +105,20 @@ export default function PongPage({ status, detail }) {
 			}}
 		  >
 			<div className={`card-body ${styles.cardInfo}`}>
-			  <h5>Player 2</h5>
-			  {/* Put the leaderboard here */}
+			{ playerR ?
+				<>
+					<h5>{playerR.username}</h5>
+					<Image
+						src={playerR.avatar}
+						alt={`${playerR.username}'s avatar`}
+						width={100}
+						height={100}
+					/>
+					<p>{`ELO: ${playerR.elo}`}</p>
+				</>
+			:
+				<h5>Player 2</h5>
+			}
 			</div>
 		  </div>
 		</div>
