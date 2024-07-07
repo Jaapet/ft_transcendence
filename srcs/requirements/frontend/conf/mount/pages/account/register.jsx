@@ -12,6 +12,7 @@ const SignupFormUsernameField = ({ username, setUsername }) => {
 			<div data-mdb-input-init className="form-outline flex-fill mb-0">
 				<label className="form-label" htmlFor="username">Username</label>
 				<input
+					pattern="^[a-zA-Z0-9]{1,8}$"
 					type="text"
 					id="username"
 					autoComplete="username"
@@ -52,6 +53,7 @@ const SignupFormPasswordField = ({ password, setPassword }) => {
 			<div data-mdb-input-init className="form-outline flex-fill mb-0">
 				<label className="form-label" htmlFor="new-password">Password</label>
 				<input
+					pattern="^[A-Za-z\d!@#$%^&*?\-+~_=]{8,20}$"
 					type="password"
 					id="new-password"
 					autoComplete="new-password"
@@ -72,6 +74,7 @@ const SignupFormPasswordRepeatField = ({ password, setPassword }) => {
 			<div data-mdb-input-init className="form-outline flex-fill mb-0">
 				<label className="form-label" htmlFor="new-passwordR">Repeat password</label>
 				<input
+					pattern="^[A-Za-z\d!@#$%^&*?\-+~_=]{8,20}$"
 					type="password"
 					id="new-passwordR"
 					autoComplete="new-password"
