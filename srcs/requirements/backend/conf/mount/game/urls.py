@@ -22,6 +22,7 @@ from .views import (
 	Match3ViewSet,
 	MatchRViewSet,
 	LastThreeMatchesAPIView,
+	RegisterMatchAPIView,
 	MetricsView
 )
 from rest_framework_simplejwt import views as jwt_views
@@ -55,5 +56,6 @@ urlpatterns = [
 	path('friends/', FriendListAPIView.as_view(), name="friend_list"),
 	path('friends/remove', RemoveFriendAPIView.as_view(), name='remove_friend'),
 	path('friends/friendship_status', CheckFriendshipStatusAPIView.as_view(), name='friendship_status'),
+	path('game/pong2/save', RegisterMatchAPIView.as_view(), name='register_pong2_game'),
 	path('metrics', MetricsView.as_view(), name='metrics')
 ]

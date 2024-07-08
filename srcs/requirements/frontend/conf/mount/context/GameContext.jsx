@@ -6,6 +6,7 @@ export const GameProvider = ({ children }) => {
 	const [inQueue, setInQueue] = useState(false);
 	const [inGame, setInGame] = useState(false);
 	const [gameStarted, setGameStarted] = useState(false);
+	const [gameEnded, setGameEnded] = useState(false);
 	const [gameType, setGameType] = useState('none');
 	const [room, setRoom] = useState(null);
 	const [players, setPlayers] = useState(null);
@@ -67,9 +68,9 @@ export const GameProvider = ({ children }) => {
 
 	return (
 		<GameContext.Provider value={{
-			inQueue, inGame, gameStarted, gameType, room, players,
+			inQueue, inGame, gameStarted, gameEnded, gameType, room, players,
 			joinPong2Game, joinPong3Game, joinRoyalGame,
-			setGameStarted, updateRoom, updatePlayers, resetAll
+			setGameStarted, setGameEnded, updateRoom, updatePlayers, resetAll
 		}}>
 			{children}
 		</GameContext.Provider>

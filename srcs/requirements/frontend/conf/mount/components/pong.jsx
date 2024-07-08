@@ -10,18 +10,21 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { AnimationMixer } from "three";
 import { useAuth } from '../context/AuthenticationContext';
 import { useGame } from '../context/GameContext';
+import { useRouter } from 'next/router';
 
 const Pong = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
-	console.log(`PONG_CMPT: Entered Pong Component`); // debug
+	const router = useRouter();
 	const { user } = useAuth();
 	const {
 		inQueue,
 		inGame,
 		gameStarted,
+		gameEnded,
 		gameType,
 		room,
 		players,
 		setGameStarted,
+		setGameEnded,
 		updateRoom,
 		updatePlayers,
 		resetAll
@@ -64,7 +67,7 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
 		});
 
 		/// SCENE
-		const scene = new THREE.Scene();
+		let scene = new THREE.Scene();
 		scene.background = new THREE.Color(0x111111);
 
 		const canvas = canvasRef.current;
@@ -88,7 +91,7 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
 		texture.colorSpace = THREE.SRGBColorSpace;
 
 		/// CAMERA
-		const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+		let camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 		camera.position.set(0, 100, 10);
 		camera.position.z = 10;
 
@@ -104,6 +107,7 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
 				modelsLoaded = true;
 		}
 		checkModelsLoaded();
+
 /*
 		const loadermodel = new GLTFLoader();
 
@@ -489,6 +493,7 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
 		scene.add(skyboxMesh);
 
 		let gameStart = false;
+		let gameEnd = false;
 		let startTimer = false;
 		let startGameplay = false;
 		let startTime = Date.now();
@@ -602,6 +607,11 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
 			startGameplay = true;
 			startTime = Date.now();
 			console.log(`PONG_CMPT: Received startGameplay`); // debug
+		});
+
+		socket.on('gameEnd', () => {
+			gameEnd = true;
+			setGameEnded(true);
 		});
 
 		//let last = Date.now(); // debug
@@ -799,15 +809,17 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
 			}
 
 			lastLoopTime = Date.now();
-			renderer.render(scene, camera);
-			requestAnimationFrame(render);
+			if (!gameEnd) {
+				renderer.render(scene, camera);
+				requestAnimationFrame(render);
+			}
 		}
 		console.log(`PONG_CMPT: Waiting for gameStart`); // debug
 		function waitForGameStart() {
-			if (gameStart) {
+			if (gameStart && !gameEnd) {
 				lastLoopTime = Date.now();
 				requestAnimationFrame(render);
-			} else {
+			} else if (!gameEnd) {
 				setTimeout(waitForGameStart, 250); // Every 0.25 seconds
 			}
 		}
@@ -847,14 +859,27 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
 				for (const key in material)
 				{
 					const value = material[key];
-					if (value && typeof value === 'object' && 'minFilter' in value)
+					if (value && typeof value === 'object' && 'minFilter' in value) {
 						value.dispose();
+					}
 				}
 			}
+			scene = null;
+			camera = null;
+			renderer && renderer.renderLists.dispose();
 			renderer.dispose();
-			cancelAnimationFrame(render); 
+			cancelAnimationFrame(render);
 		};
 	}, [user, gameType]);
+
+	useEffect(() => {
+		if (gameEnded) {
+			setGameStarted(false);
+			setGameEnded(false);
+			// TODO: redirect to results page
+			router.push('/');
+		}
+	}, [gameEnded]);
 
 	let testmessage = <></>;
 	let hidden = '';

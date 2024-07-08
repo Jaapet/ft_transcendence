@@ -76,6 +76,7 @@ const PONG2_BALL_MAX_Z = 20;
 const PONG2_PADDLE_MAX_Z = 16.5;
 const PONG2_BALL_MAX_Z_DIR = 0.6;
 const PONG2_BALL_BOUNCE_MERCY_PERIOD = 100;	// In ms
+const PONG2_BALL_RESPAWN_TIME = 500;				// In ms
 const PONG2_SCORE_TO_WIN = 11;
 
 /// PONG 3
@@ -211,7 +212,20 @@ io.on('connection', socket => {
 		}, FIND_ROOM_RATE * 1000);
 	}
 
-	function getPlayerInRoom(room) {
+	// Gets the first player in a room that has the specified role
+	// Players should thus have unique roles in a given room
+	function getPlayerRoleInRoom(room, role) {
+		if (!connected[socket.id] || !room || !room.players)
+			return null;
+
+		for (const playerId in room.players)
+			if (room.players[playerId].role === role)
+				return room.players[playerId];
+
+		return null;
+	}
+
+	function getCurrentPlayerInRoom(room) {
 		if (!connected[socket.id])
 			return null;
 
@@ -224,28 +238,25 @@ io.on('connection', socket => {
 		if (!connected[socket.id] || !room || !input || !input.key || !input.type)
 			return ;
 
-		const player = getPlayerInRoom(room);
+		const player = getCurrentPlayerInRoom(room);
 		if (!player)
 			return ;
 
 		const { key, type } = input;
 		let move = false;
-		if (type === 'keydown') {
+		if (type === 'keydown')
 			move = true;
-		}
 
 		if (key === "ArrowDown") {
-			if (player.role === 'leftPaddle') {
+			if (player.role === 'leftPaddle')
 				room.runtime.goDown.l = move;
-			} else {
+			else
 				room.runtime.goDown.r = move;
-			}
 		} else if (key === "ArrowUp") {
-			if (player.role === 'leftPaddle') {
+			if (player.role === 'leftPaddle')
 				room.runtime.goUp.l = move;
-			} else {
+			else
 				room.runtime.goUp.r = move;
-			}
 		}
 	}
 
@@ -368,9 +379,11 @@ io.on('connection', socket => {
 				ballDirection: { x: 0.99999, z: 0.00001 },
 				ballSpeed: PONG2_BASE_BALL_SPEED,
 				lastBallBounce: { happened: false, when: now },
+				ballRespawnTime: now,
 				paddleZ: { l: 0, r: 0 },
 				goUp: { l: false, r: false },
-				goDown: { l: false, r: false }
+				goDown: { l: false, r: false },
+				end: false
 			}
 		};
 	}
@@ -806,6 +819,7 @@ io.on('connection', socket => {
 		room.runtime.started = true;
 		room.runtime.startTime = Date.now();
 		room.runtime.ballZeroTime = room.runtime.startTime;
+		room.runtime.ballRespawnTime = room.runtime.startTime - PONG2_BALL_RESPAWN_TIME;
 		io.to(room.id).emit('startGameplay');
 		//console.log(`PONG2_LOOP_READY: Emitted startGameplay to room ${room.id}`); // debug
 
@@ -825,6 +839,45 @@ io.on('connection', socket => {
 			return ({ happened: false, hit: 0.0 });
 		}
 
+		const sendResults = (room, leftWon) => {
+			if (room.runtime.end)
+				return ;
+
+			room.runtime.end = true;
+			const winner = leftWon ? getPlayerRoleInRoom(room, 'leftPaddle') : getPlayerRoleInRoom(room, 'rightPaddle');
+			const loser = leftWon ? getPlayerRoleInRoom(room, 'rightPaddle') : getPlayerRoleInRoom(room, 'leftPaddle');
+			// Send match info to backend
+			const data = {
+				type: 'pong2',
+				winner_id: winner ? winner.id : 0,
+				loser_id: loser ? loser.id : 0,
+				winner_score: leftWon ? room.runtime.score.l : room.runtime.score.r,
+				loser_score: leftWon ? room.runtime.score.r : room.runtime.score.l,
+				start_datetime: new Date(room.runtime.startTime).toISOString(),
+				end_datetime: new Date(Date.now()).toISOString()
+			};
+
+			fetch('https://backend:8000/api/game/pong2/save', {
+				method: 'POST',
+				headers: {
+					'Authorization': 'Bearer ' + process.env.WS_TOKEN_BACKEND,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(data)
+			})
+			.then(response => {
+				if (!response || !response.ok)
+					throw new Error('Could not register match results');
+
+					return response.json();
+			})
+			.catch(error => {
+				console.error('Error:', error);
+			});
+
+			io.to(room.id).emit('gameEnd');
+		}
+
 		function gameLoop() {
 			if (!connected[socket.id])
 				return ;
@@ -832,9 +885,12 @@ io.on('connection', socket => {
 			// update ball speed
 			const elapsedTime = Date.now();
 			const timeSinceLastLoop = (elapsedTime - room.runtime.lastLoopTime) / 1000; // In seconds
-			const currentBallTime = elapsedTime - room.runtime.ballZeroTime; // in ms
-			room.runtime.ballSpeed = PONG2_BASE_BALL_SPEED + (currentBallTime * (PONG2_BALL_ACCELERATION_RATE / 1000));
-			room.runtime.ballSpeed = Math.min(room.runtime.ballSpeed, PONG2_MAX_BALL_SPEED);
+			// Ball will only change speed PONG2_BALL_RESPAWN_TIME ms afer respawning
+			if (elapsedTime - room.runtime.ballRespawnTime >= PONG2_BALL_RESPAWN_TIME) {
+				const currentBallTime = elapsedTime - room.runtime.ballZeroTime; // in ms
+				room.runtime.ballSpeed = PONG2_BASE_BALL_SPEED + (currentBallTime * (PONG2_BALL_ACCELERATION_RATE / 1000));
+				room.runtime.ballSpeed = Math.min(room.runtime.ballSpeed, PONG2_MAX_BALL_SPEED);
+			}
 
 			// update paddle positions
 			const displaceP = PONG2_PADDLE_SPEED * timeSinceLastLoop;
@@ -846,6 +902,7 @@ io.on('connection', socket => {
 			if (room.runtime.goDown.l)
 				room.runtime.paddleZ.l += displaceP;
 			room.runtime.paddleZ.l = Math.min(Math.max(room.runtime.paddleZ.l, -PONG2_PADDLE_MAX_Z), PONG2_PADDLE_MAX_Z);
+
 			/// Right Paddle
 			//// Go Up
 			if (room.runtime.goUp.r)
@@ -944,21 +1001,24 @@ io.on('connection', socket => {
 					room.runtime.ballPosition.x = 0;
 					room.runtime.ballPosition.z = 0;
 					room.runtime.ballDirection.z = 0.00001;
-					room.runtime.ballSpeed = PONG2_BASE_BALL_SPEED;
-					room.runtime.ballZeroTime = Date.now();
+					room.runtime.ballSpeed = 0;
+					room.runtime.ballZeroTime = Date.now() + PONG2_BALL_RESPAWN_TIME;
+					room.runtime.ballRespawnTime = Date.now();
 					room.runtime.resetRotation = true;
+					room.runtime.paddleZ.l = 0;
+					room.runtime.paddleZ.r = 0;
 					if (leftScored) {
 						room.runtime.score.l += 1;
-						room.runtime.ballDirection.x = -0.99999;
-						if (room.runtime.score.l >= PONG2_SCORE_TO_WIN) {
-							// TODO: Left won the game
-						}
+						room.runtime.ballDirection.x = 0.99999;
+						// Left won the game
+						if (room.runtime.score.l >= PONG2_SCORE_TO_WIN)
+							sendResults(room, true);
 					} else {
 						room.runtime.score.r += 1;
-						room.runtime.ballDirection.x = 0.99999;
-						if (room.runtime.score.r >= PONG2_SCORE_TO_WIN) {
-							// TODO: Right won the game
-						}
+						room.runtime.ballDirection.x = -0.99999;
+						// Right won the game
+						if (room.runtime.score.r >= PONG2_SCORE_TO_WIN)
+							sendResults(room, false);
 					}
 				}
 
