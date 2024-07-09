@@ -77,7 +77,7 @@ const PONG2_PADDLE_MAX_Z = 16.5;
 const PONG2_BALL_MAX_Z_DIR = 0.6;
 const PONG2_BALL_BOUNCE_MERCY_PERIOD = 100;	// In ms
 const PONG2_BALL_RESPAWN_TIME = 500;				// In ms
-const PONG2_SCORE_TO_WIN = 11;
+const PONG2_SCORE_TO_WIN = 4;
 
 /// PONG 3
 
@@ -875,7 +875,7 @@ io.on('connection', socket => {
 				console.error('Error:', error);
 			});
 
-			io.to(room.id).emit('gameEnd');
+			io.to(room.id).emit('gameEnd', { winner: winner, score: data.winner_score });
 		}
 
 		function gameLoop() {

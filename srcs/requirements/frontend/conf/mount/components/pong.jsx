@@ -7,12 +7,11 @@ import io from 'socket.io-client';
 import WaitList from './WaitList';
 import styles from '../styles/game.module.css';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { AnimationMixer } from "three";
 import { useAuth } from '../context/AuthenticationContext';
 import { useGame } from '../context/GameContext';
 import { useRouter } from 'next/router';
 
-const Pong = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
+const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWinner, setWinnerScore }) => {
 	const router = useRouter();
 	const { user } = useAuth();
 	const {
@@ -35,34 +34,35 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
 		if (!user || !gameType || gameType !== 'pong2' || !setGameStarted || !updateRoom || !updatePlayers || !resetAll)
 			return ;
 
-		console.log('INQUEUE:', inQueue); // debug
-		console.log('INGAME:', inGame); // debug
-		console.log('GAMETYPE:', gameType); // debug
+		//console.log('INQUEUE:', inQueue); // debug
+		//console.log('INGAME:', inGame); // debug
+		//console.log('GAMETYPE:', gameType); // debug
 
-		console.log(`PONG_CMPT: Entered useEffect`); // debug
+		//console.log(`PONG_CMPT: Entered useEffect`); // debug
 		const socket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`);
-		console.log(`PONG_CMPT: Connected to ws server`); // debug
+		//console.log(`PONG_CMPT: Connected to ws server`); // debug
+		// TODO: Replace useAuth's user with an API call
 		socket.emit('join', { gameType: 'pong2', userId: user.id, userName: user.username, userELO: user.elo_pong, userAvatar: user.avatar });
-		console.log(`PONG_CMPT: Sent join msg`); // debug
+		//console.log(`PONG_CMPT: Sent join msg`); // debug
 		// Gérer les événements de connexion et d'erreur
 		socket.on('connect', () => {
-			console.log('Connected to websocket server');
+			//console.log('Connected to websocket server');
 		});
 		socket.on('connect_error', (error) => {
-			console.error('Connection error for websocket server:', error);
+			//console.error('Connection error for websocket server:', error);
 		});
 		socket.on('disconnect', () => {
-			console.log('Disconnected from websocket server');
+			//console.log('Disconnected from websocket server');
 		});
 
 		socket.on('updateRoom', ({ room, players }) => {
-			console.log('Room updated to', room); // debug
-			console.log('With players:', players); // debug
+			//console.log('Room updated to', room); // debug
+			//console.log('With players:', players); // debug
 			updateRoom(room, players);
 		});
 
 		socket.on('updatePlayers', ({ players }) => {
-			console.log('Room updated with these new players:', players); // debug
+			//console.log('Room updated with these new players:', players); // debug
 			updatePlayers(players);
 		});
 
@@ -95,6 +95,8 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
 		camera.position.set(0, 100, 10);
 		camera.position.z = 10;
 
+		let modelsLoaded = true;
+/*
 		/// MODEL 3D
 		const totalmodel = 0;
 		let actualmodel = 0;
@@ -107,7 +109,7 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
 				modelsLoaded = true;
 		}
 		checkModelsLoaded();
-
+*/
 /*
 		const loadermodel = new GLTFLoader();
 
@@ -357,7 +359,6 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
 			return (textMesh1);
 		}
 
-
 		/// FLOOR DE LA PISCINE (PONG)
 		const planeSize = 42;
 		const texture2 = loader.load('games/pong/texture/dollarrachid.jpg');
@@ -481,7 +482,7 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
 		addwall(-44.75, 3, 0, new THREE.Mesh(wall2, wallmaterials2));
 		addwall(44.75, 3, 0, new THREE.Mesh(wall2, wallmaterials2));
 		addwall(0, 2.1, 0, new THREE.Mesh(watercube, water));
-
+/*
 		/// SKYBOX
 		// creation d'une sphere pour le ciel
 		const skybox = new THREE.IcosahedronGeometry(4200,50);
@@ -490,10 +491,9 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
 		// positionnement de l'objet ciel
 		skyboxMesh.rotation.y = -2.5;
 		skyboxMesh.position.z = 20 - 45;
-		scene.add(skyboxMesh);
+		scene.add(skyboxMesh);*/
 
 		let gameStart = false;
-		let gameEnd = false;
 		let startTimer = false;
 		let startGameplay = false;
 		let startTime = Date.now();
@@ -545,8 +545,6 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
 
 		/// RENDER
 		var frame = 0;
-		if (totalmodel == actualmodel)
-			console.log(actualmodel, totalmodel);;
 		renderer.render(scene, camera);
 
 		/// FUNCTIONS
@@ -609,9 +607,11 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
 			console.log(`PONG_CMPT: Received startGameplay`); // debug
 		});
 
-		socket.on('gameEnd', () => {
-			gameEnd = true;
+		socket.on('gameEnd', ({ winner, score }) => {
 			setGameEnded(true);
+			setWinner(winner);
+			setWinnerScore(score);
+			setGameEnd(true);
 		});
 
 		//let last = Date.now(); // debug
@@ -827,6 +827,7 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
 
 		return () =>
 		{
+			setGameEnd(true);
 			console.log("Entered useEffect's return function"); // debug
 			gameStart = false;
 			socket.disconnect();
@@ -864,8 +865,8 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
 					}
 				}
 			}
-			scene = null;
-			camera = null;
+			//scene = null;
+			//camera = null;
 			renderer && renderer.renderLists.dispose();
 			renderer.dispose();
 			cancelAnimationFrame(render);
@@ -876,8 +877,8 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
 		if (gameEnded) {
 			setGameStarted(false);
 			setGameEnded(false);
-			// TODO: redirect to results page
-			router.push('/');
+			resetAll();
+			//router.push('/');
 		}
 	}, [gameEnded]);
 

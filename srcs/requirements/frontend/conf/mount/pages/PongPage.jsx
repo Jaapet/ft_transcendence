@@ -1,8 +1,9 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
-import Pong from '../components/pong';
-import Image from 'next/image';
 import styles from '../styles/base.module.css';
+import Pong from '../components/pong';
+import PongPlayerCard from '../components/PongPlayerCard';
+import PongResults from '../components/pongResults';
 import { useAuth } from '../context/AuthenticationContext';
 import { useGame } from '../context/GameContext';
 
@@ -13,6 +14,9 @@ export default function PongPage({ status, detail }) {
 	const [playerR, setPlayerR] = useState(null);
 	const [scoreL, setScoreL] = useState(0);
 	const [scoreR, setScoreR] = useState(0);
+	const [gameEnd, setGameEnd] = useState(false);
+	const [winner, setWinner] = useState(null);
+	const [winnerScore, setWinnerScore] = useState(0);
 
 	const handleLogout = async () => {
 		await logout();
@@ -47,10 +51,10 @@ export default function PongPage({ status, detail }) {
 	}
 */
 	useEffect(() => {
-		console.log('PONG PAGE PLAYERS:', players); // debug
+		//console.log('PONG PAGE PLAYERS:', players); // debug
 		if (players) {
 			Object.entries(players).map(([key, player]) => {
-				console.log('PONG PAGE PLAYER ROLE:', player.role); // debug
+				//console.log('PONG PAGE PLAYER ROLE:', player.role); // debug
 				if (player.role === 'leftPaddle')
 					setPlayerL(player);
 				else if (player.role === 'rightPaddle')
@@ -58,6 +62,14 @@ export default function PongPage({ status, detail }) {
 			});
 		}
 	}, [players]);
+
+	if (gameEnd && winner) {
+		return (
+			<div className={`${styles.container} pt-5`}>
+				<PongResults winner={winner} winnerScore={winnerScore} />
+			</div>
+		);
+	}
 
 	return (
 	<div className={styles.container}>
@@ -75,64 +87,10 @@ export default function PongPage({ status, detail }) {
 		{ room && !inQueue ?
 			<>
 				{/* Player 1 */}
-				<div
-					className={`card ${styles.customCard}`}
-					style={{
-						width: '200px', 
-						marginRight: 'auto',
-					}}
-				>
-					<div className={`card-body ${styles.cardInfo}`}>
-						{ playerL ?
-							<>
-								<h5>{playerL.username}</h5>
-								<Image
-									src={playerL.avatar}
-									alt={`${playerL.username}'s avatar`}
-									width={100}
-									height={100}
-								/>
-								<p>{`ELO: ${playerL.elo}`}</p>
-								<h1>{scoreL}</h1>
-							</>
-						:
-							<>
-								<h5>Player 1</h5>
-								<h1>{scoreL}</h1>
-							</>
-						}
-					</div>
-				</div>
+				<PongPlayerCard nb={1} player={playerL} score={scoreL} />
 
 				{/* Player 2 */}
-				<div
-					className={`card ${styles.customCard}`}
-					style={{
-						width: '200px', 
-						marginLeft: 'auto', 
-					}}
-				>
-					<div className={`card-body ${styles.cardInfo}`}>
-						{ playerR ?
-							<>
-								<h5>{playerR.username}</h5>
-								<Image
-									src={playerR.avatar}
-									alt={`${playerR.username}'s avatar`}
-									width={100}
-									height={100}
-								/>
-								<p>{`ELO: ${playerR.elo}`}</p>
-								<h1>{scoreR}</h1>
-							</>
-						:
-							<>
-								<h5>Player 2</h5>
-								<h1>{scoreR}</h1>
-							</>
-						}
-					</div>
-				</div>
+				<PongPlayerCard nb={2} player={playerR} score={scoreR} />
 			</>
 		:
 			<></>
@@ -144,6 +102,8 @@ export default function PongPage({ status, detail }) {
 			<Pong
 				scoreL={scoreL} setScoreL={setScoreL}
 				scoreR={scoreR} setScoreR={setScoreR}
+				gameEnd={gameEnd} setGameEnd={setGameEnd}
+				setWinner={setWinner} setWinnerScore={setWinnerScore}
 			/>
 		</div>
 	</div>

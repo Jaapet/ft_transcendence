@@ -61,6 +61,8 @@ export const GameProvider = ({ children }) => {
 	const resetAll = () => {
 		setInQueue(false);
 		setInGame(false);
+		setGameStarted(false);
+		setGameEnded(false);
 		setGameType('none');
 		setRoom(null);
 		setPlayers(null);
