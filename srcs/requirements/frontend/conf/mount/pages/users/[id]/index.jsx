@@ -39,12 +39,21 @@ const ProfileMemberCardPicture = ({ user }) => {
       </Card.Body>
     </Card>
 */
+const ProfileMemberCardELOroyal = ({ user }) => {
+	return (
+		<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '20px',  minWidth: '200px'}}>
+			<div className="card-body" style={{backgroundColor:'rgba(255, 255, 255, 0.1)'}}>
+				<p className="card-text" >Royal:{user.elo_royal}</p>
+			</div>
+		</div>
+	);
+}
 
 const ProfileMemberCardELO = ({ user }) => {
 	return (
-		<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '20px'}}>
+		<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '20px', minWidth: '200px'}}>
 			<div className="card-body" style={{backgroundColor:'rgba(255, 255, 255, 0.1)'}}>
-				<p className="card-text" >elo </p>
+				<p className="card-text"> Pong:{user.elo_pong} </p>
 			</div>
 		</div>
 	);
@@ -101,6 +110,8 @@ const ProfileMemberCardEditButton = ({ target_user }) => {
 }
 
 const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
+	console.table(user);
+	
 	return (
 		<div>
 			{/* pp + join date */}
@@ -119,12 +130,11 @@ const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg
 			{/* Edit button */}
 			<ProfileMemberCardEditButton target_user={user} />
 
-			{/* Friends button */}
-			<ProfileMemberCardFriendsButton target_user={user} />
-		</div>
-
+				</div>
 			{/* elo */}
 			<ProfileMemberCardELO user={user} />
+			<ProfileMemberCardELOroyal user={user} />
+
 		</div>
 	);
 }

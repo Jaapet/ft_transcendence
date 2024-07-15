@@ -26,3 +26,20 @@
 	z-index: 1000;
 }
 
+
+
+/* footer part */
+.footer {
+	position: fixed;
+	bottom: 0px;
+	background-color: #343a40;
+	color: #ffffff;
+	text-align: center;
+	width: 100%;
+  }
+  
+  .footer p {
+	margin-bottom: 0px;
+  }
+
+ 

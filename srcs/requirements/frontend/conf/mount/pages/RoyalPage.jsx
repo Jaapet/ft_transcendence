@@ -1,6 +1,8 @@
 import React from 'react';
 import Royal from '../components/royal';
 import styles from '../styles/base.module.css';
+import DrawingCanvas from '../components/Drawing';
+
 import { useAuth } from '../context/AuthenticationContext';
 
 export default function RoyalPage({ status, detail }) {
@@ -24,38 +26,25 @@ export default function RoyalPage({ status, detail }) {
 	}
 
 	return (
-	  <div className={styles.container}>
+		<div className={styles.container}>
 		<div
 		  style={{
 			display: 'flex',
 			justifyContent: 'space-between',
 			alignItems: 'center',
 			width: '100%', 
-			marginTop: '8cm',
 		  }}
 		>
-
-		  {/* Player info */}
-		  <div
-			className={`card ${styles.customCard}`}
-			style={{
-			  width: '200px', 
-			  marginRight: 'auto',
-			}}
-		  >
-			<div className={`card-body ${styles.cardInfo}`}>
-			  <h5>Your ball: (coming soon)</h5>
-			  {/* Put the ball texture here */}
-			</div>
-		  </div>
 
 
 		  {/* Current leaderboard */}
 		  <div
 			className={`card ${styles.customCard}`}
 			style={{
-			  width: '200px', 
-			  marginLeft: 'auto', 
+				position: 'absolute',
+				right: '0%',
+				top: '3cm', 
+				width: '200px',
 			}}
 		  >
 			<div className={`card-body ${styles.cardInfo}`}>
@@ -63,14 +52,14 @@ export default function RoyalPage({ status, detail }) {
 			  {/* Put the leaderboard here */}
 			</div>
 		  </div>
+		
 		</div>
 
 
 		{/* Game canvas */}
-		<div>
+		<DrawingCanvas/>
 		  <Royal />
 		</div>
-	  </div>
 	);
 }
 

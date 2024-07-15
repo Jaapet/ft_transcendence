@@ -4,10 +4,10 @@ import BigTitle from '../components/BigAssTitle';
 import { useAuth } from '../context/AuthenticationContext';
 
 const VideoBackground = () => (
-	<div className={styles.videoBackground}>
-		<div className={styles.videoOverlay}></div>
-		<iframe src="images/tmp_background.gif" allowFullScreen></iframe>
-	</div>
+  <div className={styles.videoBackground}>
+    <div className={styles.videoOverlay}></div>
+    <iframe src="images/pong.webp" allowFullScreen></iframe>
+  </div>
 );
 
 export default function Home({ status, detail }) {

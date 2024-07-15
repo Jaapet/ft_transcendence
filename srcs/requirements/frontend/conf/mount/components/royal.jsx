@@ -403,7 +403,7 @@ const Royal = () => {
     <>
       <div>
       <div className={styles.canvasWrapper}>
-        <canvas id="royal-canvas" className={styles.canvas} width="1000" height="700"></canvas>
+        <canvas id="royal-canvas" className={styles.canvas} width="1000" height="600"></canvas>
       </div>
  
       </div>

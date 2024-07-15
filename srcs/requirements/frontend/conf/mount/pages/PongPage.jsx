@@ -5,6 +5,7 @@ import Pong from '../components/pong';
 import PongPlayerCard from '../components/PongPlayerCard';
 import PongResults from '../components/pongResults';
 import { useAuth } from '../context/AuthenticationContext';
+import DrawingCanvas from '../components/Drawing';
 import { useGame } from '../context/GameContext';
 
 export default function PongPage({ status, detail }) {
@@ -74,13 +75,12 @@ export default function PongPage({ status, detail }) {
 	return (
 	<div className={styles.container}>
 		<div
-			style={{
-				display: 'flex',
-				justifyContent: 'space-between',
-				alignItems: 'center',
-				width: '100%', 
-				marginTop: '8cm',
-			}}
+		  style={{
+			display: 'flex',
+			justifyContent: 'space-between',
+			alignItems: 'center',
+			width: '100%', 
+		  }}
 		>
 
 		{/* Players */}
@@ -99,6 +99,7 @@ export default function PongPage({ status, detail }) {
 
 		{/* Game canvas */}
 		<div>
+      <DrawingCanvas />
 			<Pong
 				scoreL={scoreL} setScoreL={setScoreL}
 				scoreR={scoreR} setScoreR={setScoreR}

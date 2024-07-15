@@ -72,10 +72,6 @@ const ProfileNavLog = () => {
 		</>
 	);
 }
-const dropdownMenuStyle = {
-	transform: 'translateX(-50px)' // Ajustez cette valeur selon vos besoins
-};
-
 
 // first button to dropdown then dropdown content
 const ProfileNav = () => {
@@ -86,12 +82,11 @@ const ProfileNav = () => {
 		  style={{ position: 'relative'}}
 		  id="basic-nav-dropdown"
 		>
-
-					<ProfileNavLog />
-					<NavDropdown.Divider />
-					<Link href="/special-thanks" passHref legacyBehavior>
-						<NavDropdown.Item as="a">Special thanks</NavDropdown.Item>
-					</Link>
+			<ProfileNavLog />
+				<NavDropdown.Divider />
+				<Link href="/special-thanks" passHref legacyBehavior>
+					<NavDropdown.Item as="a">Special thanks</NavDropdown.Item>
+				</Link>
 		</NavDropdown>
 	  </Nav>
 	);
@@ -110,10 +105,9 @@ const Header = () => {
 			</Link>
 			</Navbar.Brand>
 				<Nav className="mr-auto">
-					<Nav.Link as={Link} href="#leaderboard">Leaderboard</Nav.Link>
 					<Nav.Link as={Link} href="/users">Users</Nav.Link>
-					<Nav.Link as={Link} href="#how-to-play">How to play</Nav.Link>
-					<Nav.Link as={Link} href="#credits">Credits</Nav.Link>
+					<Nav.Link as={Link} href="/howtoplay">How to play</Nav.Link>
+					<Nav.Link as={Link} href="/chooseGame">Play</Nav.Link>
 				</Nav>
 				<ProfileNav />
 			</Navbar>

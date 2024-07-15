@@ -1,11 +1,37 @@
+
 .canvasWrapper {
-	position: fixed;
-	left: 0;
-	bottom: 1cm; 
-	width: 100%;
+	position: relative;
+	justify-content:center;
+	top: 4vh;
+	width: 1070px;/* canvas + border */
 	display: flex;
 	justify-content: center;
+
 	background-color: rgba(255, 255, 255, 0.1);
-	border: 2px solid black;
-	z-index: 6;
+	border: 35px  ridge black;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* light shadow */
+
+
+	z-index: 6;/* whatever happens, I want the game to be playable */
+  }
+
+
+.colorButton {
+	width: 30px;
+	height: 30px;
+	margin-bottom: 5px;
+	border-radius: 50%;
+	
+	border: 1px solid black;
+	transition: transform 0.2s ease-in-out; /* Smooth transition for scaling */
+}
+
+
+  .colorButton:hover {
+	transform: scale(1.1); /* Scale up on hover */
+  }
+  
+  .colorButton:active {
+	transform: scale(0.8); /* Scale down when clicked */
+	border-color: aliceblue;
   }

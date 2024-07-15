@@ -22,9 +22,8 @@ const RemoveFriendButton = ({ myFriends, setMyFriends, target_id }) => {
 		}
 	}
 
-	// TODO: Make this a bootstrap button!
 	return (
-		<Button variant="danger" onClick={handleClick} style={{ fontSize: '15px', marginTop: '10px' }} >
+		<Button variant="danger" onClick={handleClick} style={{ fontSize: '15px', marginTop: '10px', position: 'absolute', right: '10px' }} >
 			Remove friend
 		</Button>
 	);
@@ -41,7 +40,7 @@ const UserFriendListFriend = ({ myFriends, setMyFriends, friend }) => {
 				text-white
 			`}
 		>
-			<div className="ms-1 me-auto text-start" style={{ display: 'flex', flexDirection: 'row', padding: '5px', fontSize: '1.2em' }}>
+			<div className="ms-1 me-auto text-start" style={{ display: 'flex', flexDirection: 'row', padding: '5px', fontSize: '1.2em', minWidth: '450px' }}>
 				<div className="mt-2 mb-0 ml-0 mr-1">
 					<Link href={`/users/${friend.id}`} passHref>
 						<Image style={{marginBottom: '5px'}}
@@ -64,13 +63,15 @@ const UserFriendListFriend = ({ myFriends, setMyFriends, friend }) => {
 				<div>
 				<span
 					style={{
+						position: 'absolute',
 						display: 'inline-block',
 						width: '10px',
 						height: '10px',
 						borderRadius: '50%',
 						backgroundColor: friend.is_online ? 'green' : 'red',
+						right: '3.3cm',
 						marginRight: '10px',
-						marginTop:'18px',
+						marginTop:'25px',
 						verticalAlign: 'middle'
 					}}
        			></span>
