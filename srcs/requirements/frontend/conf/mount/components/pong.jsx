@@ -916,7 +916,7 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 		<div>
 			{testmessage}
 			<div className={styles.canvasWrapper}>
-				<canvas hidden={hidden} ref={canvasRef} id="pong-canvas" className={styles.canvas} width="1080" height="720"></canvas>
+				<canvas hidden={hidden} ref={canvasRef} id="pong-canvas" className={styles.canvas} width="800" height="600"></canvas>
 			</div>
 		</div>
 	);
