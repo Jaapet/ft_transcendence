@@ -1,10 +1,29 @@
 import React, { useState } from 'react';
 import {Row, Col, Button, Card, Dropdown } from 'react-bootstrap';
 import styles from '../styles/base.module.css';
+import { useAuth } from '../context/AuthenticationContext';
 
-const HowToPlay = () => {
+export default function HowToPlay({ status, detail }) {
 	const [selectedGame, setSelectedGame] = useState('game1');
 	const [numberOfPlayers, setNumberOfPlayers] = useState(2);
+	const { logout } = useAuth();
+
+	const handleLogout = async () => {
+		await logout();
+	}
+
+	if (status === 401 && detail === 'Not logged in') {
+		handleLogout();
+	}
+
+	if (status !== 200) {
+		return (
+			<div className={styles.container}>
+				<p className="bg-light text-black">Something went wrong...</p>
+				<p className="bg-light text-black">Please reload the page.</p>
+			</div>
+		);
+	}
 
 	const renderGameDescription = () => {
 		/* classic pong */
@@ -92,4 +111,48 @@ const HowToPlay = () => {
 	);
 }
 
-export default HowToPlay;
+export async function getServerSideProps(context) {
+	try {
+		const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/user`, {
+			method: 'POST',
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json',
+				'Cookie': context.req.headers.cookie
+			}
+		});
+		if (!response) {
+			throw new Error('Dummy fetch failed');
+		}
+		if (response.status === 404) {
+			return {
+				props: {
+					status: 404,
+					detail: 'Resource not found'
+				}
+			}
+		}
+
+		const data = await response.json();
+		if (!data) {
+			throw new Error('Dummy fetch failed');
+		}
+		if (!response.ok) {
+			throw new Error(data.message, 'Dummy fetch failed');
+		}
+
+		return {
+			props: {
+				status: 200,
+				detail: 'Success'
+			}
+		}
+	} catch (error) {
+		return {
+			props: {
+				status: 401,
+				detail: error.message
+			}
+		}
+	}
+}

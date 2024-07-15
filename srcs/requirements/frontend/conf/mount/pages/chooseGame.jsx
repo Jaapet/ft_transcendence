@@ -11,8 +11,6 @@ export default function ChooseGame({ status, detail }) {
 		await logout();
 	}
 
-	console.log('TEST', status, detail); // debug
-
 	if (status === 401 && detail === 'Not logged in') {
 		handleLogout();
 	}
