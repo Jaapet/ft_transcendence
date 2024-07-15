@@ -219,6 +219,26 @@ class UpdateMemberAPIView(UpdateAPIView):
 		else:
 			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class LeaderboardsAPIView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def get(self, request):
+		members_by_date = Member.objects.order_by('join_date')
+		
+		pong_leaders = sorted(members_by_date, key=lambda member: member.elo_pong, reverse=True)[:5]
+		royal_leaders = sorted(members_by_date, key=lambda member: member.elo_royal, reverse=True)[:5]
+
+		serialized_leaders = {
+			"pong": [],
+			"royal": []
+		}
+		for leader in pong_leaders:
+			serialized_leaders["pong"].append(RestrictedMemberSerializer(leader, context={'request': request}).data)
+		for leader in royal_leaders:
+			serialized_leaders["royal"].append(RestrictedMemberSerializer(leader, context={'request': request}).data)
+
+		return Response(serialized_leaders)
+
 # Queries the currently logged-in user's friend list
 class FriendListAPIView(APIView):
 	permission_classes = [permissions.IsAuthenticated]
