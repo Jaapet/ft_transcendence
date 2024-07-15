@@ -73,41 +73,45 @@ export default function PongPage({ status, detail }) {
 	}
 
 	return (
-	<div className={styles.container}>
-		<div
-		  style={{
-			display: 'flex',
-			justifyContent: 'space-between',
-			alignItems: 'center',
-			width: '100%', 
-		  }}
-		>
+		<div className={styles.container}>
+			<div
+				style={{
+					display: 'flex',
+					justifyContent: 'space-between',
+					alignItems: 'center',
+					width: '100%'
+				}}
+			>
 
-		{/* Players */}
-		{ room && !inQueue ?
-			<>
-				{/* Player 1 */}
-				<PongPlayerCard nb={1} player={playerL} score={scoreL} />
+				{ room && !inQueue ?
+					<>
+						{/* Player 1 */}
+						<PongPlayerCard nb={1} player={playerL} score={scoreL} />
+					</>
+				:
+					<></>
+				}
 
-				{/* Player 2 */}
-				<PongPlayerCard nb={2} player={playerR} score={scoreR} />
-			</>
-		:
-			<></>
-		}
+				{/* Game canvas */}
+				<DrawingCanvas />
+				<Pong
+					scoreL={scoreL} setScoreL={setScoreL}
+					scoreR={scoreR} setScoreR={setScoreR}
+					gameEnd={gameEnd} setGameEnd={setGameEnd}
+					setWinner={setWinner} setWinnerScore={setWinnerScore}
+				/>
+
+				{ room && !inQueue ?
+					<>
+						{/* Player 2 */}
+						<PongPlayerCard nb={2} player={playerR} score={scoreR} />
+					</>
+				:
+					<></>
+				}
+
+			</div>
 		</div>
-
-		{/* Game canvas */}
-		<div>
-      <DrawingCanvas />
-			<Pong
-				scoreL={scoreL} setScoreL={setScoreL}
-				scoreR={scoreR} setScoreR={setScoreR}
-				gameEnd={gameEnd} setGameEnd={setGameEnd}
-				setWinner={setWinner} setWinnerScore={setWinnerScore}
-			/>
-		</div>
-	</div>
 	);
 }
 

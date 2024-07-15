@@ -29,6 +29,14 @@ def validate_file_size(file):
 	if (file.size > max_size):
 		raise serializers.ValidationError(f"File size must be under {megabytes} MB")
 
+# Limiting types of file uploads
+# JPEG, PNG, BMP
+def validate_file_type(file):
+	valid_mime_types = ['image/jpeg', 'image/png', 'image/bmp']
+	file_mime_type = file.content_type
+	if file_mime_type not in valid_mime_types:
+		raise serializers.ValidationError('File type must be JPEG, PNG or BMP')
+
 # Restricted serializer for querying users that are not the current one
 class RestrictedMemberSerializer(serializers.HyperlinkedModelSerializer):
 	class Meta:
@@ -51,7 +59,7 @@ class RestrictedMemberSerializer(serializers.HyperlinkedModelSerializer):
 # Hashes password
 # Avatar is optional
 class RegisterMemberSerializer(serializers.HyperlinkedModelSerializer):
-	avatar = serializers.ImageField(required=False, validators=[validate_file_size])
+	avatar = serializers.ImageField(required=False, validators=[validate_file_size, validate_file_type])
 
 	def create(self, validated_data):
 		avatar = validated_data.pop('avatar', None)
@@ -83,7 +91,7 @@ class RegisterMemberSerializer(serializers.HyperlinkedModelSerializer):
 # Hashes password
 # All fields are optional
 class UpdateMemberSerializer(serializers.HyperlinkedModelSerializer):
-	avatar = serializers.ImageField(required=False, validators=[validate_file_size])
+	avatar = serializers.ImageField(required=False, validators=[validate_file_size, validate_file_type])
 
 	def update(self, instance, validated_data):
 		avatar = validated_data.pop('avatar', None)

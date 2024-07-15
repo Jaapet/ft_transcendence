@@ -104,7 +104,7 @@ const SignupFormAvatarField = ({ avatar, setAvatar, setError }) => {
 		<div className="d-flex flex-row align-items-center mb-4">
 			<i className="fas fa-image fa-lg me-3 fa-fw"></i>
 			<div data-mdb-input-init className="form-outline flex-fill mb-0">
-				<label className="form-label" htmlFor="avatar">Avatar <small>(under 10MB)</small></label>
+				<label className="form-label" htmlFor="avatar">Avatar <small>(under 10MB, jpeg, png or bmp)</small></label>
 				<input
 					type="file"
 					id="avatar"
