@@ -219,6 +219,44 @@ class MatchSerializer(serializers.HyperlinkedModelSerializer):
 	def get_loser_id(self, obj):
 		return obj.loser.id if obj.loser else None
 
+class RegisterMatchSerializer(serializers.ModelSerializer):
+	winner_id = serializers.IntegerField(write_only=True)
+	loser_id = serializers.IntegerField(write_only=True)
+
+	class Meta:
+		model = Match
+		fields = [
+			'type',
+			'winner_id',
+			'loser_id',
+			'winner_score',
+			'loser_score',
+			'start_datetime',
+			'end_datetime'
+		]
+
+	def create(self, validated_data):
+		winner_id = validated_data.pop('winner_id', None)
+		loser_id = validated_data.pop('loser_id', None)
+
+		winner = None
+		loser = None
+
+		if winner_id:
+			try:
+				winner = Member.objects.get(id=winner_id)
+			except Member.DoesNotExist:
+				pass
+
+		if loser_id:
+			try:
+				loser = Member.objects.get(id=loser_id)
+			except Member.DoesNotExist:
+				pass
+
+		match = Match.objects.create(winner=winner, loser=loser, **validated_data)
+		return match
+
 class Match3Serializer(serializers.HyperlinkedModelSerializer):
 	paddle1_username = serializers.SerializerMethodField()
 	paddle2_username = serializers.SerializerMethodField()

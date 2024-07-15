@@ -1,6 +1,7 @@
 from django.urls import include, path
 from rest_framework import routers
 from .views import (
+	HealthCheckAPIView,
 	CustomTokenObtainPairView,
 	Enable2FAView,
 	Disable2FAView,
@@ -21,6 +22,7 @@ from .views import (
 	Match3ViewSet,
 	MatchRViewSet,
 	LastThreeMatchesAPIView,
+	RegisterMatchAPIView,
 	MetricsView
 )
 from rest_framework_simplejwt import views as jwt_views
@@ -37,6 +39,7 @@ router.register(r'royal_matches', MatchRViewSet)
 
 urlpatterns = [
 	path('', include(router.urls)),
+	path('health/', HealthCheckAPIView.as_view(), name='health_check'),
 	path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
 	path('token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
 	path('user/', MemberAPIView.as_view(), name='login'),
@@ -53,5 +56,6 @@ urlpatterns = [
 	path('friends/', FriendListAPIView.as_view(), name="friend_list"),
 	path('friends/remove', RemoveFriendAPIView.as_view(), name='remove_friend'),
 	path('friends/friendship_status', CheckFriendshipStatusAPIView.as_view(), name='friendship_status'),
+	path('game/pong2/save', RegisterMatchAPIView.as_view(), name='register_pong2_game'),
 	path('metrics', MetricsView.as_view(), name='metrics')
 ]

@@ -117,6 +117,9 @@ fi
 	#Next.js
 	#TODO SETUP A LA MANO DANS LE DOCKERFILE
 	echo "NEXT_PUBLIC_API_BASE_URL=http://localhost:3000" >> $ENVFILE
+	#WS Server
+	WSTOKEN=$(openssl rand -base64 12 | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
+	echo "WS_TOKEN_BACKEND=${WSTOKEN}" >> $ENVFILE
 
 
 	#Traefik adm midleware

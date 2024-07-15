@@ -1,7 +1,5 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
-import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import io from 'socket.io-client';
 import WaitList from './WaitList';
@@ -11,7 +9,7 @@ import { useAuth } from '../context/AuthenticationContext';
 import { useGame } from '../context/GameContext';
 import { useRouter } from 'next/router';
 
-const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWinner, setWinnerScore }) => {
+const PongViewer = ({ scoreL, setScoreL, scoreR, setScoreR }) => {
 	const router = useRouter();
 	const { user } = useAuth();
 	const {
@@ -34,37 +32,31 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 		if (!user || !gameType || gameType !== 'pong2' || !setGameStarted || !updateRoom || !updatePlayers || !resetAll)
 			return ;
 
-		//console.log('INQUEUE:', inQueue); // debug
-		//console.log('INGAME:', inGame); // debug
-		//console.log('GAMETYPE:', gameType); // debug
-
-		//console.log(`PONG_CMPT: Entered useEffect`); // debug
 		const socket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`);
-		//console.log(`PONG_CMPT: Connected to ws server`); // debug
-		// TODO: Replace useAuth's user with an API call
-		socket.emit('join', { gameType: 'pong2', userId: user.id, userName: user.username, userELO: user.elo_pong, userAvatar: user.avatar });
-		//console.log(`PONG_CMPT: Sent join msg`); // debug
+
+		// TODO : 
+		socket.emit('join', { gameType: 'pong2', roomid: roomid});
+		
 		// Gérer les événements de connexion et d'erreur
 		socket.on('connect', () => {
-			//console.log('Connected to websocket server');
+			console.log('Connected to websocket server');
 		});
 		socket.on('connect_error', (error) => {
-			//console.error('Connection error for websocket server:', error);
+			console.error('Connection error for websocket server:', error);
 		});
 		socket.on('disconnect', () => {
-			//console.log('Disconnected from websocket server');
+			console.log('Disconnected from websocket server');
 		});
 
 		socket.on('updateRoom', ({ room, players }) => {
-			//console.log('Room updated to', room); // debug
-			//console.log('With players:', players); // debug
 			updateRoom(room, players);
 		});
 
 		socket.on('updatePlayers', ({ players }) => {
-			//console.log('Room updated with these new players:', players); // debug
 			updatePlayers(players);
 		});
+
+
 
 		/// SCENE
 		let scene = new THREE.Scene();
@@ -95,8 +87,6 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 		camera.position.set(0, 100, 10);
 		camera.position.z = 10;
 
-		let modelsLoaded = true;
-/*
 		/// MODEL 3D
 		const totalmodel = 0;
 		let actualmodel = 0;
@@ -109,8 +99,8 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 				modelsLoaded = true;
 		}
 		checkModelsLoaded();
-*/
-/*
+
+
 		const loadermodel = new GLTFLoader();
 
 		loadermodel.load(
@@ -298,66 +288,7 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 			undefined,
 			function (error) { console.error(error); } 
 		);
-*/
 
-		/// TEXT
-		let text3, text3r, text2, text2r, text1, text1r, text0, text0r;
-		let textMesh1, font;
-		let textGeo;
-
-		const loadertext = new FontLoader();
-		loadertext.load('games/pong/fonts/helvetiker_regular.typeface.json',
-			function (loadedFont)
-			{
-				font = loadedFont;
-				// model interieur
-				let RED = [
-					new THREE.MeshPhongMaterial( { color: 0xFF0000, flatShading: true } ), // front
-					new THREE.MeshPhongMaterial( { color: 0xFF0000 } ) // side
-				];
-				// model exterieur
-				let BLACK = [
-					new THREE.MeshPhongMaterial( { color: 0x000000, flatShading: true } ), // front
-					new THREE.MeshPhongMaterial( { color: 0x000000 } ) // side
-				];
-				// creation des different model de textes pour le compte a rebours
-				text3 = createText("3", BLACK, 31, 5, 5, 2, 0, 5);
-				text3r = createText("3", RED, 30, 5, 6, 1, -1, 5.5);
-				text2 = createText("2", BLACK, 31, 5, 5, 2, 0, 5);
-				text2r = createText("2", RED, 30, 5, 6, 1, -1, 5.5);
-				text1 = createText("1", BLACK, 31, 5, 5, 2, -7, 5);
-				text1r = createText("1", RED, 30, 5, 6, 1, -8, 5.5);
-				text0 = createText("0", BLACK, 31, 5, 5, 2, 0, 5);
-				text0r = createText("0", RED, 30, 5, 6, 1, -1, 5.5);
-			}
-		);
-		// creation des textes avec les parametres
-		function createText(text, materials, size, z, y, epaisseur, x, profondeur)
-		{
-			textGeo = new TextGeometry( text,
-				{
-					font: font,
-					size: size,
-					depth: 1,
-					curveSegments: 10,
-					bevelThickness: profondeur,
-					bevelSize: epaisseur,
-					bevelEnabled: y
-				}
-			);
-
-			textGeo.computeBoundingBox();
-			const centerOffset = - 0.5 * ( textGeo.boundingBox.max.x - textGeo.boundingBox.min.x );
-			textMesh1 = new THREE.Mesh(textGeo, materials);
-			// positionnement des textes
-			textMesh1.position.x = centerOffset + x;
-			textMesh1.position.y = y + 10;
-			textMesh1.position.z = z;
-			textMesh1.rotation.x = -1.4;
-			textMesh1.rotation.y = Math.PI * 2;
-			textMesh1.rotation.z = 0;
-			return (textMesh1);
-		}
 
 		/// FLOOR DE LA PISCINE (PONG)
 		const planeSize = 42;
@@ -464,9 +395,7 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 		var ballObj;
 		const ballDir = [ 0.99999, 0.00001 ]
 		const paddles = [];
-		let role = 'pending';
-		let paddleUp = false;
-		let paddleDown = false;
+
 
 		// ajout des objets dans la scene et placement des objets
 		addball(0, 2, 0, makeObj(ball, texturesphere));
@@ -482,7 +411,7 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 		addwall(-44.75, 3, 0, new THREE.Mesh(wall2, wallmaterials2));
 		addwall(44.75, 3, 0, new THREE.Mesh(wall2, wallmaterials2));
 		addwall(0, 2.1, 0, new THREE.Mesh(watercube, water));
-/*
+
 		/// SKYBOX
 		// creation d'une sphere pour le ciel
 		const skybox = new THREE.IcosahedronGeometry(4200,50);
@@ -491,60 +420,14 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 		// positionnement de l'objet ciel
 		skyboxMesh.rotation.y = -2.5;
 		skyboxMesh.position.z = 20 - 45;
-		scene.add(skyboxMesh);*/
+		scene.add(skyboxMesh);
 
-		let gameStart = false;
-		let startTimer = false;
-		let startGameplay = false;
-		let startTime = Date.now();
-		let currentTime = Date.now();
-		let lastLoopTime = Date.now();
-
-		/// CONTROLS
-		function handleKeyDown(event) {
-			if (event.repeat)
-				return ;
-			//console.log(event.key); // debug
-			switch (event.key) {
-				case "ArrowUp":
-					if (!paddleUp) {
-						paddleUp = true;
-						socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keydown' } });
-					}
-					break;
-				case "ArrowDown":
-					if (!paddleDown) {
-						paddleDown = true;
-						socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keydown' } });
-					}
-					break;
-			}
-		}
-		document.addEventListener('keydown', handleKeyDown);
-
-		function handleKeyUp(event) {
-			if (event.repeat)
-				return ;
-			//console.log(event.key); // debug
-			switch (event.key) {
-				case "ArrowUp":
-					if (paddleUp) {
-						paddleUp = false;
-						socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keyup' } });
-					}
-					break;
-				case "ArrowDown":
-					if (paddleDown) {
-						paddleDown = false;
-						socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keyup' } });
-					}
-					break;
-			}
-		}
-		document.addEventListener('keyup', handleKeyUp);
+		let gameEnd = false;
 
 		/// RENDER
 		var frame = 0;
+		if (totalmodel == actualmodel)
+			console.log(actualmodel, totalmodel);;
 		renderer.render(scene, camera);
 
 		/// FUNCTIONS
@@ -581,40 +464,11 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 			scene.add(obj);
 		}
 
-		let startRender = Date.now();
-
-		socket.on('gameStart', ({ players }) => {
-			console.log(`PONG_CMPT: Received gameStart`); // debug
-			console.log(`PONG_CMPT: Received player list:`, players); // debug
-			for (const playerKey in players) {
-				if (players[playerKey].id === user.id) {
-					role = players[playerKey].role;
-				}
-			}
-			gameStart = true;
-			setGameStarted(true);
-		});
-
-		socket.on('startTimer', () => {
-			startTimer = true;
-			startRender = Date.now();
-			console.log(`PONG_CMPT: Received startTimer`); // debug
-		});
-
-		socket.on('startGameplay', () => {
-			startGameplay = true;
-			startTime = Date.now();
-			console.log(`PONG_CMPT: Received startGameplay`); // debug
-		});
-
-		socket.on('gameEnd', ({ winner, score }) => {
+		socket.on('gameEnd', () => {
+			gameEnd = true;
 			setGameEnded(true);
-			setWinner(winner);
-			setWinnerScore(score);
-			setGameEnd(true);
 		});
 
-		//let last = Date.now(); // debug
 		socket.on('gameStatus', ({
 			leftScore, rightScore,
 			ballX, ballZ, newBallSpeed,
@@ -630,10 +484,6 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 			// Ball
 			/// Speed
 			ballSpeed = newBallSpeed;
-			//if (Date.now() - last > 500) {
-			//	console.log(`BALL SPEED = ${ballSpeed}`); // debug
-			//	last = Date.now(); // debug
-			//}
 			/// X Pos
 			ballObj.position.x = ballX;
 			/// Z Pos
@@ -655,20 +505,13 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 		});
 
 		// Gameplay constants
-		// TODO: Check if these are synced with server-side code
-		const FPS = 60;
-		const PADDLE_SPEED = 37;							// units per second
 		const BASE_BALL_SPEED = 60;						// units per second
-		const MAX_BALL_SPEED = 120;						// units per second
-		const BALL_ACCELERATION_RATE = 0.6;		// unit/s/s
 		const BALL_MAX_X = 42.5;
 		const BALL_MAX_Z = 20;
-		const PADDLE_MAX_Z = 16.5;
 		const BALL_MAX_Z_DIR = 0.6;
-		const BALL_BOUNCE_MERCY_PERIOD = 100;	// In ms
 		let ballSpeed = BASE_BALL_SPEED;
 
-		let first = 0;
+		
 		function render(time)
 		{
 			if (!modelsLoaded)
@@ -677,163 +520,58 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 				return;
 			}
 
-			if (first === 0) {
-				socket.emit('readyTimer', { gameType: 'pong2' });
-				first = 1;
-			}
-
-			if (!startTimer)
-			{
-				requestAnimationFrame(render);
-				return;
-			}
-
 			time *= 0.0001;
 			frame += 0.1;
-			
-			currentTime = Date.now();
-			const timeRendered = (currentTime - startRender) / 1000; // In seconds
-			// Rendering at FPS frames per second
-			if (currentTime - startTime >= 1000 / FPS)
+
+			const displaceX = (ballSpeed * timeSinceLastLoop) * Math.abs(ballDir[0]);
+			if (ballDir[0] > 0)
+				ballObj.position.x += displaceX;
+			else if (ballDir[0] < 0)
+				ballObj.position.x -= displaceX;
+			ballObj.position.x = Math.min(Math.max(ballObj.position.x, -BALL_MAX_X), BALL_MAX_X);
+			/// Z
+			const displaceZ = (ballSpeed * timeSinceLastLoop) * Math.abs(ballDir[1]);
+			if (ballDir[1] > 0) {
+				ballObj.position.z += displaceZ;
+			} else if (ballDir[1] < 0) {
+				ballObj.position.z -= displaceZ;
+			}
+			/// Bounce on top and bottom walls
+			if (ballObj.position.z > BALL_MAX_Z || ballObj.position.z < -BALL_MAX_Z) {
+				ballDir[1] *= -1;
+				ballObj.rotation.x = 0;
+				ballObj.rotation.y = 0;
+				ballObj.rotation.z = 0;
+			}
+			ballObj.position.z = Math.min(Math.max(ballObj.position.z, -BALL_MAX_Z), BALL_MAX_Z);
+
+			// Clamp Ball Z Direction
+			ballDir[1] = Math.min(Math.max(ballDir[1], -BALL_MAX_Z_DIR), BALL_MAX_Z_DIR);
+
+			const absSum = Math.abs(ballDir[0]) + Math.abs(ballDir[1]);
+			if (absSum !== 1)
 			{
-				if (timeRendered > 5)
-				{
-					if (first === 1) {
-						socket.emit('ready', { gameType: 'pong2' });
-						first = 2;
-					}
-					if (startGameplay) {
-						startTime = Date.now();
-						const timeSinceLastLoop = (startTime - lastLoopTime) / 1000; // In seconds
-						// Client-side game updates
-
-						// Paddle Movement
-						const displaceP = PADDLE_SPEED * timeSinceLastLoop;
-						/// Left Paddle
-						if (role === 'leftPaddle') {
-							if (paddleUp)
-								paddles[0].position.z -= displaceP;
-							if (paddleDown)
-								paddles[0].position.z += displaceP;
-							paddles[0].position.z = Math.min(Math.max(paddles[0].position.z, -PADDLE_MAX_Z), PADDLE_MAX_Z);
-						}
-						/// Right Paddle
-						else if (role === 'rightPaddle') {
-							if (paddleUp)
-								paddles[1].position.z -= displaceP;
-							if (paddleDown)
-								paddles[1].position.z += displaceP;
-							paddles[1].position.z = Math.min(Math.max(paddles[1].position.z, -PADDLE_MAX_Z), PADDLE_MAX_Z);
-						}
-
-						// Ball movement
-						/// X
-						const displaceX = (ballSpeed * timeSinceLastLoop) * Math.abs(ballDir[0]);
-						if (ballDir[0] > 0)
-							ballObj.position.x += displaceX;
-						else if (ballDir[0] < 0)
-							ballObj.position.x -= displaceX;
-						ballObj.position.x = Math.min(Math.max(ballObj.position.x, -BALL_MAX_X), BALL_MAX_X);
-						/// Z
-						const displaceZ = (ballSpeed * timeSinceLastLoop) * Math.abs(ballDir[1]);
-						if (ballDir[1] > 0) {
-							ballObj.position.z += displaceZ;
-						} else if (ballDir[1] < 0) {
-							ballObj.position.z -= displaceZ;
-						}
-						/// Bounce on top and bottom walls
-						if (ballObj.position.z > BALL_MAX_Z || ballObj.position.z < -BALL_MAX_Z) {
-							ballDir[1] *= -1;
-							ballObj.rotation.x = 0;
-							ballObj.rotation.y = 0;
-							ballObj.rotation.z = 0;
-						}
-						ballObj.position.z = Math.min(Math.max(ballObj.position.z, -BALL_MAX_Z), BALL_MAX_Z);
-
-						// Clamp Ball Z Direction
-						ballDir[1] = Math.min(Math.max(ballDir[1], -BALL_MAX_Z_DIR), BALL_MAX_Z_DIR);
-
-						const absSum = Math.abs(ballDir[0]) + Math.abs(ballDir[1]);
-						if (absSum !== 1)
-						{
-							const ratio = 1 / absSum;
-							ballDir[0] *= ratio;
-							ballDir[1] *= ratio;
-						}
-
-						// Ball Rotation
-						const angle = Math.atan2(ballDir[1], ballDir[0]);
-						const rotationX = Math.cos(angle) * (Math.PI / 4 / 5);
-						const rotationZ = Math.sin(angle) * (Math.PI / 4 / 5);
-						ballObj.rotateX(-rotationX);
-						ballObj.rotateZ(rotationZ);
-					}
-				}
-				else if (timeRendered > 4)
-				{
-					scene.remove(text0);
-					scene.remove(text0r);
-					scene.remove(text1);
-					scene.remove(text1r);
-					scene.remove(text2);
-					scene.remove(text2r);
-					scene.remove(text3);
-					scene.remove(text3r);
-				}
-				else if (timeRendered > 3)
-				{
-					scene.remove(text1);
-					scene.remove(text1r);
-					scene.add(text0);
-					scene.add(text0r);
-				}
-				else if (timeRendered > 2)
-				{
-					scene.remove(text2);
-					scene.remove(text2r);
-					scene.add(text1);
-					scene.add(text1r);
-				}
-				else if (timeRendered > 1)
-				{
-					scene.remove(text3);
-					scene.remove(text3r);
-					scene.add(text2);
-					scene.add(text2r);
-				}
-				else
-				{
-					scene.add(text3);
-					scene.add(text3r);
-				}
+				const ratio = 1 / absSum;
+				ballDir[0] *= ratio;
+				ballDir[1] *= ratio;
 			}
 
-			lastLoopTime = Date.now();
-			if (!gameEnd) {
-				renderer.render(scene, camera);
-				requestAnimationFrame(render);
-			}
+			// Ball Rotation
+			const angle = Math.atan2(ballDir[1], ballDir[0]);
+			const rotationX = Math.cos(angle) * (Math.PI / 4 / 5);
+			const rotationZ = Math.sin(angle) * (Math.PI / 4 / 5);
+			ballObj.rotateX(-rotationX);
+			ballObj.rotateZ(rotationZ);
+
 		}
-		console.log(`PONG_CMPT: Waiting for gameStart`); // debug
-		function waitForGameStart() {
-			if (gameStart && !gameEnd) {
-				lastLoopTime = Date.now();
-				requestAnimationFrame(render);
-			} else if (!gameEnd) {
-				setTimeout(waitForGameStart, 250); // Every 0.25 seconds
-			}
+		if (!gameEnd)
+		{
+			renderer.render(scene, camera);
+			requestAnimationFrame(render);
 		}
-		waitForGameStart();
-
 		return () =>
 		{
-			setGameEnd(true);
-			console.log("Entered useEffect's return function"); // debug
-			gameStart = false;
 			socket.disconnect();
-			document.removeEventListener('keydown', handleKeyDown);
-			document.removeEventListener('keyup', handleKeyUp);
-
 			// Dispose of Three.js objects
 			scene.traverse((object) =>
 			{
@@ -852,7 +590,6 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 						cleanMaterial(material);
 				}
 			});
-
 			function cleanMaterial(material)
 			{
 				material.dispose();
@@ -865,8 +602,8 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 					}
 				}
 			}
-			//scene = null;
-			//camera = null;
+			scene = null;
+			camera = null;
 			renderer && renderer.renderLists.dispose();
 			renderer.dispose();
 			cancelAnimationFrame(render);
@@ -875,10 +612,8 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 
 	useEffect(() => {
 		if (gameEnded) {
-			setGameStarted(false);
 			setGameEnded(false);
-			resetAll();
-			//router.push('/');
+			router.push('/');
 		}
 	}, [gameEnded]);
 
@@ -922,4 +657,4 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 	);
 };
 
-export default Pong;
+export default PongViewer;

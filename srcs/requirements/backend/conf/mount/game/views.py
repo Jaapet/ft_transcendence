@@ -31,8 +31,16 @@ from .serializers import (
 	RemoveFriendSerializer,
 	MatchSerializer,
 	Match3Serializer,
-	MatchRSerializer
+	MatchRSerializer,
+	RegisterMatchSerializer
 )
+
+# Queries the health status of the backend
+class HealthCheckAPIView(APIView):
+	permission_classes = [permissions.AllowAny]
+
+	def get(self, request):
+		return Response({'detail': 'Healthy'}, status=status.HTTP_200_OK)
 
 # Enables 2FA for current user
 class Enable2FAView(APIView):
@@ -526,6 +534,36 @@ class LastThreeMatchesAPIView(APIView):
 				serialized_matches.append(MatchRSerializer(match, context={'request': request}).data)
 
 		return Response(serialized_matches)
+
+# Custom authentication specific to Websocket Server
+class WSAuthentication(BaseAuthentication):
+	def authenticate(self, request):
+		# Check if the request contains the expected header
+		if 'Authorization' not in request.headers:
+			return None
+
+		# Validate the token contained in the header and the expected syntax
+		auth_token = request.headers['Authorization']
+		if auth_token != 'Bearer ' + os.environ.get('WS_TOKEN_BACKEND'):
+			raise AuthenticationFailed('Invalid token')
+
+		# If the token is valid, return a dummy user object
+		return (self.dummy_user(), None)
+
+	def dummy_user(self):
+		# Create a dummy user with impossible username for regular users
+		return Member(username=';ws;')
+
+class RegisterMatchAPIView(APIView):
+	authentication_classes = [WSAuthentication]
+	permission_classes = [permissions.IsAuthenticated]
+
+	def post(self, request):
+		serializer = RegisterMatchSerializer(data=request.data)
+		if serializer.is_valid():
+			serializer.save()
+			return Response(serializer.data, status=status.HTTP_201_CREATED)
+		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # Custom authentication specific to Prometheus
 class PrometheusAuthentication(BaseAuthentication):

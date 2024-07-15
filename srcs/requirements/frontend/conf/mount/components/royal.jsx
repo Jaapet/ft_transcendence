@@ -38,17 +38,35 @@ const Royal = () => {
     camera.position.z = 150;
 
 
+/*
     /// MODEL 3D
+    const totalmodel = 1;
+    let actualmodel = 0;
+    let modelsLoaded = false;
+
+    // Fonction pour vérifier si tous les modèles sont chargés
+    function checkModelsLoaded()
+    {
+      if (actualmodel === totalmodel)
+        modelsLoaded = true;
+    }
+
     const loadermodel = new GLTFLoader();
 
-    loadermodel.load(
-      'games/pong/models/building.glb',
-      function (gltf) { scene.add( gltf.scene ); },
+    loadermodel.load
+    (
+      'games/pong/models/Building.glb',
+      function (gltf)
+      {
+        scene.add( gltf.scene );
+        actualmodel += 1;
+        checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
+      },
       undefined,
       function (error) { console.error(error); } 
     );
     
-
+*/
 
     /// FLOOR
 
@@ -285,14 +303,14 @@ const Royal = () => {
 
     function render(time)
     {
-      time *= 0.001; 
       
-      if (!modelsLoaded)
+      /*if (!modelsLoaded)
       {
         requestAnimationFrame(render);
         return;
-      }
+      }*/
       
+      time *= 0.001; 
       const canvas = renderer.domElement;
       camera.aspect = canvas.clientWidth / canvas.clientHeight;
       camera.updateProjectionMatrix();
