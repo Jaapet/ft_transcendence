@@ -10,6 +10,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { useAuth } from '../context/AuthenticationContext';
 import { useGame } from '../context/GameContext';
 import { useRouter } from 'next/router';
+import React from 'react';
 
 const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWinner, setWinnerScore }) => {
 	const router = useRouter();
@@ -887,16 +888,16 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 	if (!room) {
 		hidden = 'hidden';
 		testmessage = (
-			<div className="card">
-				<p>Connecting...</p>
+			<div className={React.background}>
+				<p style={{color: 'white'}}>Connecting...</p>
 			</div>
 		);
 	}
 	else if (inQueue) {
 		hidden = 'hidden';
 		testmessage = (
-			<div className="card">
-				<p>In {gameType} waitlist</p>
+			<div className={React.background}>
+				<p style={{color: 'white'}}>In {gameType} waitlist</p>
 				<WaitList players={players} />
 			</div>
 		);
@@ -904,8 +905,8 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 	else if (!gameStarted) {
 		hidden = 'hidden';
 		testmessage = (
-			<div className="card">
-				<p>In room {room?.id}, waiting for an opponent</p>
+			<div className={React.background}>
+				<p style={{color: 'white'}}>In room {room?.id}, waiting for an opponent . . .</p>
 			</div>
 		);
 	} else {
