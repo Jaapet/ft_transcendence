@@ -21,3 +21,4 @@ openssl.cnf
 token_backend
 inited_*
 *.secret
+.env
