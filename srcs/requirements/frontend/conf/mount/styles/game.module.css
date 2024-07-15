@@ -7,14 +7,17 @@
 	display: flex;
 	justify-content: center;
 
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* light shadow */
+	
+	
+	z-index: 6;/* whatever happens, I want the game to be playable */
+}
+
+.canvas:not([hidden]) {
+	
 	background-color: rgba(255, 255, 255, 0.1);
 	border: 35px  ridge black;
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* light shadow */
-
-
-	z-index: 6;/* whatever happens, I want the game to be playable */
   }
-
 
 .colorButton {
 	width: 30px;
