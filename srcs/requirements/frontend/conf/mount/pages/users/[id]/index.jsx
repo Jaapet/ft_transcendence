@@ -15,11 +15,10 @@ import SuccessToast from '../../../components/toasts/SuccessToast';
 const ProfileMemberCardPicture = ({ user }) => {
 	return (
 		<Card className={`${styles.customCard}`} style={{ width: '200px' }}>
-			<Image src={user.avatar} alt="Profile Picture" width={100} height={100} style={{ width: '200px', height: '200px' , objectFit: 'cover'}}  className="card-img-top" priority={true} />
+			<Image src={user.avatar} alt="Profile Picture" width={200} height={200} style={{ width: '200px', height: '200px' , objectFit: 'cover'}}  className="card-img-top" priority={true} />
 			<div className="card-body">
 				<div className={`card-body ${styles.cardInfo}`}>
 					<h2 className="card-title">{user.username}</h2>
-
 				</div>
 			</div>
 		</Card>
@@ -79,6 +78,7 @@ const ProfileMemberCardFriendButton = ({ target_user, setShowError, setErrorMsg,
 	);
 }
 
+/*
 const ProfileMemberCardFriendsButton = ({ target_user }) => {
 	const { user } = useAuth();
 
@@ -93,6 +93,7 @@ const ProfileMemberCardFriendsButton = ({ target_user }) => {
 			
 	);
 }
+*/
 
 const ProfileMemberCardEditButton = ({ target_user }) => {
 	const { user } = useAuth();
