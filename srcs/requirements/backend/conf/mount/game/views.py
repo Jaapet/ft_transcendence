@@ -620,6 +620,9 @@ class MetricsView(APIView):
 		metrics += self.collect_total_users()
 		metrics += self.collect_total_2fa_users()
 		metrics += self.collect_online_users()
+		metrics += self.collect_users_friends()
+		metrics += self.collect_users_elo_pong()
+		metrics += self.collect_users_elo_royal()
 		metrics += self.collect_total_friend_requests()
 		metrics += self.collect_total_pong2_matches()
 		metrics += self.collect_won_pong2_matches()
@@ -654,6 +657,43 @@ class MetricsView(APIView):
 			'# TYPE back_online_users counter',
 			f'back_online_users {online_users}'
 		]
+		return metric
+
+	def collect_users_friends(self):
+		metric = [
+			'# HELP back_users_friends Friend count of all users',
+			'# TYPE back_users_friends counter'
+		]
+
+		users = Member.objects.all()
+		for user in users:
+			user_friend_count = user.friends.count()
+			metric.append(f'back_users_friends{{user="{user.username}"}} {user_friend_count}')
+
+		return metric
+
+	def collect_users_elo_pong(self):
+		metric = [
+			'# HELP back_users_elo_pong Pong ELO of all users',
+			'# TYPE back_users_elo_pong counter'
+		]
+
+		users = Member.objects.all()
+		for user in users:
+			metric.append(f'back_users_elo_pong{{user="{user.username}"}} {user.elo_pong}')
+
+		return metric
+
+	def collect_users_elo_royal(self):
+		metric = [
+			'# HELP back_users_elo_royal Royal ELO of all users',
+			'# TYPE back_users_elo_royal counter'
+		]
+
+		users = Member.objects.all()
+		for user in users:
+			metric.append(f'back_users_elo_royal{{user="{user.username}"}} {user.elo_royal}')
+
 		return metric
 
 	def collect_total_friend_requests(self):
