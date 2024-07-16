@@ -98,7 +98,7 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 		let modelsLoaded = true;
 /*
 		/// MODEL 3D
-		const totalmodel = 0;
+		const totalmodel = 11;
 		let actualmodel = 0;
 		let modelsLoaded = false;
 
@@ -109,8 +109,7 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 				modelsLoaded = true;
 		}
 		checkModelsLoaded();
-*/
-/*
+
 		const loadermodel = new GLTFLoader();
 
 		loadermodel.load(
@@ -299,7 +298,6 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 			function (error) { console.error(error); } 
 		);
 */
-
 		/// TEXT
 		let text3, text3r, text2, text2r, text1, text1r, text0, text0r;
 		let textMesh1, font;
