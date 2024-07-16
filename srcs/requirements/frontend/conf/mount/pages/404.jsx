@@ -14,7 +14,7 @@ const ErrorPage = () => {
 					<img src="images/saturnus.webp" alt="ArrowsGif" style={{height: '5cm'}}/>
 					<img src="images/flowers.webp" alt="ArrowsGif" style={{height: '5cm'}}/>
 				</div>
-				<p style={{position: 'absolute', bottom: '1.5cm'}}>Reloading the page might resolve the problem.</p>
+				<p className='mt-5'>Reloading the page might resolve the problem.</p>
 			</div>
 		</div>
 	);
