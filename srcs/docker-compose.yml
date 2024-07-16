@@ -143,10 +143,6 @@ services:
         aliases:
           - frontend #Used for inter containers communication, certs will match this fqdn
     #TODO HEALTHCHECK
-    deploy:
-      resources:
-        limits:
-          memory: 512M
     restart: unless-stopped
 
 ##Monitoring
