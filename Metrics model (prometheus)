@@ -13,3 +13,10 @@ traefik_service_responses_bytes_total{code="401",method="POST",protocol="http",s
 traefik_service_responses_bytes_total{code="404",method="GET",protocol="http",service="frontend@docker"} 14574
 traefik_service_responses_bytes_total{code="499",method="GET",protocol="http",service="frontend@docker"} 21
 traefik_service_responses_bytes_total{code="502",method="GET",protocol="websocket",service="frontend@docker"} 11
+
+
+back_game_won_total 444
+back_game_won_total {player="titi"} 44
+
+Creted room=444 by user=feswfjew 
+Login user=pjefipwf role=administrator 
