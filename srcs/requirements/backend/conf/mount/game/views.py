@@ -1,5 +1,5 @@
 import os
-from .models import Member, FriendRequest, Match, Match3, MatchR
+from .models import Member, FriendRequest, Match, Match3, MatchR, RoyalPlayer
 from django.db import transaction
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
@@ -622,8 +622,11 @@ class MetricsView(APIView):
 		metrics += self.collect_online_users()
 		metrics += self.collect_total_friend_requests()
 		metrics += self.collect_total_pong2_matches()
+		metrics += self.collect_won_pong2_matches()
 		metrics += self.collect_total_pong3_matches()
+		metrics += self.collect_won_pong3_matches()
 		metrics += self.collect_total_royal_matches()
+		metrics += self.collect_won_royal_matches()
 		return '\n'.join(metrics)
 
 	def collect_total_users(self):
@@ -654,16 +657,26 @@ class MetricsView(APIView):
 		return metric
 
 	def collect_total_friend_requests(self):
-		total_friend_requests = FriendRequest.objects.count()
+		requests = FriendRequest.objects.all()
+		total_friend_requests = requests.count()
 		metric = [
 			'# HELP back_total_friend_requests Number of pending friend requests',
 			'# TYPE back_total_friend_requests counter',
 			f'back_total_friend_requests {total_friend_requests}'
 		]
+
+		users = Member.objects.all()
+		for user in users:
+			user_reqs_sent = requests.filter(Q(sender=user)).count()
+			user_reqs_recv = requests.filter(Q(recipient=user)).count()
+			metric.append(f'back_total_friend_requests{{user="{user.username}",role="sender"}} {user_reqs_sent}')
+			metric.append(f'back_total_friend_requests{{user="{user.username}",role="recipient"}} {user_reqs_recv}')
+
 		return metric
 
 	def collect_total_pong2_matches(self):
-		total_pong2_matches = Match.objects.count()
+		matches = Match.objects.all()
+		total_pong2_matches = matches.count()
 		metric = [
 			'# HELP back_total_pong2_matches Number of played 1v1 pong matches',
 			'# TYPE back_total_pong2_matches counter',
@@ -672,13 +685,30 @@ class MetricsView(APIView):
 
 		users = Member.objects.all()
 		for user in users:
-			user_match_count = Match.objects.filter(Q(winner=user) | Q(loser=user)).count()
+			user_match_count = matches.filter(Q(winner=user) | Q(loser=user)).count()
 			metric.append(f'back_total_pong2_matches{{player="{user.username}"}} {user_match_count}')
 
 		return metric
 
+	def collect_won_pong2_matches(self):
+		matches = Match.objects.all()
+		won_pong2_matches = matches.count()
+		metric = [
+			'# HELP back_won_pong2_matches Number of won 1v1 pong matches',
+			'# TYPE back_won_pong2_matches counter',
+			f'back_won_pong2_matches {won_pong2_matches}'
+		]
+
+		users = Member.objects.all()
+		for user in users:
+			user_match_count = matches.filter(Q(winner=user)).count()
+			metric.append(f'back_won_pong2_matches{{player="{user.username}"}} {user_match_count}')
+
+		return metric
+
 	def collect_total_pong3_matches(self):
-		total_pong3_matches = Match3.objects.count()
+		matches = Match3.objects.all()
+		total_pong3_matches = matches.count()
 		metric = [
 			'# HELP back_total_pong3_matches Number of played 1v2 pong matches',
 			'# TYPE back_total_pong3_matches counter',
@@ -687,8 +717,28 @@ class MetricsView(APIView):
 
 		users = Member.objects.all()
 		for user in users:
-			user_match_count = Match3.objects.filter(Q(paddle1=user) | Q(paddle2=user) | Q(ball=user)).count()
-			metric.append(f'back_total_pong3_matches{{player="{user.username}"}} {user_match_count}')
+			user_match_count_ball = matches.filter(Q(ball=user)).count()
+			user_match_count_paddle = matches.filter(Q(paddle1=user) | Q(paddle2=user)).count()
+			metric.append(f'back_total_pong3_matches{{player="{user.username}",role="ball"}} {user_match_count_ball}')
+			metric.append(f'back_total_pong3_matches{{player="{user.username}",role="paddle"}} {user_match_count_paddle}')
+
+		return metric
+
+	def collect_won_pong3_matches(self):
+		matches = Match3.objects.all()
+		won_pong3_matches = matches.count()
+		metric = [
+			'# HELP back_won_pong3_matches Number of won 1v2 pong matches',
+			'# TYPE back_won_pong3_matches counter',
+			f'back_won_pong3_matches {won_pong3_matches}'
+		]
+
+		users = Member.objects.all()
+		for user in users:
+			user_match_count_ball = matches.filter(Q(ball_won=True) & Q(ball=user)).count()
+			user_match_count_paddle = matches.filter(Q(ball_won=False) & (Q(paddle1=user) | Q(paddle2=user))).count()
+			metric.append(f'back_won_pong3_matches{{player="{user.username}",role="ball"}} {user_match_count_ball}')
+			metric.append(f'back_won_pong3_matches{{player="{user.username}",role="paddle"}} {user_match_count_paddle}')
 
 		return metric
 
@@ -701,8 +751,25 @@ class MetricsView(APIView):
 		]
 
 		users = Member.objects.all()
+		royal_players = RoyalPlayer.objects.all()
 		for user in users:
-			user_match_count = MatchR.objects.filter(players__member=user).distinct().count()
+			user_match_count = royal_players.filter(Q(member=user)).count()
 			metric.append(f'back_total_royal_matches{{player="{user.username}"}} {user_match_count}')
+
+		return metric
+
+	def collect_won_royal_matches(self):
+		won_royal_matches = MatchR.objects.count()
+		metric = [
+			'# HELP back_won_royal_matches Number of won royal matches',
+			'# TYPE back_won_royal_matches counter',
+			f'back_won_royal_matches {won_royal_matches}'
+		]
+
+		users = Member.objects.all()
+		royal_players = RoyalPlayer.objects.all()
+		for user in users:
+			user_match_count = royal_players.filter(Q(member=user) & Q(position=1)).count()
+			metric.append(f'back_won_royal_matches{{player="{user.username}"}} {user_match_count}')
 
 		return metric
