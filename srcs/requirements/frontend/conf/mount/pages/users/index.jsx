@@ -69,7 +69,7 @@ const UserTableRow = ({ user }) => {
 }
 
 const UserTable = ({ users, onSort, sortConfig }) => (
-	<table className="table table-sm table-striped table-dark mt-4 w-75 mx-auto">
+	<table className="table table-sm table-striped table-dark mt-4 w-75 mx-auto" style={{marginBottom: '2cm'}}>
 		<UserTableHead onSort={onSort} sortConfig={sortConfig} />
 		<tbody>
 			{ users.map(user => (
