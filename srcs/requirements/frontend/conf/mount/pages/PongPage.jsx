@@ -79,8 +79,8 @@ export default function PongPage({ status, detail }) {
 					display: 'flex',
 					justifyContent: 'space-between',
 					alignItems: 'center',
-					width: '100%',
-					height: '70vh',
+					width: '100vw',
+					height: '78vh',
 				}}
 			>
 
