@@ -3,19 +3,19 @@ import styles from '../styles/base.module.css';
 
 const MatchScoreCardPlayerLink = ({ id, username }) => {
 	if (id === null) {
-	  return (<span>{username}</span>);
+		return (<span>{username}</span>);
 	}
-  
+
 	return (
-	  <Link
-		href={`/users/${id}`}
-		passHref
-		style={{color: '#38255faa', textDecoration: 'none'}}
-	  >
-		{username}
-	  </Link>
+		<Link
+			href={`/users/${id}`}
+			passHref
+			style={{color: '#38255faa', textDecoration: 'none'}}
+		>
+			{username}
+		</Link>
 	);
-  }
+}
 
 const Pong2MatchScoreCardPlayers = ({ user, match }) => {
 	if (match.winner_id === user.id) {

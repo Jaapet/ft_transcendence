@@ -101,7 +101,7 @@ const Header = () => {
 
 			<Navbar.Brand>
 			<Link href="/" passHref legacyBehavior>
-						<Nav.Link className={styles.logo}>Transcendence</Nav.Link>
+						<Nav.Link className={`${styles.logo} mx-3`}>Transcendence</Nav.Link>
 			</Link>
 			</Navbar.Brand>
 				<Nav className="mr-auto">
