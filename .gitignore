@@ -10,15 +10,13 @@ srcs/requirements/backend/conf/mount/backend/media
 !srcs/requirements/backend/conf/mount/backend/media/default.png
 srcs/requirements/db/mount
 Makefile
-.env
+*.env
 *.crt
 *.csr
 *.key
 *.srl
 .ssl_is_gen
 openssl.cnf
-.env
 token_backend
 inited_*
 *.secret
-.env
