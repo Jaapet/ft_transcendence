@@ -609,6 +609,7 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 		//let last = Date.now(); // debug
 		socket.on('gameStatus', ({
 			leftScore, rightScore,
+			newPaddleSpeed,
 			ballX, ballZ, newBallSpeed,
 			ballDirX, ballDirZ, resetRotation,
 			leftPaddleZ, rightPaddleZ
@@ -642,6 +643,9 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 			}
 
 			// Paddles
+			/// Speed
+			paddleSpeed = newPaddleSpeed;
+			/// Pos
 			paddles[0].position.z = leftPaddleZ;
 			paddles[1].position.z = rightPaddleZ;
 		});
@@ -658,6 +662,7 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 		const PADDLE_MAX_Z = 16.5;
 		const BALL_MAX_Z_DIR = 0.6;
 		const BALL_BOUNCE_MERCY_PERIOD = 100;	// In ms
+		let paddleSpeed = PADDLE_SPEED;
 		let ballSpeed = BASE_BALL_SPEED;
 
 		let first = 0;
@@ -700,7 +705,7 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 						// Client-side game updates
 
 						// Paddle Movement
-						const displaceP = PADDLE_SPEED * timeSinceLastLoop;
+						const displaceP = paddleSpeed * timeSinceLastLoop;
 						/// Left Paddle
 						if (role === 'leftPaddle') {
 							if (paddleUp)

@@ -375,6 +375,7 @@ io.on('connection', socket => {
 				lastLoopTime: now,
 				started: false,
 				score: { l: 0, r: 0 },
+				paddleSpeed: PONG2_PADDLE_SPEED,
 				ballPosition: { x: 0, z: 0 },
 				ballDirection: { x: 0.99999, z: 0.00001 },
 				ballSpeed: PONG2_BASE_BALL_SPEED,
@@ -882,18 +883,20 @@ io.on('connection', socket => {
 			if (!connected[socket.id])
 				return ;
 
-			// update ball speed
+			// update ball and paddle speed
 			const elapsedTime = Date.now();
 			const timeSinceLastLoop = (elapsedTime - room.runtime.lastLoopTime) / 1000; // In seconds
-			// Ball will only change speed PONG2_BALL_RESPAWN_TIME ms afer respawning
+			// Ball and Paddle will only change speed PONG2_BALL_RESPAWN_TIME ms afer respawning
 			if (elapsedTime - room.runtime.ballRespawnTime >= PONG2_BALL_RESPAWN_TIME) {
+				if (room.runtime.paddleSpeed == 0)
+					room.runtime.paddleSpeed = PONG2_PADDLE_SPEED;
 				const currentBallTime = elapsedTime - room.runtime.ballZeroTime; // in ms
 				room.runtime.ballSpeed = PONG2_BASE_BALL_SPEED + (currentBallTime * (PONG2_BALL_ACCELERATION_RATE / 1000));
 				room.runtime.ballSpeed = Math.min(room.runtime.ballSpeed, PONG2_MAX_BALL_SPEED);
 			}
 
 			// update paddle positions
-			const displaceP = PONG2_PADDLE_SPEED * timeSinceLastLoop;
+			const displaceP = room.runtime.paddleSpeed * timeSinceLastLoop;
 			/// Left Paddle
 			//// Go Up
 			if (room.runtime.goUp.l)
@@ -998,6 +1001,7 @@ io.on('connection', socket => {
 			if ((room.runtime.ballPosition.x > PONG2_BALL_MAX_X - 0.5 && room.runtime.ballDirection.x > 0)
 				|| (room.runtime.ballPosition.x < -PONG2_BALL_MAX_X + 0.5 && room.runtime.ballDirection.x < 0)) {
 					const leftScored = room.runtime.ballPosition.x > 0;
+					room.runtime.paddleSpeed = 0;
 					room.runtime.ballPosition.x = 0;
 					room.runtime.ballPosition.z = 0;
 					room.runtime.ballDirection.z = 0.00001;
@@ -1025,6 +1029,7 @@ io.on('connection', socket => {
 			io.to(room.id).emit('gameStatus', {
 				leftScore: room.runtime.score.l,
 				rightScore: room.runtime.score.r,
+				newPaddleSpeed: room.runtime.paddleSpeed,
 				ballX: room.runtime.ballPosition.x,
 				ballZ: room.runtime.ballPosition.z,
 				newBallSpeed: room.runtime.ballSpeed,
