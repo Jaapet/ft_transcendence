@@ -10,7 +10,7 @@ import { useGame } from '../context/GameContext';
 
 export default function PongPage({ status, detail }) {
 	const { logout } = useAuth();
-	const { joinPong2Game, inQueue, room, players } = useGame();
+	const { joinPong2Game, resetAll, inQueue, room, players } = useGame();
 	const [playerL, setPlayerL] = useState(null);
 	const [playerR, setPlayerR] = useState(null);
 	const [scoreL, setScoreL] = useState(0);
@@ -38,6 +38,10 @@ export default function PongPage({ status, detail }) {
 
 	useEffect(() => {
 		joinPong2Game();
+
+		return () => {
+			resetAll();
+		}
 	}, []);
 
 /*

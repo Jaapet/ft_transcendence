@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from '../../styles/base.module.css';
@@ -54,7 +54,7 @@ const UserTableRow = ({ user }) => {
 						width: '15px',
 						height: '15px',
 						borderRadius: '50%',
-						backgroundColor: user.is_online ? 'green' : 'red',
+						backgroundColor: user.is_online === "offline" ? 'red' : user.is_online === "ingame" ? 'blueviolet' : 'green' ,
 						marginRight: '5px',
 						verticalAlign: 'middle'
 					}}
@@ -83,6 +83,10 @@ export default function Users({ status, detail, users }) {
 	const { logout } = useAuth();
 	const [sortedUsers, setSortedUsers] = useState(users);
 	const [sortConfig, setSortConfig] = useState({ key: 'username', direction: 'ascending' });
+
+	useEffect(() => {
+		setSortedUsers(users);
+	}, [users]);
 
 	const handleLogout = async () => {
 		await logout();

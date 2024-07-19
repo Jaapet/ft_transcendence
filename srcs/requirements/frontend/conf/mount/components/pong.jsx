@@ -9,11 +9,9 @@ import styles from '../styles/game.module.css';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { useAuth } from '../context/AuthenticationContext';
 import { useGame } from '../context/GameContext';
-import { useRouter } from 'next/router';
 import React from 'react';
 
 const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWinner, setWinnerScore }) => {
-	const router = useRouter();
 	const { user } = useAuth();
 	const {
 		inQueue,
@@ -35,26 +33,21 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 		if (!user || !gameType || gameType !== 'pong2' || !setGameStarted || !updateRoom || !updatePlayers || !resetAll)
 			return ;
 
-		//console.log('INQUEUE:', inQueue); // debug
-		//console.log('INGAME:', inGame); // debug
-		//console.log('GAMETYPE:', gameType); // debug
-
-		//console.log(`PONG_CMPT: Entered useEffect`); // debug
 		const socket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`);
-		//console.log(`PONG_CMPT: Connected to ws server`); // debug
+
 		// TODO: Replace useAuth's user with an API call
 		socket.emit('join', { gameType: 'pong2', userId: user.id, userName: user.username, userELO: user.elo_pong, userAvatar: user.avatar });
-		//console.log(`PONG_CMPT: Sent join msg`); // debug
+
 		// Gérer les événements de connexion et d'erreur
-		socket.on('connect', () => {
-			//console.log('Connected to websocket server');
+		/*socket.on('connect', () => {
+			console.log('Connected to websocket server');
 		});
 		socket.on('connect_error', (error) => {
-			//console.error('Connection error for websocket server:', error);
+			console.error('Connection error for websocket server:', error);
 		});
 		socket.on('disconnect', () => {
-			//console.log('Disconnected from websocket server');
-		});
+			console.log('Disconnected from websocket server');
+		});*/
 
 		socket.on('updateRoom', ({ room, players }) => {
 			//console.log('Room updated to', room); // debug
@@ -864,8 +857,6 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 					}
 				}
 			}
-			//scene = null;
-			//camera = null;
 			renderer && renderer.renderLists.dispose();
 			renderer.dispose();
 			cancelAnimationFrame(render);
@@ -876,8 +867,6 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 		if (gameEnded) {
 			setGameStarted(false);
 			setGameEnded(false);
-			resetAll();
-			//router.push('/');
 		}
 	}, [gameEnded]);
 

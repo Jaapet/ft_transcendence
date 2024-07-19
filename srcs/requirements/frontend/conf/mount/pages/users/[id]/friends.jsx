@@ -68,13 +68,13 @@ const UserFriendListFriend = ({ myFriends, setMyFriends, friend }) => {
 						width: '10px',
 						height: '10px',
 						borderRadius: '50%',
-						backgroundColor: friend.is_online ? 'green' : 'red',
+						backgroundColor: user.is_online === "offline" ? 'red' : user.is_online === "ingame" ? 'blueviolet' : 'green' ,
 						right: '3.3cm',
 						marginRight: '10px',
 						marginTop:'25px',
 						verticalAlign: 'middle'
 					}}
-       			></span>
+				></span>
 				</div>
 				<div>
 					<RemoveFriendButton
