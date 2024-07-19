@@ -156,9 +156,8 @@ export const AuthenticationProvider = ({ children }) => {
 			const response = await fetch(`/api/auth/user`, {
 				method: 'POST'
 			});
-			if (!response) {
+			if (!response)
 				throw new Error('Login refresh failed');
-			}
 
 			const data = await response.json();
 			if (!data)
@@ -184,7 +183,8 @@ export const AuthenticationProvider = ({ children }) => {
 			user,
 			accessToken,
 			error, setError, clearError,
-			login, login2FA, logout, register
+			login, login2FA, logout, register,
+			isLoggedIn
 		}}>
 			{children}
 		</AuthenticationContext.Provider>
