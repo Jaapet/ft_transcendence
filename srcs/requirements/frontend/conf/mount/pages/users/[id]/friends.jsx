@@ -68,7 +68,7 @@ const UserFriendListFriend = ({ myFriends, setMyFriends, friend }) => {
 						width: '10px',
 						height: '10px',
 						borderRadius: '50%',
-						backgroundColor: user.is_online === "offline" ? 'red' : user.is_online === "ingame" ? 'blueviolet' : 'green' ,
+						backgroundColor: friend.is_online === "offline" ? 'red' : friend.is_online === "ingame" ? 'blueviolet' : 'green' ,
 						right: '3.3cm',
 						marginRight: '10px',
 						marginTop:'25px',
