@@ -23,7 +23,7 @@ As we are not required to complete all modules, here is our definitive selection
 - ✅ PostgreSQL DB in back-end
 - ✅ Bootstrap toolkit and Next.js in front-end
 - 🛠️ Multiple browser support
-- ✅ Monitoring system and 🛠️ metrics
+- ✅ Monitoring system and ✅ metrics
 
 ## How to use
 
