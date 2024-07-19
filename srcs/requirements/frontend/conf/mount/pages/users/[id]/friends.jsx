@@ -10,6 +10,7 @@ import { ListGroup, Button } from 'react-bootstrap';
 import ToastList from '../../../components/toasts/ToastList';
 import ErrorToast from '../../../components/toasts/ErrorToast';
 import SuccessToast from '../../../components/toasts/SuccessToast';
+import StatusCircle from '../../../components/StatusCircle';
 
 const RemoveFriendButton = ({ myFriends, setMyFriends, target_id }) => {
 	const { removeFriend } = useUser();
@@ -60,21 +61,15 @@ const UserFriendListFriend = ({ myFriends, setMyFriends, friend }) => {
 						{friend.username}
 					</Link>
 				</div>
-				<div>
-				<span
+				<div
 					style={{
 						position: 'absolute',
-						display: 'inline-block',
-						width: '10px',
-						height: '10px',
-						borderRadius: '50%',
-						backgroundColor: friend.is_online === "offline" ? 'red' : friend.is_online === "ingame" ? 'blueviolet' : 'green' ,
 						right: '3.3cm',
 						marginRight: '10px',
-						marginTop:'25px',
-						verticalAlign: 'middle'
+						marginTop:'9px'
 					}}
-				></span>
+				>
+					<StatusCircle status={friend.is_online} />
 				</div>
 				<div>
 					<RemoveFriendButton

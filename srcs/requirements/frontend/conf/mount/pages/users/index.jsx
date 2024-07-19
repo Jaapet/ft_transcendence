@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import styles from '../../styles/base.module.css';
 import { useAuth } from '../../context/AuthenticationContext';
+import StatusCircle from '../../components/StatusCircle';
 
 const UserTableHead = ({ onSort, sortConfig }) => {
 	const getSortDirection = (column) => {
@@ -48,17 +49,7 @@ const UserTableRow = ({ user }) => {
 
 			{/* status colored dot */}
 			<td>
-				<span
-					style={{
-						display: 'inline-block',
-						width: '15px',
-						height: '15px',
-						borderRadius: '50%',
-						backgroundColor: user.is_online === "offline" ? 'red' : user.is_online === "ingame" ? 'blueviolet' : 'green' ,
-						marginRight: '5px',
-						verticalAlign: 'middle'
-					}}
-				></span>
+				<StatusCircle status={user.is_online} />
 			</td>
 
 			<td>{user.elo_pong}</td>
@@ -86,6 +77,7 @@ export default function Users({ status, detail, users }) {
 
 	useEffect(() => {
 		setSortedUsers(users);
+		setSortConfig({ key: 'username', direction: 'ascending' });
 	}, [users]);
 
 	const handleLogout = async () => {
