@@ -119,6 +119,14 @@ class UpdateMemberSerializer(serializers.HyperlinkedModelSerializer):
 			'avatar': {'required': False}
 		}
 
+class UpdateMemberIngameStatusSerializer(serializers.Serializer):
+	is_ingame = serializers.BooleanField(required=True)
+
+	def update(self, instance, validated_data):
+		instance.is_ingame = validated_data.get('is_ingame', instance.is_ingame)
+		instance.save()
+		return instance
+
 class SendFriendRequestSerializer(serializers.Serializer):
 	target_id = serializers.IntegerField()
 

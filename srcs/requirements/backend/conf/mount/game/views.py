@@ -25,6 +25,7 @@ from .serializers import (
 	RestrictedMemberSerializer,
 	RegisterMemberSerializer,
 	UpdateMemberSerializer,
+	UpdateMemberIngameStatusSerializer,
 	FriendRequestSerializer,
 	SendFriendRequestSerializer,
 	InteractFriendRequestSerializer,
@@ -210,6 +211,19 @@ class UpdateMemberAPIView(UpdateAPIView):
 	permission_classes = [permissions.IsAuthenticated]
 	serializer_class = UpdateMemberSerializer
 	parser_classes = [MultiPartParser]
+
+	def put(self, request, *args, **kwargs):
+		serializer = self.serializer_class(data=request.data, instance=request.user, context={ 'request': request })
+		if serializer.is_valid():
+			serializer.save()
+			return Response(serializer.data, status=status.HTTP_200_OK)
+		else:
+			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# Edits the currently logged-in user's is_ingame fields
+class UpdateMemberIngameStatusAPIView(UpdateAPIView):
+	permission_classes = [permissions.IsAuthenticated]
+	serializer_class = UpdateMemberIngameStatusSerializer
 
 	def put(self, request, *args, **kwargs):
 		serializer = self.serializer_class(data=request.data, instance=request.user, context={ 'request': request })
