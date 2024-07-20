@@ -6,6 +6,7 @@ from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.db.models import Q
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 from django.core.files.storage import default_storage
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
@@ -211,19 +212,6 @@ class UpdateMemberAPIView(UpdateAPIView):
 	permission_classes = [permissions.IsAuthenticated]
 	serializer_class = UpdateMemberSerializer
 	parser_classes = [MultiPartParser]
-
-	def put(self, request, *args, **kwargs):
-		serializer = self.serializer_class(data=request.data, instance=request.user, context={ 'request': request })
-		if serializer.is_valid():
-			serializer.save()
-			return Response(serializer.data, status=status.HTTP_200_OK)
-		else:
-			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# Edits the currently logged-in user's is_ingame fields
-class UpdateMemberIngameStatusAPIView(UpdateAPIView):
-	permission_classes = [permissions.IsAuthenticated]
-	serializer_class = UpdateMemberIngameStatusSerializer
 
 	def put(self, request, *args, **kwargs):
 		serializer = self.serializer_class(data=request.data, instance=request.user, context={ 'request': request })
@@ -587,6 +575,25 @@ class WSAuthentication(BaseAuthentication):
 	def dummy_user(self):
 		# Create a dummy user with impossible username for regular users
 		return Member(username=';ws;')
+
+# Edits the specified user's is_ingame field
+class UpdateMemberIngameStatusAPIView(UpdateAPIView):
+	authentication_classes = [WSAuthentication]
+	permission_classes = [permissions.IsAuthenticated]
+	serializer_class = UpdateMemberIngameStatusSerializer
+
+	def put(self, request, *args, **kwargs):
+		serializer = self.serializer_class(data=request.data)
+		if serializer.is_valid():
+			user_id = serializer.validated_data['user_id']
+			try:
+				user = Member.objects.get(id=user_id)
+			except:
+				return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+			serializer.update(user, serializer.validated_data)
+			return Response(serializer.data, status=status.HTTP_200_OK)
+		else:
+			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class RegisterMatchAPIView(APIView):
 	authentication_classes = [WSAuthentication]

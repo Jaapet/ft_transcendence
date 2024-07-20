@@ -13,43 +13,15 @@ export const GameProvider = ({ children }) => {
 	const [room, setRoom] = useState(null);
 	const [players, setPlayers] = useState(null);
 
-	const setInGameStatus = async ({ value }) => {
-		try {
-			const response = await fetch(`/api/current_user/set_ingame_status`, {
-				method: 'POST',
-				headers: {
-					'Accept': 'application/json',
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ value })
-			});
-			if (!response) {
-				throw new Error('Could not update ingame status');
-			}
-
-			const data = await response.json();
-			if (!data) {
-				throw new Error('Could not update ingame status');
-			}
-			if (!response.ok) {
-				throw new Error(data.message, 'Could not update ingame status');
-			}
-		} catch (error) {
-			console.error('CONTEXT INGAME STATUS:', error);
-		}
-	}
-
 	// Sets InGame
 	const joinGame = () => {
 		setInGame(true);
-		setInGameStatus({ value: true });
 	}
 
 	// Unsets InGame and resets GameType
 	const leaveGame = () => {
 		setInGame(false);
 		setGameType('none');
-		setInGameStatus({ value: false });
 	}
 
 	// Sets InGame and GameType

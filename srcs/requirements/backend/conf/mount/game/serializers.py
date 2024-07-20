@@ -121,7 +121,13 @@ class UpdateMemberSerializer(serializers.HyperlinkedModelSerializer):
 		}
 
 class UpdateMemberIngameStatusSerializer(serializers.Serializer):
+	user_id = serializers.IntegerField(required=True)
 	is_ingame = serializers.BooleanField(required=True)
+
+	def validate_user_id(self, value):
+		if not Member.objects.filter(id=value).exists():
+			raise serializers.ValidationError("User does not exist.")
+		return value
 
 	def update(self, instance, validated_data):
 		instance.is_ingame = validated_data.get('is_ingame', instance.is_ingame)

@@ -51,6 +51,7 @@ const rooms = {
 };
 
 const connected = {};
+const ids = {};
 
 // Constants
 const PONG2_NB_PLAYERS = 2;
@@ -83,7 +84,27 @@ const PONG2_SCORE_TO_WIN = 4;
 
 /// ROYAL
 
-// TODO: Make client send gameType and maxPlayers in new message that will set the player's room
+
+async function setInGameStatus(userId, value) {
+	fetch(`https://backend:8000/api/edit_ingame_status`, {
+		method: 'PUT',
+		headers: {
+			'Authorization': `Bearer ${process.env.WS_TOKEN_BACKEND}`,
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ user_id: userId, is_ingame: value })
+	})
+	.then(response => {
+		if (!response || !response.ok)
+			throw new Error('Could not set ingame status');
+
+			return response.json();
+	})
+	.catch(error => {
+		console.error('Error:', error);
+	});
+}
+
 io.on('connection', socket => {
 	//console.log(`New client connected: ${socket.id}`);
 	connected[socket.id] = true;
@@ -103,12 +124,15 @@ io.on('connection', socket => {
 			}
 		}
 		connected[socket.id] = false;
+		setInGameStatus(ids[socket.id], false);
 	});
 
 	// JOIN HANDLER (https://transcendence.gmcg.fr:50581/test)
 	socket.on('join', ({ gameType, userId, userName, userELO, userAvatar }) => {
 		if (!connected[socket.id])
 			return ;
+		ids[socket.id] = userId;
+		setInGameStatus(ids[socket.id], true);
 
 		//console.log(`JOIN: New user ${userName}`); // debug
 
@@ -866,7 +890,7 @@ io.on('connection', socket => {
 			fetch('https://backend:8000/api/game/pong2/save', {
 				method: 'POST',
 				headers: {
-					'Authorization': 'Bearer ' + process.env.WS_TOKEN_BACKEND,
+					'Authorization': `Bearer ${process.env.WS_TOKEN_BACKEND}`,
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(data)
