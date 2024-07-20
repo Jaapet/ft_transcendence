@@ -634,6 +634,7 @@ class MetricsView(APIView):
 		metrics += self.collect_total_users()
 		metrics += self.collect_total_2fa_users()
 		metrics += self.collect_online_users()
+		metrics += self.collect_ingame_users()
 		metrics += self.collect_users_friends()
 		metrics += self.collect_users_elo_pong()
 		metrics += self.collect_users_elo_royal()
@@ -670,6 +671,15 @@ class MetricsView(APIView):
 			'# HELP back_online_users Number of currently online users',
 			'# TYPE back_online_users counter',
 			f'back_online_users {online_users}'
+		]
+		return metric
+
+	def collect_ingame_users(self):
+		ingame_users = Member.objects.get_ingame_users().count()
+		metric = [
+			'# HELP back_ingame_users Number of currently ingame users',
+			'# TYPE back_ingame_users counter',
+			f'back_ingame_users {ingame_users}'
 		]
 		return metric
 

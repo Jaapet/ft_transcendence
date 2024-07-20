@@ -38,6 +38,9 @@ class MemberManager(BaseUserManager):
 	def get_online_users(self):
 		return self.filter(last_activity__gte=timezone.now() - timezone.timedelta(minutes=5))
 
+	def get_ingame_users(self):
+		return self.filter(is_ingame=True)
+
 # Member objects contain:
 # - username			(CharField)
 # - email					(EmailField)
