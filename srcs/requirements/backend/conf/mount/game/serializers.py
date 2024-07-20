@@ -46,6 +46,7 @@ class RestrictedMemberSerializer(serializers.HyperlinkedModelSerializer):
 			'username',
 			'avatar',
 			'join_date',
+			'is_admin',
 			'elo_pong',
 			'elo_royal',
 			'is_online'

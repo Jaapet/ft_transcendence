@@ -1,11 +1,10 @@
 import refreshToken from '../../../lib/refresh';
 import { IncomingForm } from 'formidable';
 import fs from 'fs';
-// TODO: Check if we can skip using formidable
 
 export const config = {
 	api: {
-		bodyParser: false, // Disable Next.js built-in body parser
+		bodyParser: false, // Disabling Next.js built-in body parser
 	},
 };
 
@@ -39,6 +38,7 @@ export default async (req, res) => {
 
 		let formData = null;
 		const { fields, files } = await parseForm(req);
+		console.log(`Edit attempt for username=${fields.username}`); // ELK LOG
 
 		formData = new FormData();
 		formData.append('username', fields.username);
@@ -60,16 +60,21 @@ export default async (req, res) => {
 			body: formData
 		});
 		if (!response) {
+			console.log(`Edit failed for username=${fields.username}`); // ELK LOG
 			throw new Error('Edit failed');
 		}
 
 		const data = await response.json();
 		if (!data) {
+			console.log(`Edit failed for username=${fields.username}`); // ELK LOG
 			throw new Error('Edit failed');
 		}
 		if (!response.ok) {
+			console.log(`Edit failed for username=${fields.username}`); // ELK LOG
 			throw new Error(data.username || data.email || data.password || data.avatar || 'Edit failed');
 		}
+
+		console.log(`Edit successful for username=${fields.username}`); // ELK LOG
 
 		return res.status(200).json({ message: 'User has been edited' });
 	} catch (error) {

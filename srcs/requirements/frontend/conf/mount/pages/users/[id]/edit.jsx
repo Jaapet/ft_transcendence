@@ -24,12 +24,12 @@ const EditFormUsernameField = ({ username, setUsername }) => {
 					onChange={e => setUsername(e.target.value)}
 					value={username}
 					style={{
-                        backgroundColor: '#909099',			
-                        color: '#000000',
-                        border: '1px solid #666686',
-                        borderRadius: '5px',
-                        padding: '10px'
-                    }}
+						backgroundColor: '#909099',
+						color: '#000000',
+						border: '1px solid #666686',
+						borderRadius: '5px',
+						padding: '10px'
+					}}
 				/>
 			</div>
 		</div>
@@ -50,12 +50,12 @@ const EditFormEmailField = ({ email, setEmail }) => {
 					onChange={e => setEmail(e.target.value)}
 					value={email}
 					style={{
-                        backgroundColor: '#909099',			
-                        color: '#000000',
-                        border: '1px solid #666686',
-                        borderRadius: '5px',
-                        padding: '10px'
-                    }}
+						backgroundColor: '#909099',
+						color: '#000000',
+						border: '1px solid #666686',
+						borderRadius: '5px',
+						padding: '10px'
+					}}
 				/>
 			</div>
 		</div>
@@ -74,15 +74,15 @@ const EditFormPasswordField = ({ password, setPassword }) => {
 					autoComplete="new-password"
 					className="form-control"
 					onChange={e => setPassword(e.target.value)}
-                    value={password}
-                    style={{
-                        backgroundColor: '#909099',			
-                        color: '#000000',
-                        border: '1px solid #666686',
-                        borderRadius: '5px',
-                        padding: '10px'
-                    }}
-                />
+					value={password}
+					style={{
+						backgroundColor: '#909099',
+						color: '#000000',
+						border: '1px solid #666686',
+						borderRadius: '5px',
+						padding: '10px'
+					}}
+				/>
 			</div>
 		</div>
 	);
@@ -102,12 +102,12 @@ const EditFormPasswordRepeatField = ({ password, setPassword }) => {
 					onChange={e => setPassword(e.target.value)}
 					value={password}
 					style={{
-                        backgroundColor: '#909099',			
-                        color: '#000000',
-                        border: '1px solid #666686',
-                        borderRadius: '5px',
-                        padding: '10px'
-                    }}
+						backgroundColor: '#909099',
+						color: '#000000',
+						border: '1px solid #666686',
+						borderRadius: '5px',
+						padding: '10px'
+					}}
 				/>
 			</div>
 		</div>
@@ -211,6 +211,11 @@ export default function EditPage({ status, detail, current_user }) {
 	const handleLogout = async () => {
 		await logout();
 	}
+
+	useEffect(() => {
+		if (user)
+			setUsername(user.username);
+	}, [user]);
 
 	useEffect(() => {
 		if (userError) {

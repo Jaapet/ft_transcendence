@@ -13,8 +13,7 @@ export default async (req, res) => {
 			'refresh=; HttpOnly; Secure; Max-Age=0; SameSite=Strict; Path=/'
 		);
 
-		return res.status(200).json({message: 'User has been logged out'});
-
+		return res.status(200).json({ message: 'User has been logged out' });
 	} catch (error) {
 		console.error('API LOGOUT:', error);
 		return res.status(401).json({ message: error.message });
