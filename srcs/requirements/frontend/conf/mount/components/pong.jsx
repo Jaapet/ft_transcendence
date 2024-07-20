@@ -11,6 +11,8 @@ import { useAuth } from '../context/AuthenticationContext';
 import { useGame } from '../context/GameContext';
 import React from 'react';
 
+// TODO: Handle gameError message
+
 const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWinner, setWinnerScore }) => {
 	const { user } = useAuth();
 	const {
