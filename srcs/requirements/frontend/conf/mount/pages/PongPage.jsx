@@ -18,6 +18,8 @@ export default function PongPage({ status, detail }) {
 	const [gameEnd, setGameEnd] = useState(false);
 	const [winner, setWinner] = useState(null);
 	const [winnerScore, setWinnerScore] = useState(0);
+	const [gameError, setGameError] = useState(false);
+	const [errorMessage, setErrorMessage] = useState('');
 
 	const handleLogout = async () => {
 		await logout();
@@ -68,6 +70,22 @@ export default function PongPage({ status, detail }) {
 		}
 	}, [players]);
 
+	if (gameError) {
+		return (
+			<div className={`${styles.container} pt-5`}>
+				<div className={`card ${styles.customCard} mt-5`}>
+					<div className={`card-body ${styles.cardInfo}`}>
+						{ errorMessage ?
+							<h1>{errorMessage}</h1>
+						:
+							<h1>Something went wrong...</h1>
+						}
+					</div>
+				</div>
+			</div>
+		);
+	}
+
 	if (gameEnd && winner) {
 		return (
 			<div className={`${styles.container} pt-5`}>
@@ -104,6 +122,8 @@ export default function PongPage({ status, detail }) {
 					scoreR={scoreR} setScoreR={setScoreR}
 					gameEnd={gameEnd} setGameEnd={setGameEnd}
 					setWinner={setWinner} setWinnerScore={setWinnerScore}
+					gameError={gameError} setGameError={setGameError}
+					setErrorMessage={setErrorMessage}
 				/>
 
 				{ room && !inQueue ?

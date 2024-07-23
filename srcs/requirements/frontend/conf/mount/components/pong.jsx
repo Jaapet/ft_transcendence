@@ -11,20 +11,26 @@ import { useAuth } from '../context/AuthenticationContext';
 import { useGame } from '../context/GameContext';
 import React from 'react';
 
-// TODO: Handle gameError message
-
-const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWinner, setWinnerScore }) => {
+const Pong = ({
+	scoreL, setScoreL,
+	scoreR, setScoreR,
+	gameEnd, setGameEnd,
+	setWinner, setWinnerScore,
+	gameError, setGameError,
+	setErrorMessage
+}) => {
 	const { user } = useAuth();
 	const {
 		inQueue,
-		inGame,
 		gameStarted,
 		gameEnded,
+		gameErrored,
 		gameType,
 		room,
 		players,
 		setGameStarted,
 		setGameEnded,
+		setGameErrored,
 		updateRoom,
 		updatePlayers,
 		resetAll
@@ -578,8 +584,8 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 		let startRender = Date.now();
 
 		socket.on('gameStart', ({ players }) => {
-			console.log(`PONG_CMPT: Received gameStart`); // debug
-			console.log(`PONG_CMPT: Received player list:`, players); // debug
+			//console.log(`PONG_CMPT: Received gameStart`); // debug
+			//console.log(`PONG_CMPT: Received player list:`, players); // debug
 			for (const playerKey in players) {
 				if (players[playerKey].id === user.id) {
 					role = players[playerKey].role;
@@ -606,6 +612,13 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 			setWinner(winner);
 			setWinnerScore(score);
 			setGameEnd(true);
+		});
+
+		socket.on('gameError', ({ message }) => {
+			console.log('RECEIVED GAME_ERROR'); // debug
+			setGameErrored(true);
+			setGameError(true);
+			setErrorMessage(message);
 		});
 
 		//let last = Date.now(); // debug
@@ -808,17 +821,17 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 			}
 
 			lastLoopTime = Date.now();
-			if (!gameEnd) {
+			if (!gameEnd && !gameError) {
 				renderer.render(scene, camera);
 				requestAnimationFrame(render);
 			}
 		}
-		console.log(`PONG_CMPT: Waiting for gameStart`); // debug
+		//console.log(`PONG_CMPT: Waiting for gameStart`); // debug
 		function waitForGameStart() {
-			if (gameStart && !gameEnd) {
+			if (gameStart && !gameEnd && !gameError) {
 				lastLoopTime = Date.now();
 				requestAnimationFrame(render);
-			} else if (!gameEnd) {
+			} else if (!gameEnd && !gameError) {
 				setTimeout(waitForGameStart, 250); // Every 0.25 seconds
 			}
 		}
@@ -827,7 +840,7 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 		return () =>
 		{
 			setGameEnd(true);
-			console.log("Entered useEffect's return function"); // debug
+			//console.log("Entered useEffect's return function"); // debug
 			gameStart = false;
 			socket.disconnect();
 			document.removeEventListener('keydown', handleKeyDown);
@@ -871,11 +884,12 @@ const Pong = ({ scoreL, setScoreL, scoreR, setScoreR, gameEnd, setGameEnd, setWi
 	}, [user, gameType]);
 
 	useEffect(() => {
-		if (gameEnded) {
+		if (gameEnded || gameErrored) {
 			setGameStarted(false);
 			setGameEnded(false);
+			setGameErrored(false);
 		}
-	}, [gameEnded]);
+	}, [gameEnded, gameErrored]);
 
 	let testmessage = <></>;
 	let hidden = '';

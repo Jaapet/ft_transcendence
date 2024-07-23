@@ -9,6 +9,7 @@ export const GameProvider = ({ children }) => {
 	const [inGame, setInGame] = useState(false);
 	const [gameStarted, setGameStarted] = useState(false);
 	const [gameEnded, setGameEnded] = useState(false);
+	const [gameErrored, setGameErrored] = useState(false);
 	const [gameType, setGameType] = useState('none');
 	const [room, setRoom] = useState(null);
 	const [players, setPlayers] = useState(null);
@@ -63,6 +64,7 @@ export const GameProvider = ({ children }) => {
 		setInQueue(false);
 		setGameStarted(false);
 		setGameEnded(false);
+		setGameErrored(false);
 		setRoom(null);
 		setPlayers(null);
 		leaveGame();
@@ -70,9 +72,11 @@ export const GameProvider = ({ children }) => {
 
 	return (
 		<GameContext.Provider value={{
-			inQueue, inGame, gameStarted, gameEnded, gameType, room, players,
+			inQueue, inGame, gameStarted, gameEnded, gameErrored,
+			gameType, room, players,
 			joinPong2Game, joinPong3Game, joinRoyalGame,
-			setGameStarted, setGameEnded, updateRoom, updatePlayers, resetAll
+			setGameStarted, setGameEnded, setGameErrored,
+			updateRoom, updatePlayers, resetAll
 		}}>
 			{children}
 		</GameContext.Provider>

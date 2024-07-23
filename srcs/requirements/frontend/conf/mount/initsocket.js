@@ -117,7 +117,8 @@ io.on('connection', socket => {
 			//console.log(`Found room ${room.id}`); // debug
 			if (room.launched) {
 				//console.log(`Room ${room.id} is launched`); // debug
-				removePlayerFromRoom(socket.id); // TODO: Something else that doesn't break everything please
+				io.to(room.id).emit('gameError', { message: 'A player disconnected' });
+				removePlayerFromRoom(socket.id);
 			} else {
 				//console.log(`Room ${room.id} is not launched`); // debug
 				removePlayerFromRoom(socket.id);
@@ -784,8 +785,8 @@ io.on('connection', socket => {
 	}
 
 	function LoopError(room, errorMsg) {
-		//console.log(`LOOP_ERROR: Room ${room.id} failed (${errorMsg})`); // debug
-		io.to(room.id).emit('gameError', { stop: true, error: errorMsg });
+		console.log(`LOOP_ERROR: Room ${room.id} failed (${errorMsg})`); // debug
+		io.to(room.id).emit('gameError', { message: errorMsg });
 		return null;
 	}
 
