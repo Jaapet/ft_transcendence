@@ -598,13 +598,13 @@ const Pong = ({
 		socket.on('startTimer', () => {
 			startTimer = true;
 			startRender = Date.now();
-			console.log(`PONG_CMPT: Received startTimer`); // debug
+			//console.log(`PONG_CMPT: Received startTimer`); // debug
 		});
 
 		socket.on('startGameplay', () => {
 			startGameplay = true;
 			startTime = Date.now();
-			console.log(`PONG_CMPT: Received startGameplay`); // debug
+			//console.log(`PONG_CMPT: Received startGameplay`); // debug
 		});
 
 		socket.on('gameEnd', ({ winner, score }) => {
@@ -670,13 +670,10 @@ const Pong = ({
 		const FPS = 60;
 		const PADDLE_SPEED = 37;							// units per second
 		const BASE_BALL_SPEED = 60;						// units per second
-		const MAX_BALL_SPEED = 120;						// units per second
-		const BALL_ACCELERATION_RATE = 0.6;		// unit/s/s
 		const BALL_MAX_X = 42.5;
 		const BALL_MAX_Z = 20;
 		const PADDLE_MAX_Z = 16.5;
 		const BALL_MAX_Z_DIR = 0.6;
-		const BALL_BOUNCE_MERCY_PERIOD = 100;	// In ms
 		let paddleSpeed = PADDLE_SPEED;
 		let ballSpeed = BASE_BALL_SPEED;
 

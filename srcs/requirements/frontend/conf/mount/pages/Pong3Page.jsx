@@ -2,23 +2,23 @@ import React from 'react';
 import Link from "next/link";
 import { useEffect, useState } from 'react';
 import styles from '../styles/base.module.css';
-import Pong from '../components/pong';
-import PongPlayerCard from '../components/PongPlayerCard';
-import PongResults from '../components/pongResults';
+import Pong3 from '../components/pong3';
+import Pong3LeftUI from '../components/Pong3LeftUI';
+import Pong3RightUI from '../components/Pong3RightUI';
+import Pong3Results from '../components/pong3Results';
 import { useAuth } from '../context/AuthenticationContext';
 import DrawingCanvas from '../components/Drawing';
 import { useGame } from '../context/GameContext';
 
 export default function PongPage({ status, detail }) {
 	const { logout } = useAuth();
-	const { joinPong2Game, resetAll, inQueue, room, players } = useGame();
+	const { joinPong3Game, resetAll, inQueue, room, players } = useGame();
+	const [timeLeft, setTimeLeft] = useState(30.0);
 	const [playerL, setPlayerL] = useState(null);
 	const [playerR, setPlayerR] = useState(null);
-	const [scoreL, setScoreL] = useState(0);
-	const [scoreR, setScoreR] = useState(0);
+	const [playerB, setPlayerB] = useState(null);
+	const [ballWon, setBallWon] = useState(false);
 	const [gameEnd, setGameEnd] = useState(false);
-	const [winner, setWinner] = useState(null);
-	const [winnerScore, setWinnerScore] = useState(0);
 	const [gameError, setGameError] = useState(false);
 	const [errorMessage, setErrorMessage] = useState('');
 
@@ -40,7 +40,7 @@ export default function PongPage({ status, detail }) {
 	}
 
 	useEffect(() => {
-		joinPong2Game();
+		joinPong3Game();
 
 		return () => {
 			resetAll();
@@ -59,14 +59,19 @@ export default function PongPage({ status, detail }) {
 	}
 */
 	useEffect(() => {
-		//console.log('PONG PAGE PLAYERS:', players); // debug
+		//console.log('PONG 3 PAGE PLAYERS:', players); // debug
+		setPlayerL(null);
+		setPlayerR(null);
+		setPlayerB(null);
 		if (players) {
 			Object.entries(players).map(([key, player]) => {
-				//console.log('PONG PAGE PLAYER ROLE:', player.role); // debug
+				//console.log('PONG 3 PAGE PLAYER', key, player); // debug
 				if (player.role === 'leftPaddle')
 					setPlayerL(player);
 				else if (player.role === 'rightPaddle')
 					setPlayerR(player);
+				else if (player.role === 'ball')
+					setPlayerB(player);
 			});
 		}
 	}, [players]);
@@ -95,10 +100,15 @@ export default function PongPage({ status, detail }) {
 		);
 	}
 
-	if (gameEnd && winner) {
+	if (gameEnd) {
 		return (
 			<div className={`${styles.container} pt-5`}>
-				<PongResults winner={winner} winnerScore={winnerScore} />
+				<Pong3Results
+					playerL={playerL}
+					playerR={playerR}
+					playerB={playerB}
+					ballWon={ballWon}
+				/>
 				<div className={styles.retrybuttonContainer}>
 					<Link href="/chooseGame" passHref className={styles.retrybutton}>
 						Play Again
@@ -126,7 +136,7 @@ export default function PongPage({ status, detail }) {
 				{ room && !inQueue ?
 					<>
 						{/* Player 1 */}
-						<PongPlayerCard nb={1} player={playerL} score={scoreL} />
+						<Pong3LeftUI playerL={playerL} playerB={playerB} />
 					</>
 				:
 					<></>
@@ -134,11 +144,9 @@ export default function PongPage({ status, detail }) {
 
 				{/* Game canvas */}
 				<DrawingCanvas />
-				<Pong
-					scoreL={scoreL} setScoreL={setScoreL}
-					scoreR={scoreR} setScoreR={setScoreR}
+				<Pong3
 					gameEnd={gameEnd} setGameEnd={setGameEnd}
-					setWinner={setWinner} setWinnerScore={setWinnerScore}
+					setTimeLeft={setTimeLeft} setBallWon={setBallWon}
 					gameError={gameError} setGameError={setGameError}
 					setErrorMessage={setErrorMessage}
 				/>
@@ -146,7 +154,7 @@ export default function PongPage({ status, detail }) {
 				{ room && !inQueue ?
 					<>
 						{/* Player 2 */}
-						<PongPlayerCard nb={2} player={playerR} score={scoreR} />
+						<Pong3RightUI playerR={playerR} timeLeft={timeLeft} />
 					</>
 				:
 					<></>

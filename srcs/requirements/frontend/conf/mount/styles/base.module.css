@@ -118,34 +118,66 @@
 
 /* important buttons */
 .button {
-    display: inline-block;
+	display: inline-block;
 	font-size: 100px;
 	margin: 10px;
 
-    color: #fff;
-    background-size: 400% 400%;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 50px;
-    text-decoration: none;
+	color: #fff;
+	background-size: 400% 400%;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 50px;
+	text-decoration: none;
 
-    animation: gradientAnimation 5s ease infinite;
-    background: linear-gradient(45deg, #ff6b6b, #f06595, #cc5de8, #845ef7, #5c7cfa, #339af0, #22b8cf, #20c997, #51cf66, #94d82d, #fcc419, #ff922b);
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+	animation: gradientAnimation 5s ease infinite;
+	background: linear-gradient(45deg, #ff6b6b, #f06595, #cc5de8, #845ef7, #5c7cfa, #339af0, #22b8cf, #20c997, #51cf66, #94d82d, #fcc419, #ff922b);
+	transition: background-color 0.3s ease, box-shadow 0.3s ease;
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 
 	z-index: 3;
 }
 
 .button:hover {
 	transform: scale(1.05);
-
-    box-shadow: 0 20px 20px rgba(217, 248, 38, 0.4);
+	box-shadow: 0 20px 20px rgba(217, 248, 38, 0.4);
 }
 
 .button.selected {
 	background: linear-gradient(45deg, #e0e0e0, #c9c9c9, #b3b3b3, #9d9d9d, #878787, #717171, #5c5c5c, #464646, #303030, #1a1a1a, #000000);
 	color: white;
+}
+
+/* end game buttons */
+.retrybutton {
+	display: inline-block;
+	font-size: 60px;
+	margin: 8px;
+
+	color: #fff;
+	background-size: 100% 100%;
+	border: none;
+	padding: 5px 10px;
+	border-radius: 35px;
+	text-decoration: none;
+
+	animation: gradientAnimation 5s ease infinite;
+	background: linear-gradient(45deg, #ff6b6b, #f06595, #cc5de8, #845ef7, #5c7cfa, #339af0, #22b8cf, #20c997, #51cf66, #94d82d, #fcc419, #ff922b);
+	transition: background-color 0.3s ease, box-shadow 0.3s ease;
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+
+	z-index: 3;
+}
+
+.retrybutton:hover {
+	transform: scale(1.05);
+	box-shadow: 0 20px 20px rgba(217, 248, 38, 0.4);
+}
+
+.retrybuttonContainer {
+	display: flex;
+	justify-content: center;
+	gap: 20px;
+	margin-top: 1cm;
 }
 
 /* lil profil buttons */

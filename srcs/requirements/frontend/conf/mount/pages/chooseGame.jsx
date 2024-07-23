@@ -34,6 +34,9 @@ export default function ChooseGame({ status, detail }) {
 				<Link href="/PongPage" passHref className={styles.button}>
 					Classic Pong
 				</Link>
+				<Link href="/Pong3Page" passHref className={styles.button}>
+					1v2 Pong
+				</Link>
 				<Link href="/RoyalPage" passHref className={styles.button}>
 					Royal Pong
 				</Link>
@@ -43,7 +46,7 @@ export default function ChooseGame({ status, detail }) {
 					<img src="/images/pongicon.png" alt="Pong Icon" style={{ width: '300px', marginTop: '1rem', marginRight:'2cm' }} />
 					<img src="/images/crown.jpg" alt="Royal Icon" style={{ width: '200px', marginLeft:'0cm' }} />
 				*/}
-				{/* 	maybe put icons or how to play things here */}
+				{/* maybe put icons or how to play things here */}
 			</div>
 		</div>
 	);

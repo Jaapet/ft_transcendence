@@ -45,7 +45,7 @@ const Pong3MatchScoreCardPlayers = ({ match }) => {
 	return (
 		<p className="fs-2 mb-0">
 			<MatchScoreCardPlayerLink id={match.paddle1_id} username={match.paddle1_username} />
-			&nbsp;&&&nbsp;
+			&nbsp;&&nbsp;
 			<MatchScoreCardPlayerLink id={match.paddle2_id} username={match.paddle2_username} />
 			&nbsp;vs&nbsp;
 			<MatchScoreCardPlayerLink id={match.ball_id} username={match.ball_username} />
