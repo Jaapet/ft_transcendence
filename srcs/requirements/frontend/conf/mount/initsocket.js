@@ -83,11 +83,12 @@ const PONG2_SCORE_TO_WIN = 4;
 /// PONG 3
 const PONG3_FPS = 60;
 const PONG3_PADDLE_SPEED = 37;							// units per second
-const PONG3_BASE_BALL_SPEED = 60;						// units per second
+const PONG3_BASE_BALL_SPEED = 45;						// units per second
 const PONG3_MAX_BALL_SPEED = 120;						// units per second
-const PONG3_BALL_ACCELERATION_RATE = 0.6;		// unit/s/s
+const PONG3_BALL_ACCELERATION_RATE = 0.5;		// unit/s/s
 const PONG3_BALL_MAX_X = 42.5;
 const PONG3_BALL_MAX_Z = 20;
+const PONG3_BALL_INPUT_FORCE = 0.4;
 const PONG3_PADDLE_MAX_Z = 16.5;
 const PONG3_BALL_MAX_Z_DIR = 0.6;
 const PONG3_BALL_BOUNCE_MERCY_PERIOD = 100;	// In ms
@@ -1399,6 +1400,21 @@ io.on('connection', socket => {
 				bounce();
 
 			// TODO: Make ball user able to input influence over ball
+			/// Ball
+			const ballInfluence = PONG3_BALL_INPUT_FORCE * timeSinceLastLoop;
+			const way = room.runtime.ballDirection.x > 0 ? 1 : -1;
+			//// Go Up
+			if (room.runtime.goUp.b) {
+				room.runtime.ballDirection.z -= ballInfluence;
+				room.runtime.ballDirection.z = Math.min(Math.max(room.runtime.ballDirection.z, -PONG3_BALL_MAX_Z_DIR), PONG3_BALL_MAX_Z_DIR);
+				room.runtime.ballDirection.x = way * (1 - Math.abs(room.runtime.ballDirection.z));
+			}
+			//// Go Down
+			if (room.runtime.goDown.b) {
+				room.runtime.ballDirection.z += ballInfluence;
+				room.runtime.ballDirection.z = Math.min(Math.max(room.runtime.ballDirection.z, -PONG3_BALL_MAX_Z_DIR), PONG3_BALL_MAX_Z_DIR);
+				room.runtime.ballDirection.x = way * (1 - Math.abs(room.runtime.ballDirection.z));
+			}
 
 			/// Clamp Ball Z Direction
 			room.runtime.ballDirection.z = Math.min(Math.max(room.runtime.ballDirection.z, -PONG3_BALL_MAX_Z_DIR), PONG3_BALL_MAX_Z_DIR);

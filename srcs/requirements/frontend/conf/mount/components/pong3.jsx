@@ -463,8 +463,8 @@ const Pong3 = ({
 		const ballDir = [ 0.99999, 0.00001 ]
 		const paddles = [];
 		let role = 'pending';
-		let paddleUp = false;
-		let paddleDown = false;
+		let inputUp = false;
+		let inputDown = false;
 
 		// ajout des objets dans la scene et placement des objets
 		addball(0, 2, 0, makeObj(ball, texturesphere));
@@ -505,14 +505,14 @@ const Pong3 = ({
 			//console.log(event.key); // debug
 			switch (event.key) {
 				case "ArrowUp":
-					if (!paddleUp) {
-						paddleUp = true;
+					if (!inputUp) {
+						inputUp = true;
 						socket.emit('input', { gameType: 'pong3', input: { key: event.key, type: 'keydown' } });
 					}
 					break;
 				case "ArrowDown":
-					if (!paddleDown) {
-						paddleDown = true;
+					if (!inputDown) {
+						inputDown = true;
 						socket.emit('input', { gameType: 'pong3', input: { key: event.key, type: 'keydown' } });
 					}
 					break;
@@ -526,14 +526,14 @@ const Pong3 = ({
 			//console.log(event.key); // debug
 			switch (event.key) {
 				case "ArrowUp":
-					if (paddleUp) {
-						paddleUp = false;
+					if (inputUp) {
+						inputUp = false;
 						socket.emit('input', { gameType: 'pong3', input: { key: event.key, type: 'keyup' } });
 					}
 					break;
 				case "ArrowDown":
-					if (paddleDown) {
-						paddleDown = false;
+					if (inputDown) {
+						inputDown = false;
 						socket.emit('input', { gameType: 'pong3', input: { key: event.key, type: 'keyup' } });
 					}
 					break;
@@ -660,9 +660,10 @@ const Pong3 = ({
 		// TODO: Check if these are synced with server-side code
 		const FPS = 60;
 		const PADDLE_SPEED = 37;							// units per second
-		const BASE_BALL_SPEED = 60;						// units per second
+		const BASE_BALL_SPEED = 45;						// units per second
 		const BALL_MAX_X = 42.5;
 		const BALL_MAX_Z = 20;
+		const BALL_INPUT_FORCE = 0.4;
 		const PADDLE_MAX_Z = 16.5;
 		const BALL_MAX_Z_DIR = 0.6;
 		let paddleSpeed = PADDLE_SPEED;
@@ -711,17 +712,17 @@ const Pong3 = ({
 						const displaceP = paddleSpeed * timeSinceLastLoop;
 						/// Left Paddle
 						if (role === 'leftPaddle') {
-							if (paddleUp)
+							if (inputUp)
 								paddles[0].position.z -= displaceP;
-							if (paddleDown)
+							if (inputDown)
 								paddles[0].position.z += displaceP;
 							paddles[0].position.z = Math.min(Math.max(paddles[0].position.z, -PADDLE_MAX_Z), PADDLE_MAX_Z);
 						}
 						/// Right Paddle
 						else if (role === 'rightPaddle') {
-							if (paddleUp)
+							if (inputUp)
 								paddles[1].position.z -= displaceP;
-							if (paddleDown)
+							if (inputDown)
 								paddles[1].position.z += displaceP;
 							paddles[1].position.z = Math.min(Math.max(paddles[1].position.z, -PADDLE_MAX_Z), PADDLE_MAX_Z);
 						}
@@ -751,6 +752,20 @@ const Pong3 = ({
 						ballObj.position.z = Math.min(Math.max(ballObj.position.z, -BALL_MAX_Z), BALL_MAX_Z);
 
 						// TODO: Make ball user able to input influence over ball
+						const ballInfluence = BALL_INPUT_FORCE * timeSinceLastLoop;
+						const way = ballDir[0] > 0 ? 1 : -1;
+						if (role === "ball") {
+							if (inputUp) {
+								ballDir[1] -= ballInfluence;
+								ballDir[1] = Math.min(Math.max(ballDir[1], -BALL_MAX_Z_DIR), BALL_MAX_Z_DIR);
+								ballDir[0] = way * (1 - Math.abs(ballDir[1]));
+							}
+							if (inputDown) {
+								ballDir[1] += ballInfluence;
+								ballDir[1] = Math.min(Math.max(ballDir[1], -BALL_MAX_Z_DIR), BALL_MAX_Z_DIR);
+								ballDir[0] = way * (1 - Math.abs(ballDir[1]));
+							}
+						}
 
 						// Clamp Ball Z Direction
 						ballDir[1] = Math.min(Math.max(ballDir[1], -BALL_MAX_Z_DIR), BALL_MAX_Z_DIR);
