@@ -1257,8 +1257,8 @@ io.on('connection', socket => {
 				end_datetime: new Date(Date.now()).toISOString()
 			};
 			console.log("MATCH RESULTS:", data); // debug
-// TODO: Finish this!
-/*			fetch('https://backend:8000/api/game/pong3/save', {
+
+			fetch('https://backend:8000/api/game/pong3/save', {
 				method: 'POST',
 				headers: {
 					'Authorization': `Bearer ${process.env.WS_TOKEN_BACKEND}`,
@@ -1274,7 +1274,7 @@ io.on('connection', socket => {
 			})
 			.catch(error => {
 				console.error('Error:', error);
-			});*/
+			});
 
 			io.to(room.id).emit('gameEnd', {
 				ball_won: ballWon

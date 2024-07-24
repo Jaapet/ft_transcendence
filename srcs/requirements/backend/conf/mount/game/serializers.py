@@ -280,6 +280,53 @@ class RegisterMatchSerializer(serializers.ModelSerializer):
 		match = Match.objects.create(winner=winner, loser=loser, **validated_data)
 		return match
 
+class RegisterMatch3Serializer(serializers.ModelSerializer):
+	paddle1_id = serializers.IntegerField(write_only=True)
+	paddle2_id = serializers.IntegerField(write_only=True)
+	ball_id = serializers.IntegerField(write_only=True)
+
+	class Meta:
+		model = Match3
+		fields = [
+			'type',
+			'paddle1_id',
+			'paddle2_id',
+			'ball_id',
+			'ball_won',
+			'start_datetime',
+			'end_datetime'
+		]
+
+	def create(self, validated_data):
+		paddle1_id = validated_data.pop('paddle1_id', None)
+		paddle2_id = validated_data.pop('paddle2_id', None)
+		ball_id = validated_data.pop('ball_id', None)
+
+		paddle1 = None
+		paddle2 = None
+		ball = None
+
+		if paddle1_id:
+			try:
+				paddle1 = Member.objects.get(id=paddle1_id)
+			except Member.DoesNotExist:
+				pass
+
+		if paddle2_id:
+			try:
+				paddle2 = Member.objects.get(id=paddle2_id)
+			except Member.DoesNotExist:
+				pass
+
+		if ball_id:
+			try:
+				ball = Member.objects.get(id=ball_id)
+			except Member.DoesNotExist:
+				pass
+
+		match = Match3.objects.create(paddle1=paddle1, paddle2=paddle2, ball=ball, **validated_data)
+		return match
+
 class Match3Serializer(serializers.HyperlinkedModelSerializer):
 	paddle1_username = serializers.SerializerMethodField()
 	paddle2_username = serializers.SerializerMethodField()

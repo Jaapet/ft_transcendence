@@ -34,7 +34,8 @@ from .serializers import (
 	MatchSerializer,
 	Match3Serializer,
 	MatchRSerializer,
-	RegisterMatchSerializer
+	RegisterMatchSerializer,
+	RegisterMatch3Serializer
 )
 
 # Queries the health status of the backend
@@ -601,6 +602,17 @@ class RegisterMatchAPIView(APIView):
 
 	def post(self, request):
 		serializer = RegisterMatchSerializer(data=request.data)
+		if serializer.is_valid():
+			serializer.save()
+			return Response(serializer.data, status=status.HTTP_201_CREATED)
+		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class RegisterMatch3APIView(APIView):
+	authentication_classes = [WSAuthentication]
+	permission_classes = [permissions.IsAuthenticated]
+
+	def post(self, request):
+		serializer = RegisterMatch3Serializer(data=request.data)
 		if serializer.is_valid():
 			serializer.save()
 			return Response(serializer.data, status=status.HTTP_201_CREATED)
