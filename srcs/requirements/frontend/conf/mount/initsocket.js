@@ -83,12 +83,12 @@ const PONG2_SCORE_TO_WIN = 4;
 /// PONG 3
 const PONG3_FPS = 60;
 const PONG3_PADDLE_SPEED = 37;							// units per second
-const PONG3_BASE_BALL_SPEED = 45;						// units per second
+const PONG3_BASE_BALL_SPEED = 52;						// units per second
 const PONG3_MAX_BALL_SPEED = 120;						// units per second
-const PONG3_BALL_ACCELERATION_RATE = 0.5;		// unit/s/s
+const PONG3_BALL_ACCELERATION_RATE = 0.6;		// unit/s/s
 const PONG3_BALL_MAX_X = 42.5;
 const PONG3_BALL_MAX_Z = 20;
-const PONG3_BALL_INPUT_FORCE = 0.4;
+const PONG3_BALL_INPUT_FORCE = 0.6;
 const PONG3_PADDLE_MAX_Z = 16.5;
 const PONG3_BALL_MAX_Z_DIR = 0.6;
 const PONG3_BALL_BOUNCE_MERCY_PERIOD = 100;	// In ms

@@ -659,11 +659,11 @@ const Pong3 = ({
 		// Gameplay constants
 		// TODO: Check if these are synced with server-side code
 		const FPS = 60;
-		const PADDLE_SPEED = 37;							// units per second
-		const BASE_BALL_SPEED = 45;						// units per second
+		const PADDLE_SPEED = 37;					// units per second
+		const BASE_BALL_SPEED = 52;				// units per second
 		const BALL_MAX_X = 42.5;
 		const BALL_MAX_Z = 20;
-		const BALL_INPUT_FORCE = 0.4;
+		const BALL_INPUT_FORCE = 0.6;
 		const PADDLE_MAX_Z = 16.5;
 		const BALL_MAX_Z_DIR = 0.6;
 		let paddleSpeed = PADDLE_SPEED;
