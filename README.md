@@ -15,8 +15,8 @@ As we are not required to complete all modules, here is our definitive selection
 - ✅ Advanced 3D with ThreeJS
 - 🛠️ A second game with ✅ user history and ✅ match-making
 - ✅ Distant players (playing online from different computers)
-- 🛠️ Multiple players (more than 2 in one game)
-- 🛠️ Log management (ELK)
+- ✅ Multiple players (more than 2 in one game)
+- ✅ Log management (ELK)
 - ✅ 2FA + JSON Web Tokens
 ---
 ### Minor modules
