@@ -12,6 +12,7 @@ const SignupFormUsernameField = ({ username, setUsername }) => {
 			<div data-mdb-input-init className="form-outline flex-fill mb-0">
 				<label className="form-label" htmlFor="username">Username</label>
 				<input
+					//pattern="^[a-zA-Z0-9]{1,8}$"
 					type="text"
 					id="username"
 					autoComplete="username"
@@ -45,13 +46,26 @@ const SignupFormEmailField = ({ email, setEmail }) => {
 	);
 }
 
-const SignupFormPasswordField = ({ password, setPassword }) => {
+const SignupFormPasswordField = ({ password, setPassword/*, setError*/ }) => {
+
+	// const handlePasswordPattern = (e) => {
+	// 	const pattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*?\-+~_=])[A-Za-z\d!@#$%^&*?\-+~_=]{8,20}$/;
+	// 	if (!pattern.test(e.target.value)) {
+	// 		setError(`Password must be 8 to 20 chars and have at least 1 lower case, 1 upper case, 1 digit, and 1 special char in these : \"!@#$%^&*?-+~_=\"`);
+	// 		e.target.value = null;
+	// 	} else {
+	// 		setPassword(e.target.value);
+	// 	}
+	// }
+
 	return (
 		<div className="d-flex flex-row align-items-center mb-4">
 			<i className="fas fa-lock fa-lg me-3 fa-fw"></i>
 			<div data-mdb-input-init className="form-outline flex-fill mb-0">
 				<label className="form-label" htmlFor="new-password">Password</label>
 				<input
+					//pattern="^[A-Za-z\d!@#$%^&*?\-+~_=]{8,20}$"
+					//pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*?\-+~_=])[A-Za-z\d!@#$%^&*?\-+~_=]{8,20}$"
 					type="password"
 					id="new-password"
 					autoComplete="new-password"
@@ -72,6 +86,8 @@ const SignupFormPasswordRepeatField = ({ password, setPassword }) => {
 			<div data-mdb-input-init className="form-outline flex-fill mb-0">
 				<label className="form-label" htmlFor="new-passwordR">Repeat password</label>
 				<input
+					//pattern="^[A-Za-z\d!@#$%^&*?\-+~_=]{8,20}$"
+					//pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*?\-+~_=])[A-Za-z\d!@#$%^&*?\-+~_=]{8,20}$"
 					type="password"
 					id="new-passwordR"
 					autoComplete="new-password"
@@ -131,7 +147,7 @@ const SignupFormFields = ({
 
 			<SignupFormUsernameField username={username} setUsername={setUsername} />
 			<SignupFormEmailField email={email} setEmail={setEmail} />
-			<SignupFormPasswordField password={password} setPassword={setPassword} />
+			<SignupFormPasswordField password={password} setPassword={setPassword}/>
 			<SignupFormPasswordRepeatField password={passwordR} setPassword={setPasswordR} />
 			<SignupFormAvatarField avatar={avatar} setAvatar={setAvatar} setError={setError} />
 
@@ -179,6 +195,16 @@ const SignupForm = () => {
 
 	const submitHandler = async (event) => {
 		event.preventDefault();
+		const patternU = /^[a-zA-Z0-9]{1,8}$/;
+		const patternPW = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*?\-+~_=])[A-Za-z\d!@#$%^&*?\-+~_=]{8,20}$/;
+		if (!patternU.test(username)) {
+			setError(`Username must be 8 chars max and alphanumeric`);
+			return ;
+		}
+		if (!patternPW.test(password)) {
+			setError(`Password must be 8 to 20 chars and have at least 1 lower case, 1 upper case, 1 digit, and 1 special char in these : \"!@#$%^&*?-+~_=\"`);
+			return ;
+		}
 		if (password !== passwordR) {
 			setError("Passwords do not match");
 			return ;
