@@ -46,18 +46,7 @@ const SignupFormEmailField = ({ email, setEmail }) => {
 	);
 }
 
-const SignupFormPasswordField = ({ password, setPassword/*, setError*/ }) => {
-
-	// const handlePasswordPattern = (e) => {
-	// 	const pattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*?\-+~_=])[A-Za-z\d!@#$%^&*?\-+~_=]{8,20}$/;
-	// 	if (!pattern.test(e.target.value)) {
-	// 		setError(`Password must be 8 to 20 chars and have at least 1 lower case, 1 upper case, 1 digit, and 1 special char in these : \"!@#$%^&*?-+~_=\"`);
-	// 		e.target.value = null;
-	// 	} else {
-	// 		setPassword(e.target.value);
-	// 	}
-	// }
-
+const SignupFormPasswordField = ({ password, setPassword }) => {
 	return (
 		<div className="d-flex flex-row align-items-center mb-4">
 			<i className="fas fa-lock fa-lg me-3 fa-fw"></i>
@@ -147,7 +136,7 @@ const SignupFormFields = ({
 
 			<SignupFormUsernameField username={username} setUsername={setUsername} />
 			<SignupFormEmailField email={email} setEmail={setEmail} />
-			<SignupFormPasswordField password={password} setPassword={setPassword}/>
+			<SignupFormPasswordField password={password} setPassword={setPassword} />
 			<SignupFormPasswordRepeatField password={passwordR} setPassword={setPasswordR} />
 			<SignupFormAvatarField avatar={avatar} setAvatar={setAvatar} setError={setError} />
 
@@ -195,14 +184,25 @@ const SignupForm = () => {
 
 	const submitHandler = async (event) => {
 		event.preventDefault();
-		const patternU = /^[a-zA-Z0-9]{1,8}$/;
-		const patternPW = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*?\-+~_=])[A-Za-z\d!@#$%^&*?\-+~_=]{8,20}$/;
-		if (!patternU.test(username)) {
-			setError(`Username must be 8 chars max and alphanumeric`);
+		const usernamePattern = /^[a-zA-Z0-9]{4,8}$/;
+		const passwordLengthPattern = /^.{8,20}$/;
+		const passwordAlnumPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,20}$/;
+		const passwordSymbolPattern = /^(?=.*[!@#$%^&*?\-+~_=]).{8,20}$/;
+		if (!usernamePattern.test(username)) {
+			setError(`Username must be 4 to 8 characters long and only contain alphanumeric characters`);
 			return ;
 		}
-		if (!patternPW.test(password)) {
-			setError(`Password must be 8 to 20 chars and have at least 1 lower case, 1 upper case, 1 digit, and 1 special char in these : \"!@#$%^&*?-+~_=\"`);
+
+		if (!passwordLengthPattern.test(password)) {
+			setError(`Password must be 8 to 20 characters long`);
+			return ;
+		}
+		if (!passwordAlnumPattern.test(password)) {
+			setError(`Password must have at least 1 lowercase, 1 uppercase, 1 digit, and 1 special character`);
+			return ;
+		}
+		if (!passwordSymbolPattern.test(password)) {
+			setError(`Password must have at least 1 special character from this list: \"!@#$%^&*?-+~_=\"`);
 			return ;
 		}
 		if (password !== passwordR) {
