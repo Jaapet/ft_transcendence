@@ -2,6 +2,7 @@ from .models import Member, FriendRequest, Match, Match3, MatchR, RoyalPlayer
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django_otp.plugins.otp_totp.models import TOTPDevice
+import re # Regex
 
 # Checks username and password validity for login
 # Logs in directly if 2FA is disabled
@@ -52,6 +53,12 @@ class RestrictedMemberSerializer(serializers.HyperlinkedModelSerializer):
 			'is_online'
 		]
 
+# Regex patterns for register form validation
+USERNAME_PATTERN = re.compile(r'^[a-zA-Z0-9]{4,8}$')
+PASSWORD_LENGTH_PATTERN = re.compile(r'^.{8,20}$')
+PASSWORD_ALNUM_PATTERN = re.compile(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,20}$')
+PASSWORD_SYMBOL_PATTERN = re.compile(r'^(?=.*[!@#$%^&*?\-+~_=]).{8,20}$')
+
 # Serializes sent data for Member registration
 # Checks if avatar is under size limit defined in validate_file_size
 # Checks if avatar is a correct image file
@@ -60,7 +67,27 @@ class RestrictedMemberSerializer(serializers.HyperlinkedModelSerializer):
 # Hashes password
 # Avatar is optional
 class RegisterMemberSerializer(serializers.HyperlinkedModelSerializer):
-	avatar = serializers.ImageField(required=False, validators=[validate_file_size, validate_file_type])
+	avatar = serializers.ImageField(
+		required=False,
+		validators=[
+			validate_file_size,
+			validate_file_type
+		]
+	)
+
+	def validate_username(self, value):
+		if not USERNAME_PATTERN.match(value):
+			raise serializers.ValidationError('Username must be 4 to 8 characters long and only contain alphanumeric characters')
+		return value
+
+	def validate_password(self, value):
+		if not PASSWORD_LENGTH_PATTERN.match(value):
+			raise serializers.ValidationError('Password must be 8 to 20 characters long')
+		if not PASSWORD_ALNUM_PATTERN.match(value):
+			raise serializers.ValidationError('Password must have at least 1 lowercase, 1 uppercase, 1 digit, and 1 special character')
+		if not PASSWORD_SYMBOL_PATTERN.match(value):
+			raise serializers.ValidationError('Password must have at least 1 special character from this list: \"!@#$%^&*?-+~_=\"')
+		return value
 
 	def create(self, validated_data):
 		avatar = validated_data.pop('avatar', None)

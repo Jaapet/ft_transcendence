@@ -186,7 +186,7 @@ const SignupForm = () => {
 		event.preventDefault();
 		const usernamePattern = /^[a-zA-Z0-9]{4,8}$/;
 		const passwordLengthPattern = /^.{8,20}$/;
-		const passwordAlnumPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,20}$/;
+		const passwordAlnumPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,20}$/;
 		const passwordSymbolPattern = /^(?=.*[!@#$%^&*?\-+~_=]).{8,20}$/;
 		if (!usernamePattern.test(username)) {
 			setError(`Username must be 4 to 8 characters long and only contain alphanumeric characters`);
