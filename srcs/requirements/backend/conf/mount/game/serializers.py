@@ -1,4 +1,5 @@
 from .models import Member, FriendRequest, Match, Match3, MatchR, RoyalPlayer
+from django.core.validators import RegexValidator
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -53,7 +54,7 @@ class RestrictedMemberSerializer(serializers.HyperlinkedModelSerializer):
 			'is_online'
 		]
 
-# Regex patterns for register form validation
+# Regex patterns for register and update form validation
 USERNAME_PATTERN = re.compile(r'^[a-zA-Z0-9]{4,8}$')
 PASSWORD_LENGTH_PATTERN = re.compile(r'^.{8,20}$')
 PASSWORD_ALNUM_PATTERN = re.compile(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,20}$')
@@ -75,19 +76,32 @@ class RegisterMemberSerializer(serializers.HyperlinkedModelSerializer):
 		]
 	)
 
-	def validate_username(self, value):
-		if not USERNAME_PATTERN.match(value):
-			raise serializers.ValidationError('Username must be 4 to 8 characters long and only contain alphanumeric characters')
-		return value
+	username = serializers.CharField(
+		validators=[
+			RegexValidator(
+				regex=USERNAME_PATTERN,
+				message='Username must be 4 to 8 characters long and only contain alphanumeric characters'
+			)
+		]
+	)
 
-	def validate_password(self, value):
-		if not PASSWORD_LENGTH_PATTERN.match(value):
-			raise serializers.ValidationError('Password must be 8 to 20 characters long')
-		if not PASSWORD_ALNUM_PATTERN.match(value):
-			raise serializers.ValidationError('Password must have at least 1 lowercase, 1 uppercase, 1 digit, and 1 special character')
-		if not PASSWORD_SYMBOL_PATTERN.match(value):
-			raise serializers.ValidationError('Password must have at least 1 special character from this list: \"!@#$%^&*?-+~_=\"')
-		return value
+	password = serializers.CharField(
+		write_only=True,
+		validators=[
+			RegexValidator(
+				regex=PASSWORD_LENGTH_PATTERN,
+				message='Password must be 8 to 20 characters long'
+			),
+			RegexValidator(
+				regex=PASSWORD_ALNUM_PATTERN,
+				message='Password must have at least 1 lowercase, 1 uppercase, 1 digit, and 1 special character'
+			),
+			RegexValidator(
+				regex=PASSWORD_SYMBOL_PATTERN,
+				message='Password must have at least 1 special character from this list: \"!@#$%^&*?-+~_=\"'
+			)
+		]
+	)
 
 	def create(self, validated_data):
 		avatar = validated_data.pop('avatar', None)
@@ -119,7 +133,42 @@ class RegisterMemberSerializer(serializers.HyperlinkedModelSerializer):
 # Hashes password
 # All fields are optional
 class UpdateMemberSerializer(serializers.HyperlinkedModelSerializer):
-	avatar = serializers.ImageField(required=False, validators=[validate_file_size, validate_file_type])
+	avatar = serializers.ImageField(
+		required=False,
+		validators=[
+			validate_file_size,
+			validate_file_type
+		]
+	)
+
+	username = serializers.CharField(
+		required=False,
+		validators=[
+			RegexValidator(
+				regex=USERNAME_PATTERN,
+				message='Username must be 4 to 8 characters long and only contain alphanumeric characters'
+			)
+		]
+	)
+
+	password = serializers.CharField(
+		required=False,
+		write_only=True,
+		validators=[
+			RegexValidator(
+				regex=PASSWORD_LENGTH_PATTERN,
+				message='Password must be 8 to 20 characters long'
+			),
+			RegexValidator(
+				regex=PASSWORD_ALNUM_PATTERN,
+				message='Password must have at least 1 lowercase, 1 uppercase, 1 digit, and 1 special character'
+			),
+			RegexValidator(
+				regex=PASSWORD_SYMBOL_PATTERN,
+				message='Password must have at least 1 special character from this list: \"!@#$%^&*?-+~_=\"'
+			)
+		]
+	)
 
 	def update(self, instance, validated_data):
 		avatar = validated_data.pop('avatar', None)
