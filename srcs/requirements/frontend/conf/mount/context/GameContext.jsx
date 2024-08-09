@@ -14,21 +14,44 @@ export const GameProvider = ({ children }) => {
 	const [room, setRoom] = useState(null);
 	const [players, setPlayers] = useState(null);
 
+	// Tourney
+	const [inTourney, setInTourney] = useState(false);
+	const [tourney, setTourney] = useState(null);
+	const [tourneyPlayers, setTourneyPlayers] = useState(null);
+
 	// Sets InGame
 	const joinGame = () => {
 		setInGame(true);
 	}
 
-	// Unsets InGame and resets GameType
+	// Sets InTourney
+	const joinTourney = () => {
+		setInTourney(true);
+		joinGame();
+	}
+
+	// Unsets InGame and GameType
 	const leaveGame = () => {
 		setInGame(false);
 		setGameType('none');
+	}
+
+	// Unsets InTourney, InGame and GameType
+	const leaveTourney = () => {
+		setInTourney(false);
+		leaveGame();
 	}
 
 	// Sets InGame and GameType
 	const joinPong2Game = () => {
 		setGameType('pong2');
 		joinGame();
+	}
+
+	// Sets InTourney, InGame and GameType
+	const joinPong2Tourney = () => {
+		setGameType('pong2');
+		joinTourney();
 	}
 
 	// Sets InGame and GameType
@@ -50,12 +73,23 @@ export const GameProvider = ({ children }) => {
 		else
 			setInQueue(false);
 		setRoom(room);
-		setPlayers(players);
+		updatePlayers(players);
+	}
+
+	// Sets Tourney and TourneyPlayers
+	const updateTourney = (tourney, players) => {
+		setTourney(tourney);
+		updateTourneyPlayers(players);
 	}
 
 	// Sets Players
 	const updatePlayers = (players) => {
-		setPlayers(players)
+		setPlayers(players);
+	}
+
+	// Sets TourneyPlayers
+	const updateTourneyPlayers = (players) => {
+		setTourneyPlayers(players);
 	}
 
 	// Resets all states to default
@@ -67,16 +101,19 @@ export const GameProvider = ({ children }) => {
 		setGameErrored(false);
 		setRoom(null);
 		setPlayers(null);
-		leaveGame();
+		leaveTourney();
 	}
 
 	return (
 		<GameContext.Provider value={{
-			inQueue, inGame, gameStarted, gameEnded, gameErrored,
-			gameType, room, players,
-			joinPong2Game, joinPong3Game, joinRoyalGame,
+			inQueue, inGame, inTourney, gameStarted, gameEnded, gameErrored,
+			gameType, room, players, tourney, tourneyPlayers,
+			joinPong2Game, joinPong2Tourney,
+			joinPong3Game, joinRoyalGame,
 			setGameStarted, setGameEnded, setGameErrored,
-			updateRoom, updatePlayers, resetAll
+			updateRoom, updatePlayers,
+			updateTourney, updateTourneyPlayers,
+			resetAll
 		}}>
 			{children}
 		</GameContext.Provider>
