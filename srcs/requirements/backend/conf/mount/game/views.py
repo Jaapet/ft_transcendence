@@ -190,7 +190,7 @@ class MemberAPIView(RetrieveAPIView):
 	def get_object(self):
 		return self.request.user
 
-# TODO: Better user input validation and attempts logging
+# TODO: attempts logging
 # Creates a user
 # Used for registration
 class RegisterMemberAPIView(APIView):
@@ -207,7 +207,7 @@ class RegisterMemberAPIView(APIView):
 		else:
 			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# TODO: Better user input validation
+# TODO: attempts logging
 # Edits the currently logged-in user
 class UpdateMemberAPIView(UpdateAPIView):
 	permission_classes = [permissions.IsAuthenticated]
