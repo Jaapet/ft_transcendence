@@ -40,7 +40,7 @@ export default async (req, res) => {
 			throw new Error(userData.detail || `Could not fetch user list`);
 		}
 
-		return res.status(200).json({ users: userData.results });
+		return res.status(200).json({ users: userData });
 	} catch (error) {
 		console.error('API USER LIST:', error);
 		return res.status(401).json({ message: error.message });
