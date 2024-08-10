@@ -125,7 +125,9 @@ services:
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
       - "traefik.http.routers.frontend.service=frontend@docker"
-
+      # TLS Proxy to service
+      - "traefik.http.services.frontend.loadbalancer.server.scheme=https" #Communicate with the service in HTTPS
+      - "traefik.http.services.frontend.loadbalancer.serverstransport=transport_frontend@file"
       # websockets
       - "traefik.http.routers.websocket.rule=Host(`${FQDN}`)"
       - "traefik.http.routers.websocket.tls=true"

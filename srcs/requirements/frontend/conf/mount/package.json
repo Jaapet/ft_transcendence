@@ -4,7 +4,7 @@
 	"description": "",
 	"main": "script.js",
 	"scripts": {
-		"dev": "concurrently \"npm run sockets\" \"next dev\"",
+		"dev": "concurrently \"npm run sockets\" \"next dev --experimental-https --experimental-https-key /ssl/frontend.key --experimental-https-cert /ssl/frontend.crt --experimental-https-ca /ssl/CA.crt \"",
 		"sockets": "node initsocket.js"
 	},
 	"dependencies": {
