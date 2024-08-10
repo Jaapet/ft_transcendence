@@ -1,15 +1,19 @@
-// TODO: Rename this file to server.js
 const express = require('express');
-const http = require('http');
+const https = require('https');
+const fs = require('fs');
+const privateKey  = fs.readFileSync('/ssl/frontend.key', 'utf8');
+const certificate = fs.readFileSync('/ssl/frontend.crt', 'utf8');
+const credentials = { key: privateKey, cert: certificate };
 const socketIO = require('socket.io');
 
 const PORT = 3001; // Using port 3001 for WebSocket server
 
 const app = express();
-const server = http.createServer(app);
+
+const server = https.createServer(credentials, app);
 const io = socketIO(server, {
 	cors: {
-		origin: "*",
+		origin: `https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_FRONT_PORT}`,
 		methods: ["GET", "POST"]
 	}
 });

@@ -134,6 +134,9 @@ services:
       - "traefik.http.routers.websocket.entrypoints=websocket"
       - "traefik.http.services.websocket.loadbalancer.server.port=3001"
       - "traefik.http.routers.websocket.service=websocket@docker"
+      # TLS Proxy to service
+      - "traefik.http.services.websocket.loadbalancer.server.scheme=https" #Communicate with the service in HTTPS
+      - "traefik.http.services.websocket.loadbalancer.serverstransport=transport_websocket@file"
     env_file:
       - .env
     volumes: #TODO Volumes binded should be changed before submiting the project
