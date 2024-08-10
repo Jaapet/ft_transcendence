@@ -253,14 +253,40 @@ export default function EditPage({ status, detail, current_user }) {
 
 	const submitHandler = async (event) => {
 		event.preventDefault();
+
+		const usernamePattern = /^[a-zA-Z0-9]{4,8}$/;
+		const passwordLengthPattern = /^.{8,20}$/;
+		const passwordAlnumPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,20}$/;
+		const passwordSymbolPattern = /^(?=.*[!@#$*?\-+~_=]).{8,20}$/;
+
+		if (username !== '' && !usernamePattern.test(username)) {
+			setUserError(`Username must be 4 to 8 characters long and only contain alphanumeric characters`);
+			return ;
+		}
+
+		if (password !== '' && !passwordLengthPattern.test(password)) {
+			setUserError(`Password must be 8 to 20 characters long`);
+			return ;
+		}
+		if (password !== '' && !passwordAlnumPattern.test(password)) {
+			setUserError(`Password must have at least 1 lowercase, 1 uppercase, 1 digit, and 1 special character`);
+			return ;
+		}
+		if (password !== '' && !passwordSymbolPattern.test(password)) {
+			setUserError(`Password must have at least 1 special character from this list: \"!@#$*?-+~_=\"`);
+			return ;
+		}
+
 		if (password !== passwordR) {
 			setUserError("Passwords do not match");
 			return ;
 		}
+
 		if (username === '' && email === '' && password === '' && passwordR === '' && avatar === null) {
 			setUserError("No change detected");
 			return ;
 		}
+
 		edit({ username, email, password, avatar });
 	}
 

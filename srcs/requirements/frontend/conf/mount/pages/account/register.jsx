@@ -12,7 +12,6 @@ const SignupFormUsernameField = ({ username, setUsername }) => {
 			<div data-mdb-input-init className="form-outline flex-fill mb-0">
 				<label className="form-label" htmlFor="username">Username</label>
 				<input
-					//pattern="^[a-zA-Z0-9]{1,8}$"
 					type="text"
 					id="username"
 					autoComplete="username"
@@ -53,8 +52,6 @@ const SignupFormPasswordField = ({ password, setPassword }) => {
 			<div data-mdb-input-init className="form-outline flex-fill mb-0">
 				<label className="form-label" htmlFor="new-password">Password</label>
 				<input
-					//pattern="^[A-Za-z\d!@#$%^&*?\-+~_=]{8,20}$"
-					//pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*?\-+~_=])[A-Za-z\d!@#$%^&*?\-+~_=]{8,20}$"
 					type="password"
 					id="new-password"
 					autoComplete="new-password"
@@ -75,8 +72,6 @@ const SignupFormPasswordRepeatField = ({ password, setPassword }) => {
 			<div data-mdb-input-init className="form-outline flex-fill mb-0">
 				<label className="form-label" htmlFor="new-passwordR">Repeat password</label>
 				<input
-					//pattern="^[A-Za-z\d!@#$%^&*?\-+~_=]{8,20}$"
-					//pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*?\-+~_=])[A-Za-z\d!@#$%^&*?\-+~_=]{8,20}$"
 					type="password"
 					id="new-passwordR"
 					autoComplete="new-password"
@@ -184,10 +179,12 @@ const SignupForm = () => {
 
 	const submitHandler = async (event) => {
 		event.preventDefault();
+
 		const usernamePattern = /^[a-zA-Z0-9]{4,8}$/;
 		const passwordLengthPattern = /^.{8,20}$/;
 		const passwordAlnumPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,20}$/;
-		const passwordSymbolPattern = /^(?=.*[!@#$%^&*?\-+~_=]).{8,20}$/;
+		const passwordSymbolPattern = /^(?=.*[!@#$*?\-+~_=]).{8,20}$/;
+
 		if (!usernamePattern.test(username)) {
 			setError(`Username must be 4 to 8 characters long and only contain alphanumeric characters`);
 			return ;
@@ -202,13 +199,15 @@ const SignupForm = () => {
 			return ;
 		}
 		if (!passwordSymbolPattern.test(password)) {
-			setError(`Password must have at least 1 special character from this list: \"!@#$%^&*?-+~_=\"`);
+			setError(`Password must have at least 1 special character from this list: \"!@#$*?-+~_=\"`);
 			return ;
 		}
+
 		if (password !== passwordR) {
 			setError("Passwords do not match");
 			return ;
 		}
+
 		register({ username, email, password, avatar });
 	}
 

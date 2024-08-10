@@ -56,9 +56,7 @@ class RestrictedMemberSerializer(serializers.HyperlinkedModelSerializer):
 
 # Regex patterns for register and update form validation
 USERNAME_PATTERN = re.compile(r'^[a-zA-Z0-9]{4,8}$')
-PASSWORD_LENGTH_PATTERN = re.compile(r'^.{8,20}$')
-PASSWORD_ALNUM_PATTERN = re.compile(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,20}$')
-PASSWORD_SYMBOL_PATTERN = re.compile(r'^(?=.*[!@#$%^&*?\-+~_=]).{8,20}$')
+PASSWORD_PATTERN = re.compile(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$*?\-+~_=]).{8,20}$')
 
 # Serializes sent data for Member registration
 # Checks if avatar is under size limit defined in validate_file_size
@@ -89,16 +87,8 @@ class RegisterMemberSerializer(serializers.HyperlinkedModelSerializer):
 		write_only=True,
 		validators=[
 			RegexValidator(
-				regex=PASSWORD_LENGTH_PATTERN,
-				message='Password must be 8 to 20 characters long'
-			),
-			RegexValidator(
-				regex=PASSWORD_ALNUM_PATTERN,
-				message='Password must have at least 1 lowercase, 1 uppercase, 1 digit, and 1 special character'
-			),
-			RegexValidator(
-				regex=PASSWORD_SYMBOL_PATTERN,
-				message='Password must have at least 1 special character from this list: \"!@#$%^&*?-+~_=\"'
+				regex=PASSWORD_PATTERN,
+				message='Password must be 8 to 20 characters long, have at least 1 lowercase, 1 uppercase, 1 digit, and 1 special character from this list: \"!@#$*?-+~_=\"'
 			)
 		]
 	)
@@ -156,16 +146,8 @@ class UpdateMemberSerializer(serializers.HyperlinkedModelSerializer):
 		write_only=True,
 		validators=[
 			RegexValidator(
-				regex=PASSWORD_LENGTH_PATTERN,
-				message='Password must be 8 to 20 characters long'
-			),
-			RegexValidator(
-				regex=PASSWORD_ALNUM_PATTERN,
-				message='Password must have at least 1 lowercase, 1 uppercase, 1 digit, and 1 special character'
-			),
-			RegexValidator(
-				regex=PASSWORD_SYMBOL_PATTERN,
-				message='Password must have at least 1 special character from this list: \"!@#$%^&*?-+~_=\"'
+				regex=PASSWORD_PATTERN,
+				message='Password must be 8 to 20 characters long, have at least 1 lowercase, 1 uppercase, 1 digit, and 1 special character from this list: \"!@#$*?-+~_=\"'
 			)
 		]
 	)
