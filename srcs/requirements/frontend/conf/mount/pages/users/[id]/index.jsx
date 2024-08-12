@@ -38,7 +38,7 @@ const ProfileMemberCardPicture = ({ user }) => {
       </Card.Body>
     </Card>
 */
-const ProfileMemberCardELOroyal = ({ user }) => {
+/* const ProfileMemberCardELOroyal = ({ user }) => {
 	return (
 		<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '20px',  minWidth: '200px'}}>
 			<div className="card-body" style={{backgroundColor:'rgba(255, 255, 255, 0.1)'}}>
@@ -46,7 +46,7 @@ const ProfileMemberCardELOroyal = ({ user }) => {
 			</div>
 		</div>
 	);
-}
+} */
 
 const ProfileMemberCardELO = ({ user }) => {
 	return (
@@ -132,7 +132,7 @@ const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg
 				</div>
 			{/* elo */}
 			<ProfileMemberCardELO user={user} />
-			<ProfileMemberCardELOroyal user={user} />
+			{/* <ProfileMemberCardELOroyal user={user} /> */}
 
 		</div>
 	);

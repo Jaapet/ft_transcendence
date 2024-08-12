@@ -40,7 +40,7 @@ export default async (req, res) => {
 			throw new Error(userData.detail || `Could not fetch leaderboards`);
 		}
 
-		return res.status(200).json({ pong: userData.pong, royal: userData.royal });
+		return res.status(200).json({ pong: userData.pong});
 	} catch (error) {
 		console.error('API LEADERBOARDS:', error);
 		return res.status(401).json({ message: error.message });

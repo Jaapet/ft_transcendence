@@ -1,5 +1,4 @@
 import React from 'react';
-import Royal from '../components/royal';
 import styles from '../styles/base.module.css';
 import DrawingCanvas from '../components/Drawing';
 

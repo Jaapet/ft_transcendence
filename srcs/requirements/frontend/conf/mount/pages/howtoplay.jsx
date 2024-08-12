@@ -61,7 +61,7 @@ export default function HowToPlay({ status, detail }) {
 		}
 
 		/* royal pong */
-		else if (selectedGame === 'game2') {
+/* 		else if (selectedGame === 'game2') {
 			return (
 				<Card className={styles.customCard}>
 					<Card.Body>
@@ -75,6 +75,7 @@ export default function HowToPlay({ status, detail }) {
 				</Card>
 			);
 		}
+		*/	
 	};
 
 	return (
@@ -92,13 +93,13 @@ export default function HowToPlay({ status, detail }) {
 							>
 								Classic Pong
 							</Button>
-							<Button
+	{/* 						<Button
 								className={`${styles.button} ${selectedGame === 'game2' ? '' : styles.selected}`}
 								style={{ fontSize: '38px' }}
 								onClick={() => setSelectedGame('game2')}
 							>
 								Royal Pong
-							</Button>
+							</Button> */}
 					</Col>
 				</Row>
 				<Row className="mt-4">

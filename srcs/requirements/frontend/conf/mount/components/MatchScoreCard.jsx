@@ -55,7 +55,7 @@ const Pong3MatchScoreCardPlayers = ({ match }) => {
 
 
 
-  
+/*   
   const RoyalMatchScoreCardPlayers = ({ match }) => {
 	return (
 	  <div>
@@ -75,7 +75,7 @@ const Pong3MatchScoreCardPlayers = ({ match }) => {
 	  </div>
 	);
   }
-  
+   */
 
 const Pong2MatchScoreCard = ({ user, match }) => {
 	return (
@@ -110,7 +110,7 @@ const Pong3MatchScoreCard = ({ user, match }) => {
 		);
 	}
 }
-
+/* 
 const RoyalMatchScoreCard = ({ match }) => {
   return (
     <li key={`royal_${match.id}`} className={`list-group-item ${styles.customList}`}>
@@ -119,7 +119,7 @@ const RoyalMatchScoreCard = ({ match }) => {
     </li>
   );
 }
-
+ */
 const MatchScoreCard = ({ user, match }) => {
 	if (!user || !match) {
 		return ;
@@ -130,8 +130,8 @@ const MatchScoreCard = ({ user, match }) => {
 			return (<Pong2MatchScoreCard user={user} match={match} />);
 		case 'pong3':
 			return (<Pong3MatchScoreCard user={user} match={match} />);
-		case 'royal':
-			return (<RoyalMatchScoreCard user={user} match={match} />);
+/* 			case 'royal':
+				return (<RoyalMatchScoreCard user={user} match={match} />); */
 	}
 }
 

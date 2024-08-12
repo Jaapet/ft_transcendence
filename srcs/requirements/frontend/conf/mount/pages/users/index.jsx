@@ -21,7 +21,6 @@ const UserTableHead = ({ onSort, sortConfig }) => {
 				<th scope="col" onClick={() => onSort('username')}>Username {getSortDirection('username')}</th>
 				<th scope="col" onClick={() => onSort('is_online')}>Online? {getSortDirection('is_online')}</th>
 				<th scope="col" onClick={() => onSort('elo_pong')}>Pong ELO {getSortDirection('elo_pong')}</th>
-				<th scope="col" onClick={() => onSort('elo_royal')}>Royal ELO {getSortDirection('elo_royal')}</th>
 				<th scope="col" onClick={() => onSort('join_date')}>Join date {getSortDirection('join_date')}</th>
 			</tr>
 		</thead>
@@ -53,7 +52,6 @@ const UserTableRow = ({ user }) => {
 			</td>
 
 			<td>{user.elo_pong}</td>
-			<td>{user.elo_royal}</td>
 			<td>{user.join_date}</td>
 		</tr>
 	);

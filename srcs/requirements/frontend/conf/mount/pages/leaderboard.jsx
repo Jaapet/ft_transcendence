@@ -18,14 +18,14 @@ const LeaderboardTableRow = ({ player, index, type }) => {
 					{player.username}
 				</Link>
 			</th>
-			<th>{type === 'pong' ? player.elo_pong : player.elo_royal}</th>
+			<th>{ player.elo_pong}</th>
 		</tr>
 	);
 }
 
 const LeaderboardTable = ({ title, leaders, type }) => {
 	return (
-		<Card className={styles.customCard}>
+		<Card className={styles.customCard} styles={{minWidth: '800px'}}>
 			<Card.Body>
 				<Card.Title className={styles.cardInfo}>{title}</Card.Title>
 
@@ -49,7 +49,7 @@ const LeaderboardTable = ({ title, leaders, type }) => {
 	);
 }
 
-export default function Leaderboard({ status, detail, pong, royal }) {
+export default function Leaderboard({ status, detail, pong }) {
 	const { logout } = useAuth();
 
 	const handleLogout = async () => {
@@ -69,21 +69,12 @@ export default function Leaderboard({ status, detail, pong, royal }) {
 		);
 	}
 
-	console.log('pong', pong); // debug
-	console.log('royal', royal); // debug
 
 	return (
 		<div className={styles.container}>
 			<h1 className={styles.background_title} style={{margin: '20px'}}>Leaderboards</h1>
-			<Card className={styles.backCard} style={{}}>
-				<Row>
-					<Col md={6}>
-						<LeaderboardTable title={'Classic Pong Players'} leaders={pong} type={'pong'} />
-					</Col>
-					<Col md={6}>
-						<LeaderboardTable title={'Royal Pong Players'} leaders={royal} type={'royal'} />
-					</Col>
-				</Row>
+			<Card className={styles.backCard} style={{minWidth: '600px'}}>
+						<LeaderboardTable title={'Best players of all times !'} leaders={pong} type={'pong'} />
 			</Card>
 		</div>
 	);
@@ -108,7 +99,6 @@ export async function getServerSideProps(context) {
 					status: 404,
 					detail: 'Resource not found',
 					pong: null,
-					royal: null
 				}
 			}
 		}
@@ -126,7 +116,6 @@ export async function getServerSideProps(context) {
 				status: 200,
 				detail: 'Success',
 				pong: data.pong,
-				royal: data.royal
 			}
 		}
 	} catch (error) {
@@ -136,7 +125,6 @@ export async function getServerSideProps(context) {
 				status: 401,
 				detail: error.message,
 				pong: null,
-				royal: null
 			}
 		}
 	}
