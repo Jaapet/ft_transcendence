@@ -179,10 +179,35 @@ const SignupForm = () => {
 
 	const submitHandler = async (event) => {
 		event.preventDefault();
+
+		const usernamePattern = /^[a-zA-Z0-9]{4,8}$/;
+		const passwordLengthPattern = /^.{8,20}$/;
+		const passwordAlnumPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,20}$/;
+		const passwordSymbolPattern = /^(?=.*[!@#$*?\-+~_=]).{8,20}$/;
+
+		if (!usernamePattern.test(username)) {
+			setError(`Username must be 4 to 8 characters long and only contain alphanumeric characters`);
+			return ;
+		}
+
+		if (!passwordLengthPattern.test(password)) {
+			setError(`Password must be 8 to 20 characters long`);
+			return ;
+		}
+		if (!passwordAlnumPattern.test(password)) {
+			setError(`Password must have at least 1 lowercase, 1 uppercase, 1 digit, and 1 special character`);
+			return ;
+		}
+		if (!passwordSymbolPattern.test(password)) {
+			setError(`Password must have at least 1 special character from this list: \"!@#$*?-+~_=\"`);
+			return ;
+		}
+
 		if (password !== passwordR) {
 			setError("Passwords do not match");
 			return ;
 		}
+
 		register({ username, email, password, avatar });
 	}
 

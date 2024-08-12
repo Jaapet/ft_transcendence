@@ -21,6 +21,7 @@ const Enable2FAButton =
 }) => {
 	const { user } = useAuth();
 	const { enable2FA } = useUser();
+	const [hasErr, setHasErr] = useState(false);
 
 	if (!user || !target_user || !user.id || !target_user.id || user.id !== target_user.id) {
 		return ;
@@ -37,19 +38,37 @@ const Enable2FAButton =
 
 	if (secretKey !== '' && qrUrl !== '') {
 		return (
-				<Image
-					src={qrUrl}
-					alt={`Your 2FA secret key is ${secretKey}`}
-					width={200}
-					height={200}
-					style={{ width: '200px', height: '200px' , objectFit: 'cover', display: 'block', margin: '0 auto', marginTop: '15px'}}
-					priority={true}
-				/>
+			<>
+			{hasErr ?
+				<>
+					<p style={{ fontSize: '20px' }}>
+						Open an authenticator app (like <i>Google Authenticator</i>) and enter your secret key manually<br/>
+						as well as your username and the key type "Based on time".
+					</p>
+					<p style={{ fontSize: '25px' }}>{`Your secret Key is `}<b>{`${secretKey}`}</b></p>
+				</>
+			:
+				<>
+					<p style={{ fontSize: '20px' }}>
+						Open an authenticator app (like Google Authenticator) and scan this QR code.
+					</p>
+					<Image
+						src={qrUrl}
+						alt={`2FA QR Code`}
+						width={200}
+						height={200}
+						style={{ width: '200px', height: '200px' , objectFit: 'cover', display: 'block', margin: '0 auto', marginTop: '15px'}}
+						priority={true}
+						onError={() => setHasErr(true)}
+					/>
+				</>
+			}
+			</>
 		);
 	}
 
 	return (
-		<div className={`card ${styles.customCard}`} style={{marginTop: '15px'}}>
+		<div className={`card ${styles.customCard}`} style={{marginTop: '10px'}}>
 			<Button
 				type="button"
 				variant="danger"
@@ -88,7 +107,7 @@ const Disable2FAButton =
 
 	if (secretKey !== '' && qrUrl !== '') {
 		return (
-			<div className={`card ${styles.customCard}`} style={{marginTop: '15px'}}>
+			<div className={`card ${styles.customCard}`} style={{marginTop: '10px'}}>
 				<Button
 					type="button"
 					variant="danger"
@@ -119,7 +138,6 @@ const Edit2FAFields = ({ target_user, setShowError, setErrorMsg, setShowMsg, set
 					qrUrl={qrUrl}
 					setQrUrl={setQrUrl}
 				/>
-				<br/>
 				<Disable2FAButton
 					target_user={target_user}
 					setShowError={setShowError}
@@ -226,31 +244,31 @@ export default function Edit2FAPage({ status, detail, current_user }) {
 			<div className="container h-100">
 				<div className="row d-flex justify-content-center align-items-center h-100">
 					<div className="col-lg-12 col-xl-11">
-							<div className={styles.customCard} style={{minWidth: '60vw'}}>
-								<div className="row justify-content-center">
-									<div className="col-md-10 col-lg-6 col-xl-5 order-2 order-lg-1">
+						<div className={styles.customCard} style={{minWidth: '60vw'}}>
+							<div className="row justify-content-center">
+								<div className="col-md-10 col-lg-6 col-xl-11 order-2 order-lg-1">
 
-										<p className="text-center h1 fw-bold mb-1 mx-1 mx-md-4 mt-5">2FA settings</p>
-										<Edit2FAFields
-											target_user={current_user}
-											setShowError={setShowError}
-											setErrorMsg={setErrorMsg}
-											setShowMsg={setShowMsg}
-											setMsg={setMsg}
-										/>
+									<p className="text-center h1 fw-bold mb-1 mx-1 mx-md-4 mt-5">2FA settings</p>
+									<Edit2FAFields
+										target_user={current_user}
+										setShowError={setShowError}
+										setErrorMsg={setErrorMsg}
+										setShowMsg={setShowMsg}
+										setMsg={setMsg}
+									/>
 
-										<p className="text-center text-muted mt-0 mb-0" >
-											<Link href={`/users/${user.id}/edit`} className={styles.cardInfo}>
-												<u>To profile edit page</u>
-											</Link>
-										</p>
-										<p className="text-center text-muted mt-0 mb-0" >
-											<Link href={`/users/${user.id}`}className={styles.cardInfo}>
-												<u>Back to profile</u>
-											</Link>
-										</p>
-									</div>
+									<p className="text-center text-muted mt-0 mb-0" >
+										<Link href={`/users/${user.id}/edit`} className={styles.cardInfo}>
+											<u>To profile edit page</u>
+										</Link>
+									</p>
+									<p className="text-center text-muted mt-0 mb-0" >
+										<Link href={`/users/${user.id}`}className={styles.cardInfo}>
+											<u>Back to profile</u>
+										</Link>
+									</p>
 								</div>
+							</div>
 						</div>
 					</div>
 				</div>

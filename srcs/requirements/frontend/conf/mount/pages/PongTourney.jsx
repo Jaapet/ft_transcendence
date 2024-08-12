@@ -2,16 +2,33 @@ import React from 'react';
 import Link from "next/link";
 import { useEffect, useState } from 'react';
 import styles from '../styles/base.module.css';
-import Pong from '../components/pong';
+import PongT from '../components/pongT';
 import PongPlayerCard from '../components/PongPlayerCard';
 import PongResults from '../components/pongResults';
 import { useAuth } from '../context/AuthenticationContext';
 import DrawingCanvas from '../components/Drawing';
 import { useGame } from '../context/GameContext';
 
-export default function PongPage({ status, detail }) {
+export default function PongTourney({ status, detail }) {
 	const { logout } = useAuth();
-	const { joinPong2Game, resetAll, inQueue, room, players } = useGame();
+	const { joinPong2Tourney, resetAll, inQueue, room, players, tourney, tourneyPlayers } = useGame();
+
+	// Tourney states
+	/*
+		Inside TOURNEY PLAYER:
+			Upper or Lower group
+			Upper or Lower player in group
+			const TourneyState = {
+				Start: 'Start',									// 0 (starting pos)
+				SemiFinals: 'SemiFinals',				// 1 (first match)
+				LosersFinals: 'LosersFinals',		// 1 (final for 3rd)
+				Loser: 'Loser',									// 0 (final for 4th)
+				WinnersFinals: 'WinnersFinals',	// 2 (final for 2nd)
+				Winner: 'Winner'								// 3 (final for 1st)
+			};
+	*/
+
+	// Game states
 	const [playerL, setPlayerL] = useState(null);
 	const [playerR, setPlayerR] = useState(null);
 	const [scoreL, setScoreL] = useState(0);
@@ -40,7 +57,7 @@ export default function PongPage({ status, detail }) {
 	}
 
 	useEffect(() => {
-		joinPong2Game();
+		joinPong2Tourney();
 
 		return () => {
 			resetAll();
@@ -60,7 +77,7 @@ export default function PongPage({ status, detail }) {
 */
 	useEffect(() => {
 		//console.log('PONG PAGE PLAYERS:', players); // debug
-		if (players) {
+		if (room && players) {
 			Object.entries(players).map(([key, player]) => {
 				//console.log('PONG PAGE PLAYER ROLE:', player.role); // debug
 				if (player.role === 'leftPaddle')
@@ -96,6 +113,7 @@ export default function PongPage({ status, detail }) {
 	}
 
 	if (gameEnd && winner) {
+		// TODO: Replace by tourney results (or let it show for a bit only, then switch back to tourney results?)
 		return (
 			<div className={`${styles.container} pt-5`}>
 				<PongResults winner={winner} winnerScore={winnerScore} />
@@ -132,9 +150,9 @@ export default function PongPage({ status, detail }) {
 					<></>
 				}
 
-				{/* Game canvas */}
 				<DrawingCanvas />
-				<Pong
+				<PongT
+					tourney={tourney} tourneyPlayers={tourneyPlayers}
 					scoreL={scoreL} setScoreL={setScoreL}
 					scoreR={scoreR} setScoreR={setScoreR}
 					gameEnd={gameEnd} setGameEnd={setGameEnd}

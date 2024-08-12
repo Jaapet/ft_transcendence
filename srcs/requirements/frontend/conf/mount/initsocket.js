@@ -1,15 +1,19 @@
-// TODO: Rename this file to server.js
 const express = require('express');
-const http = require('http');
+const https = require('https');
+const fs = require('fs');
+const privateKey  = fs.readFileSync('/ssl/frontend.key', 'utf8');
+const certificate = fs.readFileSync('/ssl/frontend.crt', 'utf8');
+const credentials = { key: privateKey, cert: certificate };
 const socketIO = require('socket.io');
 
 const PORT = 3001; // Using port 3001 for WebSocket server
 
 const app = express();
-const server = http.createServer(app);
+
+const server = https.createServer(credentials, app);
 const io = socketIO(server, {
 	cors: {
-		origin: "*",
+		origin: `https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_FRONT_PORT}`,
 		methods: ["GET", "POST"]
 	}
 });
@@ -51,6 +55,7 @@ const rooms = {
 };
 
 const connected = {};
+const ids = {};
 
 // Constants
 const PONG2_NB_PLAYERS = 2;
@@ -80,37 +85,74 @@ const PONG2_BALL_RESPAWN_TIME = 500;				// In ms
 const PONG2_SCORE_TO_WIN = 4;
 
 /// PONG 3
+const PONG3_FPS = 60;
+const PONG3_PADDLE_SPEED = 37;							// units per second
+const PONG3_BASE_BALL_SPEED = 52;						// units per second
+const PONG3_MAX_BALL_SPEED = 120;						// units per second
+const PONG3_BALL_ACCELERATION_RATE = 0.6;		// unit/s/s
+const PONG3_BALL_MAX_X = 42.5;
+const PONG3_BALL_MAX_Z = 20;
+const PONG3_BALL_INPUT_FORCE = 0.6;
+const PONG3_PADDLE_MAX_Z = 16.5;
+const PONG3_BALL_MAX_Z_DIR = 0.6;
+const PONG3_BALL_BOUNCE_MERCY_PERIOD = 100;	// In ms
+const PONG3_BALL_RESPAWN_TIME = 500;				// In ms
+const PONG3_TIME_TO_WIN = 30;								// In seconds
 
 /// ROYAL
 
-// TODO: Make client send gameType and maxPlayers in new message that will set the player's room
+async function setInGameStatus(userId, value) {
+	fetch(`https://backend:8000/api/edit_ingame_status`, {
+		method: 'PUT',
+		headers: {
+			'Authorization': `Bearer ${process.env.WS_TOKEN_BACKEND}`,
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ user_id: userId, is_ingame: value })
+	})
+	.then(response => {
+		if (!response || !response.ok)
+			throw new Error('Could not set ingame status');
+
+			return response.json();
+	})
+	.catch(error => {
+		console.error('Error:', error);
+	});
+}
+
 io.on('connection', socket => {
-	console.log(`New client connected: ${socket.id}`);
+	//console.log(`New client connected: ${socket.id}`);
 	connected[socket.id] = true;
 
 	// DISCONNECT HANDLER
 	socket.on('disconnect', () => {
-		console.log(`Client disconnected: ${socket.id}`);
-		room = findRoomByPlayerIdSlow(socket.id);
+		//console.log(`Client disconnected: ${socket.id}`);
+		let room = findRoomByPlayerIdSlow(socket.id);
 		if (room) {
-			console.log(`Found room ${room.id}`); // debug
-			if (room.lauched) {
-				console.log(`Room ${room.id} is launched`); // debug
-				removePlayerFromRoom(socket.id); // TODO: Something else that doesn't break everything please
-			} else {
-				console.log(`Room ${room.id} is not launched`); // debug
+			//console.log(`Found room ${room.id}`); // debug
+			if (room.launched) {
+				//console.log(`Room ${room.id} is launched`); // debug
+				io.to(room.id).emit('gameError', { message: 'A player disconnected' });
 				removePlayerFromRoom(socket.id);
+			} else {
+				//console.log(`Room ${room.id} is not launched`); // debug
+				removePlayerFromRoom(socket.id);
+				io.to(room.id).emit('updatePlayers', { players: room.players });
 			}
 		}
 		connected[socket.id] = false;
+		setInGameStatus(ids[socket.id], false);
 	});
 
 	// JOIN HANDLER (https://transcendence.gmcg.fr:50581/test)
 	socket.on('join', ({ gameType, userId, userName, userELO, userAvatar }) => {
 		if (!connected[socket.id])
 			return ;
+		ids[socket.id] = userId;
+		setInGameStatus(ids[socket.id], true);
 
-		console.log(`JOIN: New user ${userName}`); // debug
+		//console.log(`JOIN: New user ${userName}`); // debug
 
 		// Sets queueType depending on gameType
 		let queueType = null;
@@ -125,14 +167,14 @@ io.on('connection', socket => {
 				queueType = "queue2";
 		}
 
-		console.log(`JOIN: Searching for ${queueType} for user ${userName}`); // debug
+		//console.log(`JOIN: Searching for ${queueType} for user ${userName}`); // debug
 		let queue = null;
 		queue = findRoom(queueType);
 		// Create queue if !queue and join it
 		if (!queue)
 			queue = createRoom(queueType, userELO);
-		addPlayerToRoom(gameType, queue, socket, userId, userName, userELO, userAvatar);
-		console.log(`JOIN: User ${userName} now in waitlist`); // debug
+		addPlayerToRoom(queueType, queue, socket, userId, userName, userELO, userAvatar);
+		//console.log(`JOIN: User ${userName} now in waitlist`); // debug
 
 		let room = null;
 		if (playerInRoom(queueType, queue.id))
@@ -140,26 +182,26 @@ io.on('connection', socket => {
 			// Join Existing Room
 			if (findRoom(gameType))
 			{
-				console.log(`JOIN: User ${userName} joining existing room`); // debug
+				//console.log(`JOIN: User ${userName} joining existing room`); // debug
 				room = findRoomElo(gameType, userELO);
 				if (room)
 				{
-					console.log(`JOIN: User ${userName} found room ${room.id} (ELO=${room.elo})`); // debug
+					//console.log(`JOIN: User ${userName} found room ${room.id} (ELO=${room.elo})`); // debug
 					removePlayerFromQueue(queueType, queue.id, socket.id);
-					console.log(`JOIN: User ${userName} removed from queue`); // debug
+					//console.log(`JOIN: User ${userName} removed from queue`); // debug
 					addPlayerToRoom(gameType, room, socket, userId, userName, userELO, userAvatar);
-					console.log(`JOIN: User ${userName} added to room ${room.id}`); // debug
+					//console.log(`JOIN: User ${userName} added to room ${room.id}`); // debug
 				}
 			}
 			else // Create New Room
 			{
-				console.log(`JOIN: User ${userName} creating new room`); // debug
+				//console.log(`JOIN: User ${userName} creating new room`); // debug
 				room = createRoom(gameType, userELO);
-				console.log(`JOIN: User ${userName} created room ${room.id}`); // debug
+				console.log(`Created room=${room.id} type=${gameType} by user=${userName}`); // ELK LOG
 				removePlayerFromQueue(queueType, queue.id, socket.id);
-				console.log(`JOIN: User ${userName} removed from queue`); // debug
+				//console.log(`JOIN: User ${userName} removed from queue`); // debug
 				addPlayerToRoom(gameType, room, socket, userId, userName, userELO, userAvatar);
-				console.log(`JOIN: User ${userName} added to room ${room.id}`); // debug
+				//console.log(`JOIN: User ${userName} added to room ${room.id}`); // debug
 			}
 		}
 
@@ -260,8 +302,37 @@ io.on('connection', socket => {
 		}
 	}
 
+	function pong3Input(room, input) {
+		if (!connected[socket.id] || !room || !input || !input.key || !input.type)
+			return ;
+
+		const player = getCurrentPlayerInRoom(room);
+		if (!player)
+			return ;
+
+		const { key, type } = input;
+		let move = false;
+		if (type === 'keydown')
+			move = true;
+
+		if (key === "ArrowDown") {
+			if (player.role === 'leftPaddle')
+				room.runtime.goDown.l = move;
+			else if (player.role === 'rightPaddle')
+				room.runtime.goDown.r = move;
+			else
+				room.runtime.goDown.b = move;
+		} else if (key === "ArrowUp") {
+			if (player.role === 'leftPaddle')
+				room.runtime.goUp.l = move;
+			else if (player.role === 'rightPaddle')
+				room.runtime.goUp.r = move;
+			else
+				room.runtime.goUp.b = move;
+		}
+	}
+
 	// INPUT HANDLER
-	// TODO: This is where the actual game logic will live :)
 	socket.on('input', ({ gameType, input }) => {
 		if (!connected[socket.id])
 			return ;
@@ -273,6 +344,7 @@ io.on('connection', socket => {
 			socket.to(room.id).emit('input', { playerId: socket.id, input });
 			switch (gameType) {
 				case 'pong3':
+					pong3Input(room, input);
 					break ;
 				case 'royal':
 					break ;
@@ -375,6 +447,7 @@ io.on('connection', socket => {
 				lastLoopTime: now,
 				started: false,
 				score: { l: 0, r: 0 },
+				paddleSpeed: PONG2_PADDLE_SPEED,
 				ballPosition: { x: 0, z: 0 },
 				ballDirection: { x: 0.99999, z: 0.00001 },
 				ballSpeed: PONG2_BASE_BALL_SPEED,
@@ -383,6 +456,36 @@ io.on('connection', socket => {
 				paddleZ: { l: 0, r: 0 },
 				goUp: { l: false, r: false },
 				goDown: { l: false, r: false },
+				end: false
+			}
+		};
+	}
+
+	function createPong3Room(gameType, newRoomId, now, userELO) {
+		if (!connected[socket.id])
+			return ;
+
+		rooms[gameType][newRoomId] = {
+			id: newRoomId,
+			launched: false,
+			maxPlayers: PONG3_NB_PLAYERS,
+			timeStamp: now,
+			players: {},
+			elo: userELO,
+			runtime: {
+				startTime: now,
+				ballZeroTime: now,
+				lastLoopTime: now,
+				started: false,
+				paddleSpeed: PONG3_PADDLE_SPEED,
+				ballPosition: { x: 0, z: 0 },
+				ballDirection: { x: 0.99999, z: 0.00001 },
+				ballSpeed: PONG3_BASE_BALL_SPEED,
+				lastBallBounce: { happened: false, when: now },
+				ballRespawnTime: now,
+				paddleZ: { l: 0, r: 0 },
+				goUp: { l: false, r: false, b: false },
+				goDown: { l: false, r: false, b: false },
 				end: false
 			}
 		};
@@ -410,7 +513,7 @@ io.on('connection', socket => {
 				io.to(socket.id).emit('info', { message: `Room $queueR$ created` }); // debug
 				return rooms["queueR"]["$queueR$"];
 			case 'pong3':
-				rooms[gameType][newRoomId] = { id: newRoomId, launched: false, maxPlayers: PONG3_NB_PLAYERS, timeStamp: now, players: {}, elo: userELO };
+				createPong3Room(gameType, newRoomId, now, userELO);
 				break ;
 			case 'royal':
 				rooms[gameType][newRoomId] = { id: newRoomId, launched: false, maxPlayers: ROYAL_MAX_PLAYERS, timeStamp: now, players: {}, elo: userELO };
@@ -442,17 +545,25 @@ io.on('connection', socket => {
 	}
 
 	function choosePong3Role(room) {
-		const playerNb = roomPlayerNb('pong3', room.id);
-		if (playerNb === 0) {
+		let l = false;
+		let r = false;
+		for (const playerId in room.players) {
+			const role = room.players[playerId].role;
+			if (role === "leftPaddle")
+				l = true;
+			else if (role === "rightPaddle")
+				r = true;
+		}
+		if (!l) {
 			return "leftPaddle";
-		} else if (playerNb === 1) {
+		} else if (!r) {
 			return "rightPaddle";
 		} else {
 			return "ball";
 		}
 	}
 
-	function chooseRoyalRole(room) {
+	function chooseRoyalRole() {
 		return "ball";
 	}
 
@@ -471,7 +582,7 @@ io.on('connection', socket => {
 				roomType = gameType;
 				break ;
 			case 'royal':
-				role = chooseRoyalRole(room);
+				role = chooseRoyalRole();
 				roomType = gameType;
 				break ;
 			case 'pong2':
@@ -494,7 +605,7 @@ io.on('connection', socket => {
 				role: role,
 				readyTimer: false
 			};
-			io.to(socket.id).emit('info', { message: `You (${userName} ELO ${userELO}) joined room ${room.id}, room elo ${room.elo}` }); // debug
+			//io.to(socket.id).emit('info', { message: `You (${userName} ELO ${userELO}) joined room ${room.id}, room elo ${room.elo}` }); // debug
 			// Send new room and its players to new user
 			io.to(socket.id).emit('updateRoom', {
 				room: {
@@ -506,7 +617,7 @@ io.on('connection', socket => {
 			});
 			// Update all players of new player
 			io.to(room.id).emit('updatePlayers', { players: room.players });
-			console.log("\n\nCurrent rooms structure:", JSON.stringify(rooms, null, 2)); // debug
+			console.log("\n\nCurrent room structure:", JSON.stringify(room, null, 2)); // debug
 		}
 	}
 
@@ -515,11 +626,13 @@ io.on('connection', socket => {
 		for (const gameType in rooms) {
 			for (const roomId in rooms[gameType]) {
 				if (rooms[gameType][roomId].players[playerId]) {
-					console.log(`REMOVE_PLAYER_FROM_ROOM: Removing user ${rooms[gameType][roomId].players[playerId].id} from ${gameType} room ${roomId}`); // debug
+					//console.log(`REMOVE_PLAYER_FROM_ROOM: Removing user ${rooms[gameType][roomId].players[playerId].id} from ${gameType} room ${roomId}`); // debug
 					delete rooms[gameType][roomId].players[playerId];
+					socket.leave(roomId);
 					// If the room becomes empty, delete it
 					if (roomPlayerNb(gameType, roomId) === 0) {
-						console.log(`REMOVE_PLAYER_FROM_ROOM: Deleting ${gameType} room ${roomId}`); // debug
+						//console.log(`REMOVE_PLAYER_FROM_ROOM: Deleting ${gameType} room ${roomId}`); // debug
+						console.log(`Deleted room=${roomId}`); // ELK LOG
 						delete rooms[gameType][roomId];
 					}
 					return ;
@@ -528,11 +641,12 @@ io.on('connection', socket => {
 		}
 	}
 
-	//Removes player from queue
+	// Removes player from queue
 	function removePlayerFromQueue(queueType, queueId, playerSocket) {
 		if (rooms[queueType][queueId].players[playerSocket])
 		{
 			delete rooms[queueType][queueId].players[playerSocket];
+			socket.leave(queueId);
 			io.to(playerSocket).emit('info', { message: `You left room ${queueId}` });
 			return ;
 		}
@@ -739,6 +853,8 @@ io.on('connection', socket => {
 
 		//console.log(`LAUNCH_GAME: ${gameType} room ${room.id} exists and has not been launched`); // debug
 
+		const playersString = Object.values(room.players).map(player => player.username).join(',');
+		console.log(`Launched room=${room.id} players=${playersString}`); // ELK LOG
 		room.launched = true;
 		io.to(room.id).emit('gameStart', { players: room.players });
 		//console.log(`LAUNCH_GAME: Emitted gameStart to ${gameType} room ${room.id}`); // debug
@@ -757,7 +873,7 @@ io.on('connection', socket => {
 
 	function LoopError(room, errorMsg) {
 		console.log(`LOOP_ERROR: Room ${room.id} failed (${errorMsg})`); // debug
-		io.to(room.id).emit('gameError', { stop: true, error: errorMsg });
+		io.to(room.id).emit('gameError', { message: errorMsg });
 		return null;
 	}
 
@@ -765,7 +881,8 @@ io.on('connection', socket => {
 		return (room && rooms[gameType][room.id]);
 	}
 
-	// TODO: See if this can continue while socket.id is diconnected
+// PONG 2
+
 	function Pong2Loop(room) {
 		if (!room)
 			return null;
@@ -783,7 +900,7 @@ io.on('connection', socket => {
 				//console.log(`PONG2_LOOP: room ${room.id} is not readyTimer`); // debug
 				setTimeout(waitForReadyTimer, 1000); // Once every second
 			} else {
-				console.log(`PONG2_LOOP: room ${room.id} is readyTimer`); // debug
+				//console.log(`PONG2_LOOP: room ${room.id} is readyTimer`); // debug
 				Pong2LoopReadyTimer(room);
 			}
 		}
@@ -806,7 +923,7 @@ io.on('connection', socket => {
 				//console.log(`PONG2_LOOP_READY_TIMER: room ${room.id} is not ready`); // debug
 				setTimeout(waitForReady, 1000); // Once every second
 			} else {
-				console.log(`PONG2_LOOP_READY_TIMER: room ${room.id} is ready`); // debug
+				//console.log(`PONG2_LOOP_READY_TIMER: room ${room.id} is ready`); // debug
 				Pong2LoopReady(room);
 			}
 		}
@@ -843,6 +960,8 @@ io.on('connection', socket => {
 			if (room.runtime.end)
 				return ;
 
+			console.log(`Ended room=${room.id}`); // ELK LOG
+
 			room.runtime.end = true;
 			const winner = leftWon ? getPlayerRoleInRoom(room, 'leftPaddle') : getPlayerRoleInRoom(room, 'rightPaddle');
 			const loser = leftWon ? getPlayerRoleInRoom(room, 'rightPaddle') : getPlayerRoleInRoom(room, 'leftPaddle');
@@ -860,7 +979,7 @@ io.on('connection', socket => {
 			fetch('https://backend:8000/api/game/pong2/save', {
 				method: 'POST',
 				headers: {
-					'Authorization': 'Bearer ' + process.env.WS_TOKEN_BACKEND,
+					'Authorization': `Bearer ${process.env.WS_TOKEN_BACKEND}`,
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(data)
@@ -882,18 +1001,20 @@ io.on('connection', socket => {
 			if (!connected[socket.id])
 				return ;
 
-			// update ball speed
+			// update ball and paddle speed
 			const elapsedTime = Date.now();
 			const timeSinceLastLoop = (elapsedTime - room.runtime.lastLoopTime) / 1000; // In seconds
-			// Ball will only change speed PONG2_BALL_RESPAWN_TIME ms afer respawning
+			// Ball and Paddle will only change speed PONG2_BALL_RESPAWN_TIME ms afer respawning
 			if (elapsedTime - room.runtime.ballRespawnTime >= PONG2_BALL_RESPAWN_TIME) {
+				if (room.runtime.paddleSpeed == 0)
+					room.runtime.paddleSpeed = PONG2_PADDLE_SPEED;
 				const currentBallTime = elapsedTime - room.runtime.ballZeroTime; // in ms
 				room.runtime.ballSpeed = PONG2_BASE_BALL_SPEED + (currentBallTime * (PONG2_BALL_ACCELERATION_RATE / 1000));
 				room.runtime.ballSpeed = Math.min(room.runtime.ballSpeed, PONG2_MAX_BALL_SPEED);
 			}
 
 			// update paddle positions
-			const displaceP = PONG2_PADDLE_SPEED * timeSinceLastLoop;
+			const displaceP = room.runtime.paddleSpeed * timeSinceLastLoop;
 			/// Left Paddle
 			//// Go Up
 			if (room.runtime.goUp.l)
@@ -998,6 +1119,7 @@ io.on('connection', socket => {
 			if ((room.runtime.ballPosition.x > PONG2_BALL_MAX_X - 0.5 && room.runtime.ballDirection.x > 0)
 				|| (room.runtime.ballPosition.x < -PONG2_BALL_MAX_X + 0.5 && room.runtime.ballDirection.x < 0)) {
 					const leftScored = room.runtime.ballPosition.x > 0;
+					room.runtime.paddleSpeed = 0;
 					room.runtime.ballPosition.x = 0;
 					room.runtime.ballPosition.z = 0;
 					room.runtime.ballDirection.z = 0.00001;
@@ -1025,6 +1147,7 @@ io.on('connection', socket => {
 			io.to(room.id).emit('gameStatus', {
 				leftScore: room.runtime.score.l,
 				rightScore: room.runtime.score.r,
+				newPaddleSpeed: room.runtime.paddleSpeed,
 				ballX: room.runtime.ballPosition.x,
 				ballZ: room.runtime.ballPosition.z,
 				newBallSpeed: room.runtime.ballSpeed,
@@ -1043,8 +1166,302 @@ io.on('connection', socket => {
 		gameLoop();
 	}
 
+// PONG 3
+
+	function Pong3Loop(room) {
+		if (!room)
+			return null;
+		//console.log(`PONG3_LOOP: room ${room.id} exists`); // debug
+		if (!connected[socket.id])
+			return LoopError(room, 'A player disconnected');
+
+		// Wait for timer start
+		//console.log(`PONG3_LOOP: room ${room.id} waits for readyTimer`); // debug
+		function waitForReadyTimer() {
+			if (!RoomStillExists('pong3', room))
+				return ;
+			const test = allPlayersReadyTimer(room.players);
+			if (!test) {
+				//console.log(`PONG3_LOOP: room ${room.id} is not readyTimer`); // debug
+				setTimeout(waitForReadyTimer, 1000); // Once every second
+			} else {
+				//console.log(`PONG3_LOOP: room ${room.id} is readyTimer`); // debug
+				Pong3LoopReadyTimer(room);
+			}
+		}
+		waitForReadyTimer();
+	}
+
+	function Pong3LoopReadyTimer(room) {
+		if (!connected[socket.id])
+			return LoopError(room, 'A player disconnected');
+		io.to(room.id).emit('startTimer');
+		//console.log(`PONG3_LOOP_READY_TIMER: Emitted startTimer to room ${room.id}`); // debug
+
+		// Wait for gameplay start
+		//console.log(`PONG3_LOOP_READY_TIMER: room ${room.id} waits for ready`); // debug
+		function waitForReady() {
+			if (!RoomStillExists('pong3', room))
+				return ;
+			const test = allPlayersReady(room.players);
+			if (!test) {
+				//console.log(`PONG3_LOOP_READY_TIMER: room ${room.id} is not ready`); // debug
+				setTimeout(waitForReady, 1000); // Once every second
+			} else {
+				//console.log(`PONG3_LOOP_READY_TIMER: room ${room.id} is ready`); // debug
+				Pong3LoopReady(room);
+			}
+		}
+		waitForReady();
+	}
+
+	function Pong3LoopReady(room) {
+		if (!connected[socket.id])
+			return LoopError(room, 'A player disconnected');
+		room.runtime.started = true;
+		room.runtime.startTime = Date.now();
+		room.runtime.ballZeroTime = room.runtime.startTime;
+		room.runtime.ballRespawnTime = room.runtime.startTime - PONG3_BALL_RESPAWN_TIME;
+		io.to(room.id).emit('startGameplay');
+		//console.log(`PONG3_LOOP_READY: Emitted startGameplay to room ${room.id}`); // debug
+
+		// Checks intersection between two non-rotated rectangles
+		// rectangles should be represented as [left, top, right, bottom]
+		// Returns { happened, hit } where happened is a boolean (collided or not)
+		// and hit is the z difference between the two rectangles' centers
+		const checkBounce = (rect1, rect2) => {
+			const [left1, top1, right1, bottom1] = [...rect1];
+			const [left2, top2, right2, bottom2] = [...rect2];
+
+			if (!(top1 < bottom2 || top2 < bottom1 || right1 < left2 || right2 < left1)) {
+				const center1 = bottom1 + ((top1 - bottom1) / 2);
+				const center2 = bottom2 + ((top2 - bottom2) / 2);
+				return ({ happened: true, hit: center1 - center2 });
+			}
+			return ({ happened: false, hit: 0.0 });
+		}
+
+		const sendResults = (room, ballWon) => {
+			if (room.runtime.end)
+				return ;
+
+			console.log(`Ended room=${room.id}`); // ELK LOG
+
+			room.runtime.end = true;
+			const leftPaddle = getPlayerRoleInRoom(room, 'leftPaddle');
+			const rightPaddle = getPlayerRoleInRoom(room, 'rightPaddle');
+			const ball = getPlayerRoleInRoom(room, 'ball');
+			// Send match info to backend
+			const data = {
+				type: 'pong3',
+				paddle1_id: leftPaddle ? leftPaddle.id : 0,
+				paddle2_id: rightPaddle ? rightPaddle.id : 0,
+				ball_id: ball ? ball.id : 0,
+				ball_won: ballWon,
+				start_datetime: new Date(room.runtime.startTime).toISOString(),
+				end_datetime: new Date(Date.now()).toISOString()
+			};
+			console.log("MATCH RESULTS:", data); // debug
+
+			fetch('https://backend:8000/api/game/pong3/save', {
+				method: 'POST',
+				headers: {
+					'Authorization': `Bearer ${process.env.WS_TOKEN_BACKEND}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(data)
+			})
+			.then(response => {
+				if (!response || !response.ok)
+					throw new Error('Could not register match results');
+
+					return response.json();
+			})
+			.catch(error => {
+				console.error('Error:', error);
+			});
+
+			io.to(room.id).emit('gameEnd', {
+				ball_won: ballWon
+			});
+		}
+
+		function gameLoop() {
+			if (!connected[socket.id])
+				return ;
+
+			// update ball and paddle speed
+			const elapsedTime = Date.now();
+
+			/// Check if the paddles won
+			const elapsedTimeSeconds = (elapsedTime - room.runtime.startTime) / 1000;
+			if (elapsedTimeSeconds >= PONG3_TIME_TO_WIN) {
+					room.runtime.paddleSpeed = 0;
+					room.runtime.ballSpeed = 0;
+					room.runtime.ballZeroTime = Date.now() + PONG3_BALL_RESPAWN_TIME;
+					room.runtime.ballRespawnTime = Date.now();
+					sendResults(room, false);
+				}
+
+			const timeSinceLastLoop = (elapsedTime - room.runtime.lastLoopTime) / 1000; // In seconds
+			// Ball and Paddle will only change speed PONG3_BALL_RESPAWN_TIME ms afer respawning
+			if (elapsedTime - room.runtime.ballRespawnTime >= PONG3_BALL_RESPAWN_TIME) {
+				if (room.runtime.paddleSpeed == 0)
+					room.runtime.paddleSpeed = PONG3_PADDLE_SPEED;
+				const currentBallTime = elapsedTime - room.runtime.ballZeroTime; // in ms
+				room.runtime.ballSpeed = PONG3_BASE_BALL_SPEED + (currentBallTime * (PONG3_BALL_ACCELERATION_RATE / 1000));
+				room.runtime.ballSpeed = Math.min(room.runtime.ballSpeed, PONG3_MAX_BALL_SPEED);
+			}
+
+			// update paddle positions
+			const displaceP = room.runtime.paddleSpeed * timeSinceLastLoop;
+			/// Left Paddle
+			//// Go Up
+			if (room.runtime.goUp.l)
+				room.runtime.paddleZ.l -= displaceP;
+			//// Go Down
+			if (room.runtime.goDown.l)
+				room.runtime.paddleZ.l += displaceP;
+			room.runtime.paddleZ.l = Math.min(Math.max(room.runtime.paddleZ.l, -PONG3_PADDLE_MAX_Z), PONG3_PADDLE_MAX_Z);
+
+			/// Right Paddle
+			//// Go Up
+			if (room.runtime.goUp.r)
+				room.runtime.paddleZ.r -= displaceP;
+			//// Go Down
+			if (room.runtime.goDown.r)
+				room.runtime.paddleZ.r += displaceP;
+			room.runtime.paddleZ.r = Math.min(Math.max(room.runtime.paddleZ.r, -PONG3_PADDLE_MAX_Z), PONG3_PADDLE_MAX_Z);
+
+			// update ball position
+			/// Update X
+			const displaceX = (room.runtime.ballSpeed * timeSinceLastLoop) * Math.abs(room.runtime.ballDirection.x);
+			if (room.runtime.ballDirection.x > 0)
+				room.runtime.ballPosition.x += displaceX;
+			else if (room.runtime.ballDirection.x < 0)
+				room.runtime.ballPosition.x -= displaceX;
+			room.runtime.ballPosition.x = Math.min(Math.max(room.runtime.ballPosition.x, -PONG3_BALL_MAX_X), PONG3_BALL_MAX_X);
+
+			/// Update Z
+			const displaceZ = (room.runtime.ballSpeed * timeSinceLastLoop) * Math.abs(room.runtime.ballDirection.z);
+			if (room.runtime.ballDirection.z > 0)
+				room.runtime.ballPosition.z += displaceZ;
+			else if (room.runtime.ballDirection.z < 0)
+				room.runtime.ballPosition.z -= displaceZ;
+			/// Bounce on top and bottom walls
+			if (room.runtime.ballPosition.z > PONG3_BALL_MAX_Z
+				|| room.runtime.ballPosition.z < -PONG3_BALL_MAX_Z)
+				room.runtime.ballDirection.z *= -1;
+			room.runtime.ballPosition.z = Math.min(Math.max(room.runtime.ballPosition.z, -PONG3_BALL_MAX_Z), PONG3_BALL_MAX_Z);
+
+			/// Check Bounces
+			function bounce() {
+				// TODO: Check data consistency with client-side
+				//// - Ball has radius of 2
+				const ballRad = 2;
+				const ballX = room.runtime.ballPosition.x;
+				const ballZ = room.runtime.ballPosition.z;
+				//// - Paddle has X-length of 2 and Z-length of 10
+				const paddleRadX = 1;
+				const paddleRadZ = 5;
+				//// - Paddle is either on X = -43 or X = 43
+				let paddleX = -43;
+				let paddleZ = room.runtime.paddleZ.l;
+				if (ballX > 0) {
+					paddleX *= -1;
+					paddleZ = room.runtime.paddleZ.r;
+				}
+				// Only check collision if ball is going in direction of paddle
+				// TODO: Check if Bounce Mercy Period is useful
+				if (
+					Date.now() - room.runtime.lastBallBounce.when > PONG3_BALL_BOUNCE_MERCY_PERIOD
+					&& ((paddleX < 0 && room.runtime.ballDirection.x < 0)
+						|| (paddleX > 0 && room.runtime.ballDirection.x > 0))
+				) {
+					//// Left, Top, Right, Bottom
+					const { happened, hit } = checkBounce(
+						[ballX - ballRad,				ballZ + ballRad,			ballX + ballRad,			ballZ - ballRad],
+						[paddleX - paddleRadX,	paddleZ + paddleRadZ,	paddleX + paddleRadX,	paddleZ - paddleRadZ]
+					);
+					if (happened) {
+						room.runtime.ballDirection.x *= -1;
+						const offset = hit * 0.1;
+						room.runtime.ballDirection.z += offset;
+						room.runtime.ballDirection.x -= offset;
+						const absSum = Math.abs(room.runtime.ballDirection.x) + Math.abs(room.runtime.ballDirection.z);
+						if (absSum !== 1)
+						{
+							const ratio = 1 / absSum;
+							room.runtime.ballDirection.x *= ratio;
+							room.runtime.ballDirection.z *= ratio;
+						}
+						room.runtime.lastBallBounce.happened = true;
+						room.runtime.lastBallBounce.when = Date.now();
+					}
+				}
+			}
+			if (room.runtime.ballPosition.x > PONG3_BALL_MAX_X - 2.5 || room.runtime.ballPosition.x < -PONG3_BALL_MAX_X + 2.5)
+				bounce();
+
+			// TODO: Make ball user able to input influence over ball
+			/// Ball
+			const ballInfluence = PONG3_BALL_INPUT_FORCE * timeSinceLastLoop;
+			const way = room.runtime.ballDirection.x > 0 ? 1 : -1;
+			//// Go Up
+			if (room.runtime.goUp.b) {
+				room.runtime.ballDirection.z -= ballInfluence;
+				room.runtime.ballDirection.z = Math.min(Math.max(room.runtime.ballDirection.z, -PONG3_BALL_MAX_Z_DIR), PONG3_BALL_MAX_Z_DIR);
+				room.runtime.ballDirection.x = way * (1 - Math.abs(room.runtime.ballDirection.z));
+			}
+			//// Go Down
+			if (room.runtime.goDown.b) {
+				room.runtime.ballDirection.z += ballInfluence;
+				room.runtime.ballDirection.z = Math.min(Math.max(room.runtime.ballDirection.z, -PONG3_BALL_MAX_Z_DIR), PONG3_BALL_MAX_Z_DIR);
+				room.runtime.ballDirection.x = way * (1 - Math.abs(room.runtime.ballDirection.z));
+			}
+
+			/// Clamp Ball Z Direction
+			room.runtime.ballDirection.z = Math.min(Math.max(room.runtime.ballDirection.z, -PONG3_BALL_MAX_Z_DIR), PONG3_BALL_MAX_Z_DIR);
+			const absSum = Math.abs(room.runtime.ballDirection.x) + Math.abs(room.runtime.ballDirection.z);
+			if (absSum !== 1)
+			{
+				const ratio = 1 / absSum;
+				room.runtime.ballDirection.x *= ratio;
+				room.runtime.ballDirection.z *= ratio;
+			}
+
+			/// Check if the ball scored
+			if ((room.runtime.ballPosition.x > PONG3_BALL_MAX_X - 0.5 && room.runtime.ballDirection.x > 0)
+				|| (room.runtime.ballPosition.x < -PONG3_BALL_MAX_X + 0.5 && room.runtime.ballDirection.x < 0)) {
+					room.runtime.paddleSpeed = 0;
+					room.runtime.ballSpeed = 0;
+					room.runtime.ballZeroTime = Date.now() + PONG3_BALL_RESPAWN_TIME;
+					room.runtime.ballRespawnTime = Date.now();
+					sendResults(room, true);
+				}
+
+			io.to(room.id).emit('gameStatus', {
+				timeLeft: PONG3_TIME_TO_WIN - Math.floor(elapsedTimeSeconds),
+				ballX: room.runtime.ballPosition.x,
+				ballZ: room.runtime.ballPosition.z,
+				newBallSpeed: room.runtime.ballSpeed,
+				ballDirX: room.runtime.ballDirection.x,
+				ballDirZ: room.runtime.ballDirection.z,
+				resetRotation: room.runtime.lastBallBounce.happened,
+				leftPaddleZ: room.runtime.paddleZ.l,
+				rightPaddleZ: room.runtime.paddleZ.r
+			});
+			room.runtime.lastBallBounce.happened = false;
+			room.runtime.lastLoopTime = Date.now();
+
+			setTimeout(gameLoop, 1000 / PONG3_FPS);
+		}
+		room.runtime.lastLoopTime = Date.now();
+		gameLoop();
+	}
+
 	socket.on('ready', ({ gameType }) => {
-		if (!connected[socket.id] || ['queue2', 'queue3', 'queueR'].includes(gameType))
+		if (!connected[socket.id] || !['pong2', 'pong3', 'royal'].includes(gameType))
 			return ;
 
 		const room = findRoomByPlayerId(gameType, socket.id);
@@ -1054,7 +1471,7 @@ io.on('connection', socket => {
 	});
 
 	socket.on('readyTimer', ({ gameType }) => {
-		if (!connected[socket.id] || ['queue2', 'queue3', 'queueR'].includes(gameType))
+		if (!connected[socket.id] || !['pong2', 'pong3', 'royal'].includes(gameType))
 			return ;
 
 		const room = findRoomByPlayerId(gameType, socket.id);

@@ -11,11 +11,9 @@ import { useAuth } from '../context/AuthenticationContext';
 import { useGame } from '../context/GameContext';
 import React from 'react';
 
-const Pong = ({
-	scoreL, setScoreL,
-	scoreR, setScoreR,
+const Pong3 = ({
 	gameEnd, setGameEnd,
-	setWinner, setWinnerScore,
+	setTimeLeft, setBallWon,
 	gameError, setGameError,
 	setErrorMessage
 }) => {
@@ -38,13 +36,13 @@ const Pong = ({
 	const canvasRef = useRef(null);
 
 	useEffect(() => {
-		if (!user || !gameType || gameType !== 'pong2' || !setGameStarted || !updateRoom || !updatePlayers || !resetAll)
+		if (!user || !gameType || gameType !== 'pong3' || !setGameStarted || !updateRoom || !updatePlayers || !resetAll)
 			return ;
 
 		const socket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`);
 
 		// TODO: Replace useAuth's user with an API call
-		socket.emit('join', { gameType: 'pong2', userId: user.id, userName: user.username, userELO: user.elo_pong, userAvatar: user.avatar });
+		socket.emit('join', { gameType: 'pong3', userId: user.id, userName: user.username, userELO: user.elo_pong, userAvatar: user.avatar });
 
 		// Gérer les événements de connexion et d'erreur
 		/*socket.on('connect', () => {
@@ -465,8 +463,8 @@ const Pong = ({
 		const ballDir = [ 0.99999, 0.00001 ]
 		const paddles = [];
 		let role = 'pending';
-		let paddleUp = false;
-		let paddleDown = false;
+		let inputUp = false;
+		let inputDown = false;
 
 		// ajout des objets dans la scene et placement des objets
 		addball(0, 2, 0, makeObj(ball, texturesphere));
@@ -507,15 +505,15 @@ const Pong = ({
 			//console.log(event.key); // debug
 			switch (event.key) {
 				case "ArrowUp":
-					if (!paddleUp) {
-						paddleUp = true;
-						socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keydown' } });
+					if (!inputUp) {
+						inputUp = true;
+						socket.emit('input', { gameType: 'pong3', input: { key: event.key, type: 'keydown' } });
 					}
 					break;
 				case "ArrowDown":
-					if (!paddleDown) {
-						paddleDown = true;
-						socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keydown' } });
+					if (!inputDown) {
+						inputDown = true;
+						socket.emit('input', { gameType: 'pong3', input: { key: event.key, type: 'keydown' } });
 					}
 					break;
 			}
@@ -528,15 +526,15 @@ const Pong = ({
 			//console.log(event.key); // debug
 			switch (event.key) {
 				case "ArrowUp":
-					if (paddleUp) {
-						paddleUp = false;
-						socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keyup' } });
+					if (inputUp) {
+						inputUp = false;
+						socket.emit('input', { gameType: 'pong3', input: { key: event.key, type: 'keyup' } });
 					}
 					break;
 				case "ArrowDown":
-					if (paddleDown) {
-						paddleDown = false;
-						socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keyup' } });
+					if (inputDown) {
+						inputDown = false;
+						socket.emit('input', { gameType: 'pong3', input: { key: event.key, type: 'keyup' } });
 					}
 					break;
 			}
@@ -607,10 +605,9 @@ const Pong = ({
 			//console.log(`PONG_CMPT: Received startGameplay`); // debug
 		});
 
-		socket.on('gameEnd', ({ winner, score }) => {
+		socket.on('gameEnd', ({ ball_won }) => {
 			setGameEnded(true);
-			setWinner(winner);
-			setWinnerScore(score);
+			setBallWon(ball_won);
 			setGameEnd(true);
 		});
 
@@ -623,17 +620,13 @@ const Pong = ({
 
 		//let last = Date.now(); // debug
 		socket.on('gameStatus', ({
-			leftScore, rightScore,
-			newPaddleSpeed,
+			timeLeft,
 			ballX, ballZ, newBallSpeed,
 			ballDirX, ballDirZ, resetRotation,
 			leftPaddleZ, rightPaddleZ
 		}) => {
-			// Score
-			if (leftScore !== scoreL)
-				setScoreL(leftScore);
-			if (rightScore !== scoreR)
-				setScoreR(rightScore);
+			// Timer
+			setTimeLeft(timeLeft);
 
 			// Ball
 			/// Speed
@@ -658,8 +651,6 @@ const Pong = ({
 			}
 
 			// Paddles
-			/// Speed
-			paddleSpeed = newPaddleSpeed;
 			/// Pos
 			paddles[0].position.z = leftPaddleZ;
 			paddles[1].position.z = rightPaddleZ;
@@ -668,10 +659,11 @@ const Pong = ({
 		// Gameplay constants
 		// TODO: Check if these are synced with server-side code
 		const FPS = 60;
-		const PADDLE_SPEED = 37;							// units per second
-		const BASE_BALL_SPEED = 60;						// units per second
+		const PADDLE_SPEED = 37;					// units per second
+		const BASE_BALL_SPEED = 52;				// units per second
 		const BALL_MAX_X = 42.5;
 		const BALL_MAX_Z = 20;
+		const BALL_INPUT_FORCE = 0.6;
 		const PADDLE_MAX_Z = 16.5;
 		const BALL_MAX_Z_DIR = 0.6;
 		let paddleSpeed = PADDLE_SPEED;
@@ -687,7 +679,7 @@ const Pong = ({
 			}
 
 			if (first === 0) {
-				socket.emit('readyTimer', { gameType: 'pong2' });
+				socket.emit('readyTimer', { gameType: 'pong3' });
 				first = 1;
 			}
 
@@ -708,7 +700,7 @@ const Pong = ({
 				if (timeRendered > 5)
 				{
 					if (first === 1) {
-						socket.emit('ready', { gameType: 'pong2' });
+						socket.emit('ready', { gameType: 'pong3' });
 						first = 2;
 					}
 					if (startGameplay) {
@@ -720,17 +712,17 @@ const Pong = ({
 						const displaceP = paddleSpeed * timeSinceLastLoop;
 						/// Left Paddle
 						if (role === 'leftPaddle') {
-							if (paddleUp)
+							if (inputUp)
 								paddles[0].position.z -= displaceP;
-							if (paddleDown)
+							if (inputDown)
 								paddles[0].position.z += displaceP;
 							paddles[0].position.z = Math.min(Math.max(paddles[0].position.z, -PADDLE_MAX_Z), PADDLE_MAX_Z);
 						}
 						/// Right Paddle
 						else if (role === 'rightPaddle') {
-							if (paddleUp)
+							if (inputUp)
 								paddles[1].position.z -= displaceP;
-							if (paddleDown)
+							if (inputDown)
 								paddles[1].position.z += displaceP;
 							paddles[1].position.z = Math.min(Math.max(paddles[1].position.z, -PADDLE_MAX_Z), PADDLE_MAX_Z);
 						}
@@ -758,6 +750,22 @@ const Pong = ({
 							ballObj.rotation.z = 0;
 						}
 						ballObj.position.z = Math.min(Math.max(ballObj.position.z, -BALL_MAX_Z), BALL_MAX_Z);
+
+						// TODO: Make ball user able to input influence over ball
+						const ballInfluence = BALL_INPUT_FORCE * timeSinceLastLoop;
+						const way = ballDir[0] > 0 ? 1 : -1;
+						if (role === "ball") {
+							if (inputUp) {
+								ballDir[1] -= ballInfluence;
+								ballDir[1] = Math.min(Math.max(ballDir[1], -BALL_MAX_Z_DIR), BALL_MAX_Z_DIR);
+								ballDir[0] = way * (1 - Math.abs(ballDir[1]));
+							}
+							if (inputDown) {
+								ballDir[1] += ballInfluence;
+								ballDir[1] = Math.min(Math.max(ballDir[1], -BALL_MAX_Z_DIR), BALL_MAX_Z_DIR);
+								ballDir[0] = way * (1 - Math.abs(ballDir[1]));
+							}
+						}
 
 						// Clamp Ball Z Direction
 						ballDir[1] = Math.min(Math.max(ballDir[1], -BALL_MAX_Z_DIR), BALL_MAX_Z_DIR);
@@ -911,7 +919,8 @@ const Pong = ({
 		hidden = 'hidden';
 		testmessage = (
 			<div className={React.background}>
-				<p style={{color: 'white'}}>In room {room?.id}, waiting for an opponent . . .</p>
+				<p style={{color: 'white'}}>In room {room?.id}, waiting for other players . . .</p>
+				<WaitList players={players} />
 			</div>
 		);
 	} else {
@@ -928,4 +937,4 @@ const Pong = ({
 	);
 };
 
-export default Pong;
+export default Pong3;

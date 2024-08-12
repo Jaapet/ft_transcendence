@@ -21,3 +21,11 @@ http:
       serverName: "kibana"
       rootCAs:
         - /ssl/CA.crt
+    transport_frontend:
+      serverName: "frontend"
+      rootCAs:
+        - /ssl/CA.crt
+    transport_websocket:
+      serverName: "frontend"
+      rootCAs:
+        - /ssl/CA.crt

@@ -111,13 +111,13 @@ export default function UserMatchHistory({ status, detail, user, pong2_matches, 
 						className="bg-dark text-white"
 					>
 						<Nav.Item>
-							<Nav.Link href='#pong2'>Pong 1v1</Nav.Link>
+							<Nav.Link href='#pong2'>Pong 1v1 ({pong2_matches.length})</Nav.Link>
 						</Nav.Item>
 						<Nav.Item>
-							<Nav.Link href='#pong3'>Pong 1v2</Nav.Link>
+							<Nav.Link href='#pong3'>Pong 1v2 ({pong3_matches.length})</Nav.Link>
 						</Nav.Item>
 						<Nav.Item>
-							<Nav.Link href='#royal'>Royal Pong</Nav.Link>
+							<Nav.Link href='#royal'>Royal Pong ({royal_matches.length})</Nav.Link>
 						</Nav.Item>
 					</Nav>
 				</Card.Header>

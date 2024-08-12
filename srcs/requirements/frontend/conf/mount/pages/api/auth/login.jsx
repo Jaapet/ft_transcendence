@@ -6,6 +6,7 @@ export default async (req, res) => {
 	}
 
 	const { username, password } = req.body;
+	console.log(`Login attempt for username=${username}`); // ELK LOG
 
 	try {
 		// Fetch tokens
@@ -18,20 +19,26 @@ export default async (req, res) => {
 			body: JSON.stringify({ username, password })
 		});
 		if (!tokRes) {
+			console.log(`Login failed for username=${username}`); // ELK LOG
 			throw new Error('Could not fetch tokens');
 		}
 
 		const tokData = await tokRes.json();
 		if (!tokData) {
+			console.log(`Login failed for username=${username}`); // ELK LOG
 			throw new Error('Could not fetch tokens');
 		}
 		if (!tokRes.ok) {
+			console.log(`Login failed for username=${username}`); // ELK LOG
 			throw new Error(tokData.detail || 'Could not fetch tokens');
 		}
 
 		if (tokData.requires_2fa && tokData.user_id) {
+			console.log(`Prompting user=${username} for 2fa`); // ELK LOG
 			return res.status(200).json({ requires_2fa: tokData.requires_2fa, user_id: tokData.user_id });
 		}
+
+		console.log(`Login successful for user=${username}`); // ELK LOG
 
 		// Store refresh token in a cookie
 		res.setHeader(
@@ -55,6 +62,9 @@ export default async (req, res) => {
 			throw new Error('Could not fetch user data');
 		if (!userRes.ok)
 			throw new Error(userData.detail || 'Could not fetch user data');
+
+		if (userData.is_admin)
+			console.log(`WARNING: Admin logged in user=${username}`); // ELK LOG
 
 		return res.status(200).json({ user: userData, access: accessToken });
 	} catch (error) {

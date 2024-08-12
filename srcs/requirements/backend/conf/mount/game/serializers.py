@@ -1,7 +1,9 @@
 from .models import Member, FriendRequest, Match, Match3, MatchR, RoyalPlayer
+from django.core.validators import RegexValidator
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django_otp.plugins.otp_totp.models import TOTPDevice
+import re # Regex
 
 # Checks username and password validity for login
 # Logs in directly if 2FA is disabled
@@ -46,10 +48,15 @@ class RestrictedMemberSerializer(serializers.HyperlinkedModelSerializer):
 			'username',
 			'avatar',
 			'join_date',
+			'is_admin',
 			'elo_pong',
 			'elo_royal',
 			'is_online'
 		]
+
+# Regex patterns for register and update form validation
+USERNAME_PATTERN = re.compile(r'^[a-zA-Z0-9]{4,8}$')
+PASSWORD_PATTERN = re.compile(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$*?\-+~_=]).{8,20}$')
 
 # Serializes sent data for Member registration
 # Checks if avatar is under size limit defined in validate_file_size
@@ -59,7 +66,32 @@ class RestrictedMemberSerializer(serializers.HyperlinkedModelSerializer):
 # Hashes password
 # Avatar is optional
 class RegisterMemberSerializer(serializers.HyperlinkedModelSerializer):
-	avatar = serializers.ImageField(required=False, validators=[validate_file_size, validate_file_type])
+	avatar = serializers.ImageField(
+		required=False,
+		validators=[
+			validate_file_size,
+			validate_file_type
+		]
+	)
+
+	username = serializers.CharField(
+		validators=[
+			RegexValidator(
+				regex=USERNAME_PATTERN,
+				message='Username must be 4 to 8 characters long and only contain alphanumeric characters'
+			)
+		]
+	)
+
+	password = serializers.CharField(
+		write_only=True,
+		validators=[
+			RegexValidator(
+				regex=PASSWORD_PATTERN,
+				message='Password must be 8 to 20 characters long, have at least 1 lowercase, 1 uppercase, 1 digit, and 1 special character from this list: \"!@#$*?-+~_=\"'
+			)
+		]
+	)
 
 	def create(self, validated_data):
 		avatar = validated_data.pop('avatar', None)
@@ -91,7 +123,34 @@ class RegisterMemberSerializer(serializers.HyperlinkedModelSerializer):
 # Hashes password
 # All fields are optional
 class UpdateMemberSerializer(serializers.HyperlinkedModelSerializer):
-	avatar = serializers.ImageField(required=False, validators=[validate_file_size, validate_file_type])
+	avatar = serializers.ImageField(
+		required=False,
+		validators=[
+			validate_file_size,
+			validate_file_type
+		]
+	)
+
+	username = serializers.CharField(
+		required=False,
+		validators=[
+			RegexValidator(
+				regex=USERNAME_PATTERN,
+				message='Username must be 4 to 8 characters long and only contain alphanumeric characters'
+			)
+		]
+	)
+
+	password = serializers.CharField(
+		required=False,
+		write_only=True,
+		validators=[
+			RegexValidator(
+				regex=PASSWORD_PATTERN,
+				message='Password must be 8 to 20 characters long, have at least 1 lowercase, 1 uppercase, 1 digit, and 1 special character from this list: \"!@#$*?-+~_=\"'
+			)
+		]
+	)
 
 	def update(self, instance, validated_data):
 		avatar = validated_data.pop('avatar', None)
@@ -118,6 +177,20 @@ class UpdateMemberSerializer(serializers.HyperlinkedModelSerializer):
 			'email': {'required': False},
 			'avatar': {'required': False}
 		}
+
+class UpdateMemberIngameStatusSerializer(serializers.Serializer):
+	user_id = serializers.IntegerField(required=True)
+	is_ingame = serializers.BooleanField(required=True)
+
+	def validate_user_id(self, value):
+		if not Member.objects.filter(id=value).exists():
+			raise serializers.ValidationError("User does not exist.")
+		return value
+
+	def update(self, instance, validated_data):
+		instance.is_ingame = validated_data.get('is_ingame', instance.is_ingame)
+		instance.save()
+		return instance
 
 class SendFriendRequestSerializer(serializers.Serializer):
 	target_id = serializers.IntegerField()
@@ -263,6 +336,53 @@ class RegisterMatchSerializer(serializers.ModelSerializer):
 				pass
 
 		match = Match.objects.create(winner=winner, loser=loser, **validated_data)
+		return match
+
+class RegisterMatch3Serializer(serializers.ModelSerializer):
+	paddle1_id = serializers.IntegerField(write_only=True)
+	paddle2_id = serializers.IntegerField(write_only=True)
+	ball_id = serializers.IntegerField(write_only=True)
+
+	class Meta:
+		model = Match3
+		fields = [
+			'type',
+			'paddle1_id',
+			'paddle2_id',
+			'ball_id',
+			'ball_won',
+			'start_datetime',
+			'end_datetime'
+		]
+
+	def create(self, validated_data):
+		paddle1_id = validated_data.pop('paddle1_id', None)
+		paddle2_id = validated_data.pop('paddle2_id', None)
+		ball_id = validated_data.pop('ball_id', None)
+
+		paddle1 = None
+		paddle2 = None
+		ball = None
+
+		if paddle1_id:
+			try:
+				paddle1 = Member.objects.get(id=paddle1_id)
+			except Member.DoesNotExist:
+				pass
+
+		if paddle2_id:
+			try:
+				paddle2 = Member.objects.get(id=paddle2_id)
+			except Member.DoesNotExist:
+				pass
+
+		if ball_id:
+			try:
+				ball = Member.objects.get(id=ball_id)
+			except Member.DoesNotExist:
+				pass
+
+		match = Match3.objects.create(paddle1=paddle1, paddle2=paddle2, ball=ball, **validated_data)
 		return match
 
 class Match3Serializer(serializers.HyperlinkedModelSerializer):

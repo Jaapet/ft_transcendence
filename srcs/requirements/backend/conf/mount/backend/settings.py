@@ -19,11 +19,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# TODO SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-rs--ehnucxiznlr2q4vm3&l6fyssky#yjg@ktmijv*f@4smj67'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# TODO SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False
 
 # Replace this with FQDN later
 ALLOWED_HOSTS = ['*']
@@ -59,8 +59,7 @@ REST_FRAMEWORK = {
 	'DEFAULT_PERMISSION_CLASSES': [
 		'rest_framework.permissions.IsAuthenticated'
 	],
-	'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-	'PAGE_SIZE': 50
+	'DEFAULT_PAGINATION_CLASS': None
 }
 
 INSTALLED_APPS = [

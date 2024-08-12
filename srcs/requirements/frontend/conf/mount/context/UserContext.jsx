@@ -4,7 +4,7 @@ import { useAuth } from './AuthenticationContext';
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-	const { user } = useAuth();
+	const { user, isLoggedIn } = useAuth();
 	const [userError, setUserError] = useState(null);
 	const [userMsg, setUserMsg] = useState(null);
 
@@ -36,6 +36,7 @@ export const UserProvider = ({ children }) => {
 				throw new Error(data.message || 'Edit failed');
 
 			setUserMsg(data.message || 'Edit failed');
+			isLoggedIn();
 		} catch (error) {
 			console.error('CONTEXT EDIT:', error);
 			setUserError(error.message);

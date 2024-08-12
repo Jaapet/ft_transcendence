@@ -10,6 +10,7 @@ from .views import (
 	MemberAPIView,
 	RegisterMemberAPIView,
 	UpdateMemberAPIView,
+	UpdateMemberIngameStatusAPIView,
 	LeaderboardsAPIView,
 	FriendListAPIView,
 	FriendRequestViewSet,
@@ -24,6 +25,7 @@ from .views import (
 	MatchRViewSet,
 	LastThreeMatchesAPIView,
 	RegisterMatchAPIView,
+	RegisterMatch3APIView,
 	MetricsView
 )
 from rest_framework_simplejwt import views as jwt_views
@@ -49,6 +51,7 @@ urlpatterns = [
 	path('disable_2fa/', Disable2FAView.as_view(), name='disable_2fa'),
 	path('verify_2fa/', Verify2FAView.as_view(), name='verify_2fa'),
 	path('edit/', UpdateMemberAPIView.as_view(), name='edit'),
+	path('edit_ingame_status', UpdateMemberIngameStatusAPIView.as_view(), name='edit_ingame_status'),
 	path('leaderboards/', LeaderboardsAPIView.as_view(), name='leaderboards'),
 	path('last_matches/', LastThreeMatchesAPIView.as_view(), name='last_matches'),
 	path('friend_request/send', SendFriendRequestAPIView.as_view(), name='send_friend_request'),
@@ -59,5 +62,6 @@ urlpatterns = [
 	path('friends/remove', RemoveFriendAPIView.as_view(), name='remove_friend'),
 	path('friends/friendship_status', CheckFriendshipStatusAPIView.as_view(), name='friendship_status'),
 	path('game/pong2/save', RegisterMatchAPIView.as_view(), name='register_pong2_game'),
+	path('game/pong3/save', RegisterMatch3APIView.as_view(), name='register_pong3_game'),
 	path('metrics', MetricsView.as_view(), name='metrics')
 ]

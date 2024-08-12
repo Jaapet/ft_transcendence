@@ -111,8 +111,6 @@ const ProfileMemberCardEditButton = ({ target_user }) => {
 }
 
 const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
-	console.table(user);
-	
 	return (
 		<div>
 			{/* pp + join date */}

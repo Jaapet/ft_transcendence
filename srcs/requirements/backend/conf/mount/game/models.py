@@ -38,6 +38,9 @@ class MemberManager(BaseUserManager):
 	def get_online_users(self):
 		return self.filter(last_activity__gte=timezone.now() - timezone.timedelta(minutes=5))
 
+	def get_ingame_users(self):
+		return self.filter(is_ingame=True)
+
 # Member objects contain:
 # - username			(CharField)
 # - email					(EmailField)
@@ -112,6 +115,12 @@ class Member(AbstractBaseUser, PermissionsMixin):
 		verbose_name="Admin status"
 	)
 
+	is_ingame = models.BooleanField(
+		default=False,
+		db_comment="In-Game status",
+		verbose_name="In-Game status"
+	)
+
 	last_activity = models.DateTimeField(
 		null=True,
 		blank=True,
@@ -169,11 +178,13 @@ class Member(AbstractBaseUser, PermissionsMixin):
 
 	@property
 	def is_online(self):
+		if self.is_ingame:
+			return "ingame"
 		# Right now - 5 minutes
-		if not self.last_activity:
-			return False
 		threshold = timezone.now() - timezone.timedelta(minutes=5)
-		return self.last_activity and self.last_activity >= threshold
+		if (self.last_activity and self.last_activity >= threshold):
+			return "online"
+		return "offline"
 
 	def update_last_activity(self):
 		self.last_activity = timezone.now()

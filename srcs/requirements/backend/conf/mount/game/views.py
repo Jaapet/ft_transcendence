@@ -6,6 +6,7 @@ from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.db.models import Q
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 from django.core.files.storage import default_storage
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
@@ -25,6 +26,7 @@ from .serializers import (
 	RestrictedMemberSerializer,
 	RegisterMemberSerializer,
 	UpdateMemberSerializer,
+	UpdateMemberIngameStatusSerializer,
 	FriendRequestSerializer,
 	SendFriendRequestSerializer,
 	InteractFriendRequestSerializer,
@@ -32,7 +34,8 @@ from .serializers import (
 	MatchSerializer,
 	Match3Serializer,
 	MatchRSerializer,
-	RegisterMatchSerializer
+	RegisterMatchSerializer,
+	RegisterMatch3Serializer
 )
 
 # Queries the health status of the backend
@@ -187,7 +190,7 @@ class MemberAPIView(RetrieveAPIView):
 	def get_object(self):
 		return self.request.user
 
-# TODO: Better user input validation and attempts logging
+# TODO: attempts logging
 # Creates a user
 # Used for registration
 class RegisterMemberAPIView(APIView):
@@ -204,7 +207,7 @@ class RegisterMemberAPIView(APIView):
 		else:
 			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# TODO: Better user input validation
+# TODO: attempts logging
 # Edits the currently logged-in user
 class UpdateMemberAPIView(UpdateAPIView):
 	permission_classes = [permissions.IsAuthenticated]
@@ -574,12 +577,42 @@ class WSAuthentication(BaseAuthentication):
 		# Create a dummy user with impossible username for regular users
 		return Member(username=';ws;')
 
+# Edits the specified user's is_ingame field
+class UpdateMemberIngameStatusAPIView(UpdateAPIView):
+	authentication_classes = [WSAuthentication]
+	permission_classes = [permissions.IsAuthenticated]
+	serializer_class = UpdateMemberIngameStatusSerializer
+
+	def put(self, request, *args, **kwargs):
+		serializer = self.serializer_class(data=request.data)
+		if serializer.is_valid():
+			user_id = serializer.validated_data['user_id']
+			try:
+				user = Member.objects.get(id=user_id)
+			except:
+				return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+			serializer.update(user, serializer.validated_data)
+			return Response(serializer.data, status=status.HTTP_200_OK)
+		else:
+			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class RegisterMatchAPIView(APIView):
 	authentication_classes = [WSAuthentication]
 	permission_classes = [permissions.IsAuthenticated]
 
 	def post(self, request):
 		serializer = RegisterMatchSerializer(data=request.data)
+		if serializer.is_valid():
+			serializer.save()
+			return Response(serializer.data, status=status.HTTP_201_CREATED)
+		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class RegisterMatch3APIView(APIView):
+	authentication_classes = [WSAuthentication]
+	permission_classes = [permissions.IsAuthenticated]
+
+	def post(self, request):
+		serializer = RegisterMatch3Serializer(data=request.data)
 		if serializer.is_valid():
 			serializer.save()
 			return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -620,6 +653,7 @@ class MetricsView(APIView):
 		metrics += self.collect_total_users()
 		metrics += self.collect_total_2fa_users()
 		metrics += self.collect_online_users()
+		metrics += self.collect_ingame_users()
 		metrics += self.collect_users_friends()
 		metrics += self.collect_users_elo_pong()
 		metrics += self.collect_users_elo_royal()
@@ -656,6 +690,15 @@ class MetricsView(APIView):
 			'# HELP back_online_users Number of currently online users',
 			'# TYPE back_online_users counter',
 			f'back_online_users {online_users}'
+		]
+		return metric
+
+	def collect_ingame_users(self):
+		ingame_users = Member.objects.get_ingame_users().count()
+		metric = [
+			'# HELP back_ingame_users Number of currently ingame users',
+			'# TYPE back_ingame_users counter',
+			f'back_ingame_users {ingame_users}'
 		]
 		return metric
 
