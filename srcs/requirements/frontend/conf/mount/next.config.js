@@ -10,8 +10,8 @@ module.exports = {
 	images: {
 		remotePatterns: [{
 			protocol: 'https',
-			hostname: 'backend',
-			port: '8000',
+			hostname: 'backendimg',
+			port: '',
 			pathname: '/media/**',
 		}],
 	},

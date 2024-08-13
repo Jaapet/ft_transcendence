@@ -67,7 +67,6 @@ services:
       default:
         aliases:
           - proxy #Used for inter containers communication, certs will match this fqdn
-    #TODO HEALTHCHECK
     restart: unless-stopped
 
   db:
@@ -85,7 +84,6 @@ services:
       default:
         aliases:
           - db
-    #TODO HEALTHCHECK
     restart: unless-stopped
 
   backend:
@@ -106,7 +104,22 @@ services:
       default:
         aliases:
           - backend #Used for inter containers communication, certs will match this fqdn
-      #TODO HEALTHCHECK
+    restart: unless-stopped
+
+  backendimg:
+    build: ./requirements/backendimg
+    container_name: backendimg_${PROJECT_NAME}
+    image: backendimg_${PROJECT_NAME} #TODO Remove before submiting
+    profiles:
+      - main
+    env_file:
+      - .env
+    volumes: #TODO Volumes binded should be changed before submiting the project
+      - ./requirements/backend/conf/mount/backend/media:/var/www/html/media:ro
+    networks:
+      default:
+        aliases:
+          - backendimg #Used for inter containers communication, certs will match this fqdn
     restart: unless-stopped
 
   frontend:
@@ -147,7 +160,6 @@ services:
       default:
         aliases:
           - frontend #Used for inter containers communication, certs will match this fqdn
-    #TODO HEALTHCHECK
     restart: unless-stopped
 
 ##Monitoring
@@ -181,7 +193,6 @@ services:
       default:
         aliases:
           - prometheus #Used for inter containers communication, certs will match this fqdn
-      #TODO HEALTHCHECK
     restart: unless-stopped
   
   grafana: #Grafana is a graph app useful for visualizing metrics
@@ -225,7 +236,6 @@ services:
       default:
         aliases:
           - postgres-exporter #Used for inter containers communication, certs will match this fqdn
-      #TODO HEALTHCHECK
     restart: unless-stopped
 ##ELK
   elasticsearch:
@@ -264,8 +274,6 @@ services:
     depends_on:
       elasticsearch:
         condition: service_healthy
-
-    #TODO HEALTHCHECK
     restart: unless-stopped
 
   kibana:
@@ -298,5 +306,4 @@ services:
     depends_on:
       elasticsearch:
         condition: service_healthy
-    #TODO HEALTHCHECK
     restart: unless-stopped

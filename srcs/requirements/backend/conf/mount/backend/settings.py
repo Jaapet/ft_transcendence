@@ -20,25 +20,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # TODO SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-rs--ehnucxiznlr2q4vm3&l6fyssky#yjg@ktmijv*f@4smj67'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+# TODO Remove fallback before submitting
+SECRET_KEY_FALLBACKS = [os.environ.get('DJANGO_SECRET_KEY_FALLBACK')]
 
-# TODO SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-# Replace this with FQDN later
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['backend']
 
 # SSL
-
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-#SECURE_SSL_REDIRECT = True
-#SECURE_HSTS_SECONDS = 3600
-#SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-#SECURE_HSTS_PRELOAD = True
-#SECURE_BROWSER_XSS_FILTER = True
-#SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # Application definition
 
@@ -47,7 +40,7 @@ AUTH_USER_MODEL = 'game.Member'
 
 # Set where user uploads are stored
 MEDIA_ROOT = "/usr/app/backend/media"
-MEDIA_URL = "/media/"
+MEDIA_URL = "https://backendimg/media/"
 
 # Configuration of REST
 REST_FRAMEWORK = {
@@ -87,8 +80,9 @@ MIDDLEWARE = [
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
-	'game.middleware.UpdateLastActivityMiddleware',
 	'django_otp.middleware.OTPMiddleware',
+	'game.middleware.UpdateLastActivityMiddleware',
+#	'game.middleware.LogHostMiddleware' TODO: Remove this before submitting
 ]
 
 # CORS_ALLOW_ALL_ORIGINS = True
@@ -137,7 +131,6 @@ DATABASES = {
 	}
 }
 
-# TODO: Check this out
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [

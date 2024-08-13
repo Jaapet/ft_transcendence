@@ -5,16 +5,15 @@
 #                                                     +:+ +:+         +:+      #
 #    By: thepaqui <thepaqui@student.42nice.fr>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2024/05/05 17:20:04 by thepaqui          #+#    #+#              #
+#    Created: 2024/08/13 17:35:04 by thepaqui          #+#    #+#              #
 #    Updated: 2024/05/05 18:32:45 by thepaqui         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-FROM		python:3.8-alpine
+FROM	nginx:1.27.0-alpine
 
-LABEL		author="thepaqui@student.42nice.fr"
+LABEL	author="thepaqui@student.42nice.fr"
 
-##CA & Cert######################
 # Install CA certificates package
 RUN apk update && apk add ca-certificates && update-ca-certificates
 
@@ -24,49 +23,14 @@ COPY CA.crt /usr/local/share/ca-certificates/CA.crt
 # Update the certificate store
 RUN update-ca-certificates
 
-# Add srv cert
+#Add my keys
 RUN mkdir /ssl
 COPY *.crt /ssl/
 COPY *.key /ssl/
-#################################
+RUN chmod 777 -R /ssl
 
-ENV			PIP_DISABLE_PIP_VERSION_CHECK 1
+COPY default.conf /etc/nginx/nginx.conf
 
-ENV			PYTHONDONTWRITEBYTECODE 1
+EXPOSE 443
 
-ENV			PYTHONUNBUFFERED 1
-
-#COPY		conf/backend /usr/app
-
-WORKDIR	/usr/app
-
-RUN			apk add --no-cache \
-					build-base \
-					libpq-dev \
-					libffi \
-					libffi-dev \
-				&& \
-				pip install --upgrade \
-					pip \
-				&& \
-				pip install --no-cache-dir \
-					django \
-					djangorestframework \
-					djangorestframework_simplejwt \
-					django-otp \
-					qrcode \
-					django-cors-headers \
-					psycopg2 \
-					pillow \
-					gunicorn \
-					django-extensions \
-					pyOpenSSL
-
-# psycopg2 if for postgres
-# pillow is required for ImageField to work
-
-COPY		conf/start.sh ../
-
-EXPOSE		8000
-
-ENTRYPOINT	["sh", "../start.sh"]
+CMD ["nginx", "-g", "daemon off;"]

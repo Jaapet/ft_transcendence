@@ -1,6 +1,12 @@
 #!/bin/bash
-#TODO, empty the webhook for the submiting
+
+#TODO: empty the webhook for the submiting
 DISCORD_WEBHOOK='https://discord.com/api/webhooks/1250123017044885555/xD8TUCvv0eNTZWKigjm78aXL4htSNmYo5WxxzQaNMMeVH7-sMwMH4gQuMB5RSR-Lkf95'
+
+#TODO: empty the django secret keys before submitting
+DJANGO_SECRET_KEY='#%)+8qytx=ths8-xul(v75@m*gpf@c%ip(_nvjfl=0-6$(c!&r'
+DJANGO_SECRET_KEY_FALLBACK='django-insecure-rs--ehnucxiznlr2q4vm3&l6fyssky#yjg@ktmijv*f@4smj67'
+
 #Script to init a lot of config files and .env file
 ENVFILE=./srcs/.env
 if [[ $1 == "clean" ]]; then
@@ -53,7 +59,7 @@ elif [[ $choice == "no" ]]; then
 	echo "PROFILES_COMPOSE_5=" >> $ENVFILE
 	echo "PROFILES_COMPOSE_6=" >> $ENVFILE
 else
-    echo "Invalid choice. Please enter 'yes' or 'no'."
+	echo "Invalid choice. Please enter 'yes' or 'no'."
 fi
 
 
@@ -67,17 +73,17 @@ fi
 	echo "PROJECT_NAME=${GIT_BRANCH}" >> $ENVFILE
 	echo "Debug: Current branch is $GIT_BRANCH"
 	if [ "$GIT_BRANCH" == "main" ]; then
-    	PROJECT_PORT_ID=502
+		PROJECT_PORT_ID=502
 	elif [ "$GIT_BRANCH" == "proxy" ]; then
-	    PROJECT_PORT_ID=501
+		PROJECT_PORT_ID=501
 	elif [ "$GIT_BRANCH" == "mmidon" ]; then
-	    PROJECT_PORT_ID=503
+		PROJECT_PORT_ID=503
 	elif [ "$GIT_BRANCH" == "bebzouz" ]; then
-	    PROJECT_PORT_ID=504
+		PROJECT_PORT_ID=504
 	elif [ "$GIT_BRANCH" == "jaapet" ]; then
-	    PROJECT_PORT_ID=505
+		PROJECT_PORT_ID=505
 	else
-	    PROJECT_PORT_ID=0
+		PROJECT_PORT_ID=0
 	fi
 	echo "Debug: PROJECT_PORT_ID is $PROJECT_PORT_ID"
 	echo "PROJECT_PORT_ID=${PROJECT_PORT_ID}" >> $ENVFILE
@@ -104,7 +110,7 @@ fi
 	echo -e "\e[0;32m\n[SECRET]\tAccess to postrgesql\nUsername: ${USERNAME}\nPassword: ${PASSWORD}\n(Acccess to postgresql)\e[0m"
 	echo "POSTGRES_USER=${USERNAME}" >> $ENVFILE
 	echo "POSTGRES_PASSWORD=${PASSWORD}" >> $ENVFILE
-			#For postgres-exporter
+		#For postgres-exporter
 	echo "DATA_SOURCE_NAME=postgresql://${USERNAME}:${PASSWORD}@db:5432/transcendence" >> $ENVFILE
 	#DJANGO User Admin
 	USERNAME="backchid"
@@ -114,6 +120,8 @@ fi
 	echo "DJANGO_SUPERUSER_USERNAME=${USERNAME}" >> $ENVFILE
 	echo "DJANGO_SUPERUSER_PASSWORD=${PASSWORD}" >> $ENVFILE
 	echo "DJANGO_SUPERUSER_EMAIL=back@chid.fr" >> $ENVFILE
+	echo "DJANGO_SECRET_KEY='${DJANGO_SECRET_KEY}'" >> $ENVFILE
+	echo "DJANGO_SECRET_KEY_FALLBACK='${DJANGO_SECRET_KEY_FALLBACK}'" >> $ENVFILE
 	#Next.js
 	#TODO SETUP A LA MANO DANS LE DOCKERFILE
 	echo "NEXT_PUBLIC_API_BASE_URL=https://frontend:3000" >> $ENVFILE
