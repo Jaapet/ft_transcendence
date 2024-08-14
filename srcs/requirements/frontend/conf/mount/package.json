@@ -5,23 +5,24 @@
 	"main": "script.js",
 	"scripts": {
 		"dev": "concurrently \"npm run sockets\" \"next dev --experimental-https --experimental-https-key /ssl/frontend.key --experimental-https-cert /ssl/frontend.crt --experimental-https-ca /ssl/CA.crt \"",
-		"sockets": "node initsocket.js"
+		"sockets": "node initsocket.js",
+		"build": "next build",
+		"start": "concurrently \"npm run sockets\" \"node server.js\""
 	},
 	"dependencies": {
 		"bootstrap": "^5.3.3",
+		"concurrently": "8.2.2",
 		"express": "^4.19.2",
 		"formidable": "^3.5.1",
 		"next": "^14.2.3",
 		"react": "18.2.0",
 		"react-bootstrap": "^2.10.2",
 		"react-dom": "18.2.0",
+		"sharp": "^0.33.4",
 		"socket.io": "^4.7.5",
 		"socket.io-client": "^4.7.5",
 		"three": "^0.164.1"
 	},
-	"author": "uwu c'est moi uwu",
-	"license": "ISC",
-	"devDependencies": {
-		"concurrently": "latest"
-	}
+	"author": "mmidon",
+	"license": "ISC"
 }

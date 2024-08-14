@@ -14,7 +14,15 @@ do
 	sleep 2
 done
 
-echo "Installing dependencies"
-npm install
+echo "Installing Next.js dependencies"
 
-npm run dev
+# PRODUCTION
+
+npm install --omit=dev
+npm run build
+echo "Launching Next.js in production mode"
+npm run start
+
+# DEVELOPMENT
+# npm install
+# npm run dev
