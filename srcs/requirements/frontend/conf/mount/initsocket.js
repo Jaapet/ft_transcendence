@@ -20,7 +20,7 @@ const io = socketIO(server, {
 
 /* HOW TO USE
 
-In client-side code (pong/royal.jsx):
+In client-side code (pong/pong.jsx):
 ```
 	useEffect((user) => {
 		const socket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`);
@@ -49,9 +49,11 @@ const rooms = {
 	queue2: {},
 	pong2: {},
 	queue3: {},
-	pong3: {},
-	queueR: {},
-	royal: {}
+	pong3: {}
+};
+
+const tourneys = {
+	pong2: {}
 };
 
 const connected = {};
@@ -59,10 +61,8 @@ const ids = {};
 
 // Constants
 const PONG2_NB_PLAYERS = 2;
+const PONG2_TOURNEY_NB_PLAYERS = 4;
 const PONG3_NB_PLAYERS = 3;
-const ROYAL_MIN_PLAYERS = 2;
-const ROYAL_MAX_PLAYERS = 8;
-const ROYAL_START_TIMEOUT = 30000;	// Start a Royal game after 30 seconds of waiting for a full room
 const ELO_RANGE = 100;							// Base range of accepted ELO in a room (room.elo+-ELO_RANGE)
 const ELO_RANGE_MAX = 1000;					// Limit for ELO_RANGE
 const FIND_ROOM_TIMEOUT = 10;				// Create your own room after trying to find one for 10 seconds
@@ -99,8 +99,6 @@ const PONG3_BALL_BOUNCE_MERCY_PERIOD = 100;	// In ms
 const PONG3_BALL_RESPAWN_TIME = 500;				// In ms
 const PONG3_TIME_TO_WIN = 30;								// In seconds
 
-/// ROYAL
-
 async function setInGameStatus(userId, value) {
 	fetch(`https://backend:8000/api/edit_ingame_status`, {
 		method: 'PUT',
@@ -127,6 +125,7 @@ io.on('connection', socket => {
 
 	// DISCONNECT HANDLER
 	socket.on('disconnect', () => {
+		// TODO: Remove them from tourney too!
 		//console.log(`Client disconnected: ${socket.id}`);
 		let room = findRoomByPlayerIdSlow(socket.id);
 		if (room) {
@@ -145,7 +144,35 @@ io.on('connection', socket => {
 		setInGameStatus(ids[socket.id], false);
 	});
 
-	// JOIN HANDLER (https://transcendence.gmcg.fr:50581/test)
+	// JOIN_TOURNEY HANDLER
+	socket.on('joinTourney', ({ gameType, userId, userName, userELO, userAvatar }) => {
+		if (!connected[socket.id])
+			return ;
+		ids[socket.id] = userId;
+		setInGameStatus(ids[socket.id], true);
+
+		console.log(`JOIN_TOURNEY: New user ${userName}`); // debug
+
+		let tourney = findTourney(gameType);
+		if (tourney) // Join Existing Tourney
+		{
+			console.log(`JOIN_TOURNEY: User ${userName} found tourney ${tourney.id}`); // debug
+			addPlayerToTourney(gameType, tourney, socket, userId, userName, userELO, userAvatar);
+			console.log(`JOIN_TOURNEY: User ${userName} added to tourney ${tourney.id}`); // debug
+		}
+		else // Create New Tourney
+		{
+			console.log(`JOIN_TOURNEY: User ${userName} creating new tourney`); // debug
+			tourney = createTourney(gameType);
+			console.log(`Created tourney=${tourney.id} type=${gameType} by user=${userName}`); // ELK LOG
+			addPlayerToTourney(gameType, tourney, socket, userId, userName, userELO, userAvatar);
+			console.log(`JOIN_TOURNEY: User ${userName} added to tourney ${tourney.id}`); // debug
+		}
+
+		checkTourneyStart(tourney, gameType);
+	});
+
+	// JOIN HANDLER
 	socket.on('join', ({ gameType, userId, userName, userELO, userAvatar }) => {
 		if (!connected[socket.id])
 			return ;
@@ -159,9 +186,6 @@ io.on('connection', socket => {
 		switch (gameType){
 			case 'pong3':
 				queueType = "queue3";
-				break ;
-			case 'royal':
-				queueType = "queueR";
 				break ;
 			default:
 				queueType = "queue2";
@@ -346,8 +370,6 @@ io.on('connection', socket => {
 				case 'pong3':
 					pong3Input(room, input);
 					break ;
-				case 'royal':
-					break ;
 				case 'pong2':
 					pong2Input(room, input);
 					break ;
@@ -387,6 +409,20 @@ io.on('connection', socket => {
 		return false;
 	}
 
+	// Finds tourney if there is one, null if not
+	function findTourney(gameType) {
+		if (!connected[socket.id])
+			return null;
+
+		// For all tourneys in selected game type, return the first one that is not full
+		for (const tourneyId in tourneys[gameType]) {
+			if (!isTourneyFull(gameType, tourneyId) && !isTourneyLaunched(gameType, tourneyId)) {
+				return tourneys[gameType][tourneyId];
+			}
+		}
+		return null;
+	}
+
 	// Finds room if there is one, null if not
 	function findRoom(gameType) {
 		if (!connected[socket.id])
@@ -401,6 +437,7 @@ io.on('connection', socket => {
 		return null;
 	}
 
+	// TODO: Remove this
 	// Finds launched rooms to spectate, empty if there are none
 	function findWatcherRooms(gameType) {
 		if (!connected[socket.id])
@@ -417,7 +454,7 @@ io.on('connection', socket => {
 		return ret;
 	}
 
-	// Finds room matching elo if ther is one, null if not
+	// Finds room matching elo if there is one, null if not
 	function findRoomElo(gameType, userELO) {
 		if (!connected[socket.id])
 			return null;
@@ -428,6 +465,50 @@ io.on('connection', socket => {
 			}
 		}
 		return null;
+	}
+
+	function createPong2Tourney(gameType, newTourneyId, now) {
+		if (!connected[socket.id])
+			return ;
+
+		tourneys[gameType][newTourneyId] = {
+			id: newTourneyId,
+			launched: false,
+			maxPlayers: PONG2_TOURNEY_NB_PLAYERS,
+			timeStamp: now,
+			players: {},
+			matches: {}
+		};
+	}
+
+	function createPong2TourneyRoom(tourney, newRoomId, matchType, now) {
+		if (!connected[socket.id])
+			return ;
+
+		tourney.matches[matchType] = {
+			id: newRoomId,
+			launched: false,
+			maxPlayers: PONG2_NB_PLAYERS,
+			timeStamp: now,
+			players: {},
+			runtime: {
+				startTime: now,
+				ballZeroTime: now,
+				lastLoopTime: now,
+				started: false,
+				score: { l: 0, r: 0 },
+				paddleSpeed: PONG2_PADDLE_SPEED,
+				ballPosition: { x: 0, z: 0 },
+				ballDirection: { x: 0.99999, z: 0.00001 },
+				ballSpeed: PONG2_BASE_BALL_SPEED,
+				lastBallBounce: { happened: false, when: now },
+				ballRespawnTime: now,
+				paddleZ: { l: 0, r: 0 },
+				goUp: { l: false, r: false },
+				goDown: { l: false, r: false },
+				end: false
+			}
+		};
 	}
 
 	function createPong2Room(gameType, newRoomId, now, userELO) {
@@ -491,6 +572,41 @@ io.on('connection', socket => {
 		};
 	}
 
+	// Creates a tourney for the player
+	function createTourney(gameType) {
+		if (!connected[socket.id])
+			return null;
+
+		// Create a new tourney
+		const now = Date.now();
+		const newTourneyId = generateTourneyId(gameType);
+		createPong2Tourney(gameType, newTourneyId, now);
+		io.to(socket.id).emit('info', { message: `Tourney ${newTourneyId} created` }); // debug
+		return tourneys[gameType][newTourneyId];
+	}
+
+	// Generates a new unique tourney ID
+	function generateTourneyId(gameType) {
+		let newTourneyId = '';
+		do {
+			newTourneyId = Math.random().toString(36).substring(2, 11);
+		} while (tourneys[gameType][newTourneyId]);
+		return newTourneyId;
+	}
+
+	// Creates a room for a tourney
+	function createTourneyRoom(tourney, matchType) {
+		if (!connected[socket.id])
+			return null;
+
+		// Create a new room
+		const now = Date.now();
+		const newRoomId = tourney.id + matchType;
+		createPong2TourneyRoom(tourney, newRoomId, matchType, now);
+		//io.to(socket.id).emit('info', { message: `Room ${matchType} created for tourney` }); // debug
+		return tourney.matches[matchType];
+	}
+
 	// Creates a room for the player
 	function createRoom(gameType, userELO) {
 		if (!connected[socket.id])
@@ -508,21 +624,13 @@ io.on('connection', socket => {
 				rooms["queue3"]["$queue3$"] = { id: "$queue3$", launched: false, maxPlayers: 1000, timeStamp: now, players: {} };
 				io.to(socket.id).emit('info', { message: `Room $queue3$ created` }); // debug
 				return rooms["queue3"]["$queue3$"];
-			case 'queueR':
-				rooms["queueR"]["$queueR$"] = { id: "$queueR$", launched: false, maxPlayers: 1000, timeStamp: now, players: {} };
-				io.to(socket.id).emit('info', { message: `Room $queueR$ created` }); // debug
-				return rooms["queueR"]["$queueR$"];
 			case 'pong3':
 				createPong3Room(gameType, newRoomId, now, userELO);
-				break ;
-			case 'royal':
-				rooms[gameType][newRoomId] = { id: newRoomId, launched: false, maxPlayers: ROYAL_MAX_PLAYERS, timeStamp: now, players: {}, elo: userELO };
 				break ;
 			default:
 				createPong2Room(gameType, newRoomId, now, userELO);
 		}
-		io.to(socket.id).emit('info', { message: `Room ${newRoomId} created, room elo ${userELO}` });
-		//io.to(socket.id).emit('info', { message: `created at ${now}` });
+		//io.to(socket.id).emit('info', { message: `Room ${newRoomId} created, room elo ${userELO}` }); // debug
 		return rooms[gameType][newRoomId];
 	}
 
@@ -533,6 +641,86 @@ io.on('connection', socket => {
 			newRoomId = Math.random().toString(36).substring(2, 11);
 		} while (rooms[gameType][newRoomId]);
 		return newRoomId;
+	}
+
+	// Tourney states
+	/*
+		Inside TOURNEY PLAYER:
+			group = Upper or Lower group
+			position = Upper or Lower player in group
+			rank = {
+				Start: 'Start',									// 0 (starting pos)
+				SemiFinals: 'SemiFinals',				// 1 (first match)
+				LosersFinals: 'LosersFinals',		// 1 (final for 3rd)
+				Loser: 'Loser',									// 0 (final for 4th)
+				WinnersFinals: 'WinnersFinals',	// 2 (final for 2nd)
+				Winner: 'Winner'								// 3 (final for 1st)
+			};
+	*/
+	function chooseTourneyRole(tourney) {
+		let g1u = false;
+		let g1d = false;
+		let g2u = false;
+		let g2d = false;
+		for (const playerId in tourney.players) {
+			const role = tourney.players[playerId].role;
+			if (role.group === 1) {
+				if (role.position === 'up')
+					g1u = true;
+				else if (role.position === 'down')
+					g1d = true;
+			}
+			else if (role.group === 2) {
+				if (role.position === 'up')
+					g2u = true;
+				else if (role.position === 'down')
+					g2d = true;
+			}
+		}
+
+		const group = g1u && g1d ? 2 : 1;
+		const position = group === 1 ? (g1u ? 'down' : 'up') : (g2u ? 'down' : 'up');
+		const rank = 'Start';
+		return {
+			group: group,
+			position: position,
+			rank: rank
+		};
+	}
+
+	// Adds a player to a tourney
+	// Does nothing if either tourney or socket does not exist
+	function addPlayerToTourney(gameType, tourney, socket, userId, userName, userELO, userAvatar) {
+		if (!connected[socket.id])
+			return ;
+
+		const role = chooseTourneyRole(tourney);
+
+		console.log('ADD_PLAYER_TO_TOURNEY: Role is',  JSON.stringify(role, null, 2));
+
+		if (tourney && socket) {
+			socket.join(tourney.id);
+			tourney.players[socket.id] = {
+				id: userId,
+				username: userName,
+				ready: false,
+				elo: userELO,
+				avatar: userAvatar,
+				role: role
+			};
+			//io.to(socket.id).emit('info', { message: `You (${userName} ELO ${userELO}) joined tourney ${tourney.id}, tourney elo ${tourney.elo}` }); // debug
+			// Send new tourney and its players to new user
+			io.to(socket.id).emit('updateTourney', {
+				tourney: {
+					type: gameType,
+					id: tourney.id
+				},
+				tourneyPlayers: tourney.players
+			});
+			// Update all players of new player
+			io.to(tourney.id).emit('updateTourneyPlayers', { tourneyPlayers: tourney.players });
+			//console.log("\n\nCurrent tourney structure:", JSON.stringify(tourney, null, 2)); // debug
+		}
 	}
 
 	function choosePong2Role(room) {
@@ -563,8 +751,39 @@ io.on('connection', socket => {
 		}
 	}
 
-	function chooseRoyalRole() {
-		return "ball";
+	// Adds a player to a tourney room
+	// Does nothing if either room or playerSocket does not exist
+	function addPlayerToTourneyRoom(room, gameType, playerSocket, userId, userName, userELO, userAvatar) {
+		if (!connected[playerSocket.id])
+			return ;
+
+		let role = choosePong2Role(room);
+		let roomType = gameType;
+
+		if (room && playerSocket) {
+			playerSocket.join(room.id);
+			room.players[playerSocket.id] = {
+				id: userId,
+				username: userName,
+				ready: false,
+				elo: userELO,
+				avatar: userAvatar,
+				role: role,
+				readyTimer: false
+			};
+			//io.to(playerSocket.id).emit('info', { message: `You (${userName} ELO ${userELO}) joined tourney room ${room.id}` }); // debug
+			// Send new room and its players to new user
+			io.to(playerSocket.id).emit('updateRoom', {
+				room: {
+					type: roomType,
+					id: room.id
+				},
+				players: room.players
+			});
+			// Update all players of new player
+			io.to(room.id).emit('updatePlayers', { players: room.players });
+			//console.log("\n\nCurrent tourney room structure:", JSON.stringify(room, null, 2)); // debug
+		}
 	}
 
 	// Adds a player to a room
@@ -579,10 +798,6 @@ io.on('connection', socket => {
 		switch (gameType) {
 			case 'pong3':
 				role = choosePong3Role(room);
-				roomType = gameType;
-				break ;
-			case 'royal':
-				role = chooseRoyalRole();
 				roomType = gameType;
 				break ;
 			case 'pong2':
@@ -617,7 +832,23 @@ io.on('connection', socket => {
 			});
 			// Update all players of new player
 			io.to(room.id).emit('updatePlayers', { players: room.players });
-			console.log("\n\nCurrent room structure:", JSON.stringify(room, null, 2)); // debug
+			//console.log("\n\nCurrent room structure:", JSON.stringify(room, null, 2)); // debug
+		}
+	}
+
+	// Removes player from their room
+	function removePlayerFromTourneyRoom(tourney, room, matchType, gameType, playerSocket) {
+		if (room.players[playerSocket.id]) {
+			//console.log(`REMOVE_PLAYER_FROM_TOURNEY_ROOM: Removing user ${room.players[playerSocket.id].id} from room ${room.id}`); // debug
+			delete room.players[playerSocket.id];
+			playerSocket.leave(room.id);
+			// If the room becomes empty, delete it
+			if (roomPlayerNb(gameType, room.id) === 0) {
+				//console.log(`REMOVE_PLAYER_FROM_TOURNEY_ROOM: Deleting room ${room.id}`); // debug
+				console.log(`Deleted room=${room.id}`); // ELK LOG
+				delete tourney.matches[matchType];
+			}
+			return ;
 		}
 	}
 
@@ -678,6 +909,19 @@ io.on('connection', socket => {
 		return true;
 	}
 
+	// Returns true if a tourney is full or if it doesn't exist
+	// Returns false otherwise
+	function isTourneyFull(gameType, tourneyId) {
+		if (!connected[socket.id])
+			return false;
+
+		return (
+			tourneys[gameType]
+			&& tourneys[gameType][tourneyId]
+			&& tourneyPlayerNb(gameType, tourneyId) >= tourneys[gameType][tourneyId].maxPlayers
+		);
+	}
+
 	// Returns true if a room is full or if it doesn't exist
 	// Returns false otherwise
 	function isRoomFull(gameType, roomId) {
@@ -691,6 +935,18 @@ io.on('connection', socket => {
 		);
 	}
 
+	// Returns true if a tourney is launched or if it doesn't exist
+	// Returns false otherwise
+	function isTourneyLaunched(gameType, tourneyId) {
+		if (!connected[socket.id])
+			return true;
+
+		if (tourneys[gameType][tourneyId])
+			return tourneys[gameType][tourneyId].launched;
+
+		return true;
+	}
+
 	// Returns true if a room is launched or if it doesn't exist
 	// Returns false otherwise
 	function isRoomLaunched(gameType, roomId) {
@@ -701,6 +957,18 @@ io.on('connection', socket => {
 			return rooms[gameType][roomId].launched;
 
 		return true;
+	}
+
+	// Returns the current number of players in a tourney
+	// Returns -1 if the tourney does not exist
+	function tourneyPlayerNb(gameType, tourneyId) {
+		if (!connected[socket.id])
+			return -1;
+
+		if (tourneys[gameType][tourneyId])
+			return Object.keys(tourneys[gameType][tourneyId].players).length;
+
+		return -1;
 	}
 
 	// Returns the current number of players in a room
@@ -726,7 +994,7 @@ io.on('connection', socket => {
 		//console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: Searching for ${playerId}`); // debug
 
 		for (const gameType in rooms) {
-			if (['queue2', 'queue3', 'queueR'].includes(gameType))
+			if (['queue2', 'queue3'].includes(gameType))
 				continue ;
 			//console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: Checking ${gameType}`); // debug
 			for (const roomId in rooms[gameType]) {
@@ -761,6 +1029,183 @@ io.on('connection', socket => {
 		return (rooms[gameType][roomId] && rooms[gameType][roomId].players[socket.id]);
 	}
 
+	// Checks if a tourney can be started and starts it if the answer is yes
+	// Does nothing if tourney does not exist, is already launched, or if its players are not ready
+	function checkTourneyStart(tourney, gameType) {
+		if (!connected[socket.id])
+			return ;
+
+		console.log(`CHECK_TOURNEY_START: Checking ${gameType} tourney ${tourney.id}`); // debug
+		if (!tourney || isTourneyLaunched(gameType, tourney.id)) {
+			return ;
+		}
+
+		console.log(`CHECK_TOURNEY_START: ${gameType} tourney ${tourney.id} exists and has not been launched`); // debug
+		startPong2Tourney(tourney, gameType);
+	}
+
+	// Starts a tourney of pong2 (1v1)
+	// Does nothing if there are less than 2 players in the tourney
+	// Does nothing if tourney does not exist, is already launched, or if its players are not ready
+	function startPong2Tourney(tourney, gameType) {
+		if (!connected[socket.id])
+			return ;
+
+		console.log(`START_PONG2_TOURNEY: Checking ${gameType} tourney ${tourney.id}`); // debug
+
+		if (!tourney || isTourneyLaunched(gameType, tourney.id)) {
+			return ;
+		}
+
+		console.log(`START_PONG2_TOURNEY: ${gameType} tourney ${tourney.id} exists and has not been launched`); // debug
+
+		// If the tourney is full, launch the tourney
+		if (isTourneyFull(gameType, tourney.id)) {
+			console.log(`START_PONG2_TOURNEY: ${gameType} tourney ${tourney.id} is full, launching tourney`); // debug
+			launchTourney(gameType, tourney);
+		}
+	}
+
+	// Sends a tourneyStart message to all players in the tourney and sets launched to true
+	// Does nothing if tourney does not exist, is already launched, or if its players are not ready
+	function launchTourney(gameType, tourney) {
+		if (!connected[socket.id])
+			return ;
+
+		console.log(`LAUNCH_TOURNEY: Launching ${gameType} tourney ${tourney.id}`); // debug
+
+		if (!tourney || tourney.launched) {
+			return ;
+		}
+
+		console.log(`LAUNCH_TOURNEY: ${gameType} tourney ${tourney.id} exists and has not been launched`); // debug
+
+		const playersString = Object.values(tourney.players).map(player => player.username).join(',');
+		console.log(`Launched tourney=${tourney.id} players=${playersString}`); // ELK LOG
+		tourney.launched = true;
+		io.to(tourney.id).emit('tourneyStart', { players: tourney.players });
+		console.log(`LAUNCH_TOURNEY: Emitted tourneyStart to ${gameType} tourney ${tourney.id}`); // debug
+
+		// TODO: Launch first 2 games and keep track of them
+		let sfup = createTourneyRoom(tourney, 'SFUP');
+		let sfdo = createTourneyRoom(tourney, 'SFDO');
+		let wf = createTourneyRoom(tourney, 'WF');
+		let lf = createTourneyRoom(tourney, 'LF');
+		for (const playerId in tourney.players) {
+			const player = tourney.players[playerId];
+			const playerSocket = io.sockets.sockets.get(playerId);
+
+			player.role.rank = 'SemiFinals';
+			if (player.role.group === 1) {
+				addPlayerToTourneyRoom(sfup, gameType, playerSocket, player.id, player.username, player.elo, player.avatar);
+			} else if (player.role.group === 2) {
+				addPlayerToTourneyRoom(sfdo, gameType, playerSocket, player.id, player.username, player.elo, player.avatar);
+			}
+		}
+		// TODO: Wait for a few seconds (next match announcement)
+		launchGame(gameType, sfup);
+		launchGame(gameType, sfdo);
+
+		// Wait for semifinals to end
+		let sfupEnd = false;
+		let sfdoEnd = false;
+		function waitForSemiFinalsEnd() {
+			function checkIfGameEnded(room, matchType, checker) {
+				if (room.runtime.end) {
+					checker = true;
+	
+					const leftWon = room.runtime.score.l > room.runtime.score.r;
+					const winner = leftWon ? getPlayerRoleInRoom(room, 'leftPaddle') : getPlayerRoleInRoom(room, 'rightPaddle');
+					const loser = leftWon ? getPlayerRoleInRoom(room, 'rightPaddle') : getPlayerRoleInRoom(room, 'leftPaddle');
+	
+					for (const playerId in tourney.players) {
+						const player = tourney.players[playerId];
+						const playerSocket = io.sockets.sockets.get(playerId);
+
+						if (player.id === winner.id) {
+							player.role.rank = 'WinnersFinals';
+							removePlayerFromTourneyRoom(tourney, room, matchType, gameType, playerSocket);
+							addPlayerToTourneyRoom(wf, gameType, playerSocket, player.id, player.username, player.elo, player.avatar);
+						} else if (player.id === loser.id) {
+							player.role.rank = 'LosersFinals';
+							removePlayerFromTourneyRoom(tourney, room, matchType, gameType, playerSocket);
+							addPlayerToTourneyRoom(lf, gameType, playerSocket, player.id, player.username, player.elo, player.avatar);
+						}
+					}
+				}
+			}
+
+			if (!sfupEnd)
+				checkIfGameEnded(sfup, 'SFUP', sfupEnd);
+			if (!sfdoEnd)
+				checkIfGameEnded(sfdo, 'SFDO', sfdoEnd);
+
+			if (sfupEnd && sfdoEnd)
+				continueTourney(gameType, tourney, wf, lf); // TODO: THIS FUNCTION
+			else
+				setTimeout(waitForSemiFinalsEnd, 1000); // Once every second
+		}
+		waitForSemiFinalsEnd();
+	}
+
+	function continueTourney(gameType, tourney, wf, lf) {
+		// TODO: Wait for a few seconds (next match announcement)
+		launchGame(gameType, lf);
+		launchGame(gameType, wf);
+
+		// Wait for finals to end
+		let wfEnd = false;
+		let lfEnd = false;
+		function waitForFinalsEnd() {
+			function checkIfWFEnded() {
+				if (wf.runtime.end) {
+					wfEnd = true;
+
+					const leftWon = wf.runtime.score.l > wf.runtime.score.r;
+					const winner = leftWon ? getPlayerRoleInRoom(wf, 'leftPaddle') : getPlayerRoleInRoom(wf, 'rightPaddle');
+
+					for (const playerId in tourney.players) {
+						const player = tourney.players[playerId];
+						const playerSocket = io.sockets.sockets.get(playerId);
+
+						if (player.id === winner.id)
+							player.role.rank = 'Winner';
+						removePlayerFromTourneyRoom(tourney, wf, matchType, gameType, playerSocket);
+					}
+				}
+			}
+
+			function checkIfLFEnded() {
+				if (lf.runtime.end) {
+					lfEnd = true;
+
+					const leftWon = lf.runtime.score.l > lf.runtime.score.r;
+					const loser = leftWon ? getPlayerRoleInRoom(lf, 'rightPaddle') : getPlayerRoleInRoom(lf, 'leftPaddle');
+
+					for (const playerId in tourney.players) {
+						const player = tourney.players[playerId];
+						const playerSocket = io.sockets.sockets.get(playerId);
+
+						if (player.id === loser.id)
+							player.role.rank = 'Loser';
+						removePlayerFromTourneyRoom(tourney, lf, matchType, gameType, playerSocket);
+					}
+				}
+			}
+
+			if (!wfEnd)
+				checkIfWFEnded();
+			if (!lfEnd)
+				checkIfLFEnded();
+
+			if (wfEnd && lfEnd)
+				return ; // TODO: Something here maybe???
+			else
+				setTimeout(waitForFinalsEnd, 1000); // Once every second
+		}
+		waitForFinalsEnd();
+	}
+
 	// Checks if a game can be started and starts it if the answer is yes
 	// Does nothing if room does not exist, is already launched, or if its players are not ready
 	function checkGameStart(room, gameType) {
@@ -768,25 +1213,16 @@ io.on('connection', socket => {
 			return ;
 
 		//console.log(`CHECK_GAME_START: Checking ${gameType} room ${room.id}`); // debug
-
 		if (!room || isRoomLaunched(gameType, room.id)) {
 			return ;
 		}
 
 		//console.log(`CHECK_GAME_START: ${gameType} room ${room.id} exists and has not been launched`); // debug
-
-		switch (gameType) {
-			case 'royal':
-				startRoyalGame(room, gameType);
-				break ;
-			case 'pong2':
-			case 'pong3':
-				startPongGame(room, gameType);
-		}
+		startPongGame(room, gameType);
 	}
 
-	// Starts a game of pong2 (1v1)
-	// Does nothing if there are less than 2 players in the room
+	// Starts a game of pong2 (1v1) or pong3 (1v2)
+	// Does nothing if there are less than required players in the room
 	// Does nothing if room does not exist, is already launched, or if its players are not ready
 	// TODO: Check if all players have the right roles and reassign them in case not!
 	function startPongGame(room, gameType) {
@@ -805,37 +1241,6 @@ io.on('connection', socket => {
 		if (isRoomFull(gameType, room.id)) {
 			//console.log(`START_PONG_GAME: ${gameType} room ${room.id} is full, launching game`); // debug
 			launchGame(gameType, room);
-		}// else {
-			//console.log(`START_PONG_GAME: ${gameType} room ${room.id} is not full`); // debug
-		//}
-	}
-
-	// Starts a game of royal
-	// Does nothing if there are less than ROYAL_MIN_PLAYERS in the room
-	// Does nothing if room does not exist, is already launched, or if its players are not ready
-	// TODO: Check if all players have the right roles and reassign them in case not!
-	function startRoyalGame(room, gameType) {
-		if (!connected[socket.id])
-			return ;
-
-		if (!room || room.launched) {
-			return ;
-		}
-
-		if (roomPlayerNb('royal', room.id) >= ROYAL_MIN_PLAYERS) {
-			// If the room is full, launch the game
-			if (isRoomFull('royal', room.id)) {
-				launchGame(gameType, room);
-				return ;
-			}
-			// If the room is not full, starts timer for forced launch
-			setTimeout(() => {
-				// Need to recheck if room still exists and there are enough
-				// players in it since this could have changed in the meantime
-				if (room && !room.launched && roomPlayerNb(gameType, room.id) >= ROYAL_MIN_PLAYERS) {
-					launchGame(gameType, room);
-				}
-			}, ROYAL_START_TIMEOUT);
 		}
 	}
 
@@ -859,9 +1264,6 @@ io.on('connection', socket => {
 		io.to(room.id).emit('gameStart', { players: room.players });
 		//console.log(`LAUNCH_GAME: Emitted gameStart to ${gameType} room ${room.id}`); // debug
 		switch (gameType) {
-			case 'royal':
-				RoyalLoop(room);
-				return ;
 			case 'pong3':
 				Pong3Loop(room);
 				return ;
@@ -1461,7 +1863,7 @@ io.on('connection', socket => {
 	}
 
 	socket.on('ready', ({ gameType }) => {
-		if (!connected[socket.id] || !['pong2', 'pong3', 'royal'].includes(gameType))
+		if (!connected[socket.id] || !['pong2', 'pong3'].includes(gameType))
 			return ;
 
 		const room = findRoomByPlayerId(gameType, socket.id);
@@ -1471,7 +1873,7 @@ io.on('connection', socket => {
 	});
 
 	socket.on('readyTimer', ({ gameType }) => {
-		if (!connected[socket.id] || !['pong2', 'pong3', 'royal'].includes(gameType))
+		if (!connected[socket.id] || !['pong2', 'pong3'].includes(gameType))
 			return ;
 
 		const room = findRoomByPlayerId(gameType, socket.id);

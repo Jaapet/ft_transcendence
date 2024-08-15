@@ -13,7 +13,6 @@ import React from 'react';
 import PongResults from './pongResults';
 
 const PongT = ({
-	tourney, tourneyPlayers,
 	scoreL, setScoreL,
 	scoreR, setScoreR,
 	gameEnd, setGameEnd,
@@ -35,6 +34,9 @@ const PongT = ({
 		setGameErrored,
 		updateRoom,
 		updatePlayers,
+		setTourneyStarted,
+		updateTourney,
+		updateTourneyPlayers,
 		resetAll
 	} = useGame();
 	const canvasRef = useRef(null);
@@ -46,8 +48,7 @@ const PongT = ({
 		const socket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`);
 
 		// TODO: Replace useAuth's user with an API call
-		// TODO: Replace with a new joinTourney message
-		socket.emit('join', { gameType: 'pong2', userId: user.id, userName: user.username, userELO: user.elo_pong, userAvatar: user.avatar });
+		socket.emit('joinTourney', { gameType: 'pong2', userId: user.id, userName: user.username, userELO: user.elo_pong, userAvatar: user.avatar });
 
 		// Gérer les événements de connexion et d'erreur
 		socket.on('connect', () => {
@@ -60,8 +61,6 @@ const PongT = ({
 			console.log('Disconnected from websocket server');
 		});
 
-		// TODO: updateTourney
-
 		socket.on('updateRoom', ({ room, players }) => {
 			//console.log('Room updated to', room); // debug
 			//console.log('With players:', players); // debug
@@ -71,6 +70,14 @@ const PongT = ({
 		socket.on('updatePlayers', ({ players }) => {
 			//console.log('Room updated with these new players:', players); // debug
 			updatePlayers(players);
+		});
+
+		socket.on('updateTourney', ({ tourney, tourneyPlayers }) => {
+			updateTourney(tourney, tourneyPlayers);
+		});
+
+		socket.on('updateTourneyPlayers', ({ tourneyPlayers }) => {
+			updateTourneyPlayers(tourneyPlayers);
 		});
 
 		/// SCENE
@@ -498,6 +505,7 @@ const PongT = ({
 		skyboxMesh.position.z = 20 - 45;
 		scene.add(skyboxMesh);*/
 
+		let tourneyStart = false;
 		let gameStart = false;
 		let startTimer = false;
 		let startGameplay = false;
@@ -587,6 +595,13 @@ const PongT = ({
 		}
 
 		let startRender = Date.now();
+
+		socket.on('tourneyStart', ({ players }) => {
+			//console.log(`PONG_CMPT: Received tourneyStart`); // debug
+			//console.log(`PONG_CMPT: Received player list:`, players); // debug
+			tourneyStart = true;
+			setTourneyStarted(true);
+		});
 
 		socket.on('gameStart', ({ players }) => {
 			//console.log(`PONG_CMPT: Received gameStart`); // debug
