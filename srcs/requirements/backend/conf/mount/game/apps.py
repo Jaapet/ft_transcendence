@@ -6,3 +6,5 @@ class UsersConfig(AppConfig):
 
 	def ready(self):
 		import game.signals
+		from .models import Member
+		Member.objects.all().update(is_ingame=False)
