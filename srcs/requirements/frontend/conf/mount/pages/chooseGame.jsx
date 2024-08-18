@@ -1,11 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Head from "next/head";
 import styles from '../styles/base.module.css';
 import { useAuth } from '../context/AuthenticationContext';
 
+
+
 export default function ChooseGame({ status, detail }) {
 	const { logout } = useAuth();
+	const [isChecked, setIsChecked] = useState(false);
+	
+	const handleCheckboxChange = () => {
+		setIsChecked(!isChecked); 
+	  };
 
 	const handleLogout = async () => {
 		await logout();
@@ -30,6 +37,19 @@ export default function ChooseGame({ status, detail }) {
 				<title>Choose Game</title>
 			</Head>
 			<h1 className={`mt-5 ${styles.background_title}`}>Choose Your Game</h1>
+			 
+			  {/* Checkbox */}
+
+			  <div>
+				<label className={styles.cardInfo}>
+					<input
+						type="checkbox"
+						checked={isChecked}
+						onChange={handleCheckboxChange}
+					/>
+					Performance Mode ?
+				</label>
+     		 </div>
 			<div className={styles.buttonContainer}>
 				<Link href="/PongPage" passHref className={styles.button}>
 					Classic Pong
@@ -41,7 +61,8 @@ export default function ChooseGame({ status, detail }) {
 					Royal Pong
 				</Link> */}
 			
-			</div>
+		</div>
+			{isChecked && <p className={styles.backCard}>Performance Mode Activated!</p>}
 		</div>
 	);
 }
