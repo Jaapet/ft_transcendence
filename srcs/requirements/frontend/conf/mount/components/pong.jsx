@@ -38,7 +38,17 @@ const Pong = ({
 	const canvasRef = useRef(null);
 
 	useEffect(() => {
-		if (!user || !gameType || gameType !== 'pong2' || !setGameStarted || !updateRoom || !updatePlayers || !resetAll)
+		if (!user) {
+			setGameError(true);
+			setGameErrored(true);
+			setErrorMessage('You were disconnected');
+			return ;
+		} else {
+			setGameError(false);
+			setGameErrored(false);
+			setErrorMessage('');
+		}
+		if (!gameType || gameType !== 'pong2' || !setGameStarted || !updateRoom || !updatePlayers || !resetAll)
 			return ;
 
 		const socket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`);
