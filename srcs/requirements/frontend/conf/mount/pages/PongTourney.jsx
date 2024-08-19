@@ -18,7 +18,9 @@ export default function PongTourney({ status, detail, user }) {
 		tourney, tourneyPlayers,
 		updateRoom, updatePlayers,
 		updateTourney, updateTourneyPlayers,
-		tourneyEnded
+		tourneyEnded,
+		setTourneyStarted,
+		setTourneyEnded
 	} = useGame();
 
 	// Game states
@@ -27,8 +29,6 @@ export default function PongTourney({ status, detail, user }) {
 	const [scoreL, setScoreL] = useState(0);
 	const [scoreR, setScoreR] = useState(0);
 	const [gameEnd, setGameEnd] = useState(false);
-	const [winner, setWinner] = useState(null);
-	const [winnerScore, setWinnerScore] = useState(0);
 	const [gameError, setGameError] = useState(false);
 	const [errorMessage, setErrorMessage] = useState('');
 
@@ -86,6 +86,17 @@ export default function PongTourney({ status, detail, user }) {
 
 		mySocket.on('updateTourneyPlayers', ({ tourneyPlayers }) => {
 			updateTourneyPlayers(tourneyPlayers);
+		});
+
+		mySocket.on('tourneyStart', ({ players }) => {
+			console.log(`PONG_CMPT: Received tourneyStart`); // debug
+			//console.log(`PONG_CMPT: Received player list:`, players); // debug
+			setTourneyStarted(true);
+		});
+
+		mySocket.on('tourneyEnd', () => {
+			console.log(`PONG_CMPT: Received tourneyEnd`); // debug
+			setTourneyEnded(true);
 		});
 
 		return () => {
@@ -188,10 +199,9 @@ export default function PongTourney({ status, detail, user }) {
 					scoreL={scoreL} setScoreL={setScoreL}
 					scoreR={scoreR} setScoreR={setScoreR}
 					gameEnd={gameEnd} setGameEnd={setGameEnd}
-					setWinner={setWinner} setWinnerScore={setWinnerScore}
 					gameError={gameError} setGameError={setGameError}
 					setErrorMessage={setErrorMessage}
-					socket={socket}
+					socket={socket} myUser={user}
 				/>
 
 				{ room && !inQueue ?

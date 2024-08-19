@@ -10,17 +10,14 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { useAuth } from '../context/AuthenticationContext';
 import { useGame } from '../context/GameContext';
 import React from 'react';
-import PongResults from './pongResults';
-import { setQuaternionFromProperEuler } from 'three/src/math/MathUtils.js';
 
 const PongT = ({
 	scoreL, setScoreL,
 	scoreR, setScoreR,
 	gameEnd, setGameEnd,
-	setWinner, setWinnerScore,
 	gameError, setGameError,
 	setErrorMessage,
-	socket
+	socket, myUser
 }) => {
 	const { user } = useAuth();
 	const {
@@ -36,41 +33,42 @@ const PongT = ({
 		setGameEnded,
 		setGameErrored,
 		updateRoom,
-		updatePlayers,
-		setTourneyStarted,
-		setTourneyEnded
+		updatePlayers
 	} = useGame();
 	const canvasRef = useRef(null);
 	const [matchNb, setMatchNb] = useState(1);
+	const [watchLogout, setWatchLogout] = useState(false);
 
 	useEffect(() => {
-//		console.log(`USE_EFFECT_DEBUG: user=`, user); // debug
-		if (!socket || !user || matchNb > 2)
+		//console.log('user', user); // debug
+		if (!user && watchLogout) {
+			setGameError(true);
+			setGameErrored(true);
+			if (socket)
+				socket.disconnect();
+			setErrorMessage('You were disconnected');
+		} else if (user) {
+			setGameError(false);
+			setGameErrored(false);
+			setErrorMessage('');
+			setWatchLogout(true);
+		}
+	}, [user]);
+
+	useEffect(() => {
+		//console.log(socket, myUser, matchNb, tourneyEnded); // debug
+		if (!socket || !myUser || matchNb > 2)
 			return ;
 		if (!setGameStarted || !updateRoom || !updatePlayers || tourneyEnded)
 			return ;
 
 		socket.on('resetGameState', () => {
 			updateRoom(null, null);
-			setWinner(null);
 			setGameStarted(false);
 			setGameEnd(false);
 			setGameEnded(false);
 			setScoreL(0);
 			setScoreR(0);
-		});
-
-		socket.on('tourneyStart', ({ players }) => {
-			console.log(`PONG_CMPT: Received tourneyStart`); // debug
-			//console.log(`PONG_CMPT: Received player list:`, players); // debug
-			tourneyStart = true;
-			setTourneyStarted(true);
-		});
-
-		socket.on('tourneyEnd', () => {
-			console.log(`PONG_CMPT: Received tourneyEnd`); // debug
-			tourneyEnd = true;
-			setTourneyEnded(true);
 		});
 
 		socket.on('endMatch', () => {
@@ -503,8 +501,6 @@ const PongT = ({
 		skyboxMesh.position.z = 20 - 45;
 		scene.add(skyboxMesh);*/
 
-		let tourneyStart = false;
-		let tourneyEnd = false;
 		let gameStart = false;
 		let startTimer = false;
 		let startGameplay = false;
@@ -596,10 +592,10 @@ const PongT = ({
 		let startRender = Date.now();
 
 		socket.on('gameStart', ({ players }) => {
-			//console.log(`PONG_CMPT: Received gameStart`); // debug
+			console.log(`PONG_CMPT: Received gameStart`); // debug
 			//console.log(`PONG_CMPT: Received player list:`, players); // debug
 			for (const playerKey in players) {
-				if (players[playerKey].id === user.id) {
+				if (players[playerKey].id === myUser.id) {
 					role = players[playerKey].role;
 				}
 			}
@@ -621,8 +617,6 @@ const PongT = ({
 
 		socket.on('gameEnd', ({ winner, score }) => {
 			setGameEnded(true);
-			setWinner(winner);
-			setWinnerScore(score);
 			setGameEnd(true);
 		});
 
@@ -849,7 +843,7 @@ const PongT = ({
 		return () =>
 		{
 			//console.log("Entered useEffect's return function"); // debug
-			//console.log(`USE_EFFECT_RETURN_DEBUG: user=`, user); // debug
+			//console.log(`USE_EFFECT_RETURN_DEBUG: myUser=`, myUser); // debug
 			setGameEnd(true);
 			gameStart = false;
 			document.removeEventListener('keydown', handleKeyDown);
@@ -890,7 +884,7 @@ const PongT = ({
 			renderer?.dispose();
 			cancelAnimationFrame(render);
 		};
-	}, [user, socket, matchNb]);
+	}, [myUser, socket, matchNb]);
 
 	useEffect(() => {
 		if (gameEnded || gameErrored) {
