@@ -70,8 +70,8 @@ export default function PongTourney({ status, detail, user }) {
 		});
 
 		mySocket.on('updateRoom', ({ room, players }) => {
-			console.log('Room updated to', room); // debug
-			console.log('With players:', players); // debug
+			//console.log('Room updated to', room); // debug
+			//console.log('With players:', players); // debug
 			updateRoom(room, players);
 		});
 
@@ -89,13 +89,13 @@ export default function PongTourney({ status, detail, user }) {
 		});
 
 		mySocket.on('tourneyStart', ({ players }) => {
-			console.log(`PONG_CMPT: Received tourneyStart`); // debug
+			//console.log(`PONG_CMPT: Received tourneyStart`); // debug
 			//console.log(`PONG_CMPT: Received player list:`, players); // debug
 			setTourneyStarted(true);
 		});
 
 		mySocket.on('tourneyEnd', () => {
-			console.log(`PONG_CMPT: Received tourneyEnd`); // debug
+			//console.log(`PONG_CMPT: Received tourneyEnd`); // debug
 			setTourneyEnded(true);
 		});
 
