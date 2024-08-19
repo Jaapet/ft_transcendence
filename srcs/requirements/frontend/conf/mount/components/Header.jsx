@@ -36,7 +36,7 @@ const ProfileNavLog = () => {
 			event.preventDefault();
 			await logout();
 		}
-
+		
 		//profile picture dropdown content
 		return (
 			<>
@@ -56,6 +56,10 @@ const ProfileNavLog = () => {
 					<NavDropdown.Item as="a">2FA settings</NavDropdown.Item>
 				</Link>
 				<NavDropdown.Item as="button" onClick={handleLogout}>Log out</NavDropdown.Item>
+				<NavDropdown.Divider />
+				<Link href="/special-thanks" passHref legacyBehavior>
+					<NavDropdown.Item as="a">Special thanks</NavDropdown.Item>
+				</Link>
 			</>
 		);
 	}
@@ -83,32 +87,33 @@ const ProfileNav = () => {
 		  id="basic-nav-dropdown"
 		>
 			<ProfileNavLog />
-				<NavDropdown.Divider />
-				<Link href="/special-thanks" passHref legacyBehavior>
-					<NavDropdown.Item as="a">Special thanks</NavDropdown.Item>
-				</Link>
 		</NavDropdown>
 	  </Nav>
 	);
-  };
-  
+};
 
-// TODO: Align ProfileNav to the right?
 const Header = () => {
+	const { user } = useAuth();
+
+	const logoLink = user ? '/' : '/account/login';
+
 	return (
 		<div className={styles.header}>
 			<Navbar bg="dark" variant="dark">
-
-			<Navbar.Brand>
-			<Link href="/" passHref legacyBehavior>
+				<Navbar.Brand>
+					<Link href={logoLink} passHref legacyBehavior>
 						<Nav.Link className={`${styles.logo} mx-3`}>Transcendence</Nav.Link>
-			</Link>
-			</Navbar.Brand>
-				<Nav className="mr-auto">
-					<Nav.Link as={Link} href="/users">Users</Nav.Link>
-					<Nav.Link as={Link} href="/howtoplay">How to play</Nav.Link>
-					<Nav.Link as={Link} href="/chooseGame">Play</Nav.Link>
-				</Nav>
+					</Link>
+				</Navbar.Brand>
+				{user ? (
+					<Nav className="mr-auto">
+						<Nav.Link as={Link} href="/users">Users</Nav.Link>
+						<Nav.Link as={Link} href="/howtoplay">How to play</Nav.Link>
+						<Nav.Link as={Link} href="/chooseGame">Play</Nav.Link>
+					</Nav>
+				) : (
+					<></>
+				)}
 				<ProfileNav />
 			</Navbar>
 		</div>
