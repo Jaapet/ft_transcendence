@@ -5,7 +5,7 @@ import styles from '../styles/base.module.css';
 import { useAuth } from '../context/AuthenticationContext';
 
 const LeaderboardTableRow = ({ player, index, type }) => {
-	console.log(player); // debug
+	//console.log(player); // debug
 	return (
 		<tr key={index} className={`list-group-item ${styles.customList} d-flex justify-content-between`}>
 			<th>{index}</th>
@@ -69,8 +69,8 @@ export default function Leaderboard({ status, detail, pong, royal }) {
 		);
 	}
 
-	console.log('pong', pong); // debug
-	console.log('royal', royal); // debug
+	//console.log('pong', pong); // debug
+	//console.log('royal', royal); // debug
 
 	return (
 		<div className={styles.container}>

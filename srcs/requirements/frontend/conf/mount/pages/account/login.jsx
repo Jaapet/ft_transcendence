@@ -2,6 +2,7 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthenticationContext';
 import Link from 'next/link';
+import LoginResult from '../../components/LoginResult';
 import ToastList from '../../components/toasts/ToastList';
 import ErrorToast from '../../components/toasts/ErrorToast';
 
@@ -115,23 +116,17 @@ const LoginToasts = ({ showError, setShowError, errorMessage, setErrorMessage })
 	);
 }
 
-const LoginForm = () => {
+const LoginForm2FAOrNot = ({}) => {
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
 	const [otp, setOtp] = useState('');
 	const [show2FA, setShow2FA] = useState(false);
 	const [userId, setUserId] = useState(null);
-	const [showError, setShowError] = useState(false);
-	const [errorMessage, setErrorMessage] = useState('');
 
-	const { login, login2FA, error, clearError } = useAuth();
+	const { login, login2FA, error } = useAuth();
 
 	useEffect(() => {
 		if (error) {
-			console.error(error);
-			setErrorMessage(error);
-			setShowError(true);
-			clearError();
 			setUsername('');
 			setPassword('');
 			setOtp('');
@@ -152,6 +147,53 @@ const LoginForm = () => {
 	}
 
 	return (
+		<>
+			{show2FA ? (
+				<LoginForm2FA
+					otp={otp} setOtp={setOtp}
+					submitHandler={submitHandler}
+				/>
+			) : (
+				<LoginFormFields
+					username={username} setUsername={setUsername}
+					password={password} setPassword={setPassword}
+					submitHandler={submitHandler}
+				/>
+			)}
+			<p className="text-center text-muted mt-5 mb-0">
+				Don't have an account?&nbsp;
+				<Link href="/account/register" className="fw-bold text-body">
+					<u>Sign up here</u>
+				</Link>
+			</p>
+		</>
+	);
+}
+
+const LoginForm = () => {
+	const [showError, setShowError] = useState(false);
+	const [errorMessage, setErrorMessage] = useState('');
+	const [alreadyLoggedIn, setAlreadyLoggedIn] = useState(false);
+
+	const { user, error, clearError } = useAuth();
+
+	useEffect(() => {
+		if (error) {
+			console.error(error);
+			setErrorMessage(error);
+			setShowError(true);
+			clearError();
+		}
+	}, [error]);
+
+	useEffect(() => {
+		if (user)
+			setAlreadyLoggedIn(true);
+		else
+			setAlreadyLoggedIn(false);
+	}, [user]);
+
+	return (
 		<section className="vh-100" style={{backgroundColor: '#eee'}}>
 			<LoginToasts
 				showError={showError}
@@ -168,24 +210,11 @@ const LoginForm = () => {
 									<div className="col-md-10 col-lg-6 col-xl-5 order-2 order-lg-1">
 
 										<p className="text-center h1 fw-bold mb-5 mx-1 mx-md-4 mt-4">Login</p>
-										{show2FA ? (
-											<LoginForm2FA
-												otp={otp} setOtp={setOtp}
-												submitHandler={submitHandler}
-											/>
+										{alreadyLoggedIn ? (
+											<LoginResult />
 										) : (
-											<LoginFormFields
-												username={username} setUsername={setUsername}
-												password={password} setPassword={setPassword}
-												submitHandler={submitHandler}
-											/>
+											<LoginForm2FAOrNot />
 										)}
-										<p className="text-center text-muted mt-5 mb-0">
-											Don't have an account?&nbsp;
-											<Link href="/account/register" className="fw-bold text-body">
-												<u>Sign up here</u>
-											</Link>
-										</p>
 
 									</div>
 								</div>
