@@ -47,7 +47,7 @@ export const AuthenticationProvider = ({ children }) => {
 			setUser(data.user);
 			setAccessToken(data.access);
 
-			router.replace('/');
+			//router.replace('/');
 			return null;
 		} catch (error) {
 			console.error('CONTEXT LOGIN:', error);
@@ -82,7 +82,7 @@ export const AuthenticationProvider = ({ children }) => {
 			setUser(data.user);
 			setAccessToken(data.access);
 
-			router.replace('/');
+			//router.replace('/');
 		} catch (error) {
 			console.error('CONTEXT LOGIN 2FA:', error);
 			setError(error.message);

@@ -2,6 +2,7 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthenticationContext';
 import Link from 'next/link';
+import LoginResult from '../../components/LoginResult';
 import ToastList from '../../components/toasts/ToastList';
 import ErrorToast from '../../components/toasts/ErrorToast';
 
@@ -165,8 +166,9 @@ const SignupForm = () => {
 	const [avatar, setAvatar] = useState(null);
 	const [showError, setShowError] = useState(false);
 	const [errorMessage, setErrorMessage] = useState('');
+	const [alreadyLoggedIn, setAlreadyLoggedIn] = useState(false);
 
-	const { register, error, setError, clearError } = useAuth();
+	const { user, register, error, setError, clearError } = useAuth();
 
 	useEffect(() => {
 		if (error) {
@@ -176,6 +178,13 @@ const SignupForm = () => {
 			clearError();
 		}
 	}, [error]);
+
+	useEffect(() => {
+		if (user)
+			setAlreadyLoggedIn(true);
+		else
+			setAlreadyLoggedIn(false);
+	}, [user]);
 
 	const submitHandler = async (event) => {
 		event.preventDefault();
@@ -228,21 +237,27 @@ const SignupForm = () => {
 									<div className="col-md-10 col-lg-6 col-xl-5 order-2 order-lg-1">
 
 										<p className="text-center h1 fw-bold mb-5 mx-1 mx-md-4 mt-4">Sign up</p>
-										<SignupFormFields
-											username={username} setUsername={setUsername}
-											email={email} setEmail={setEmail}
-											password={password} setPassword={setPassword}
-											passwordR={passwordR} setPasswordR={setPasswordR}
-											avatar={avatar} setAvatar={setAvatar}
-											submitHandler={submitHandler}
-											setError={setError}
-										/>
-										<p className="text-center text-muted mt-5 mb-0">
-											Already have an account?&nbsp;
-											<Link href="/account/login" className="fw-bold text-body">
-												<u>Log in here</u>
-											</Link>
-										</p>
+										{alreadyLoggedIn ? (
+											<LoginResult />
+										) : (
+											<>
+												<SignupFormFields
+													username={username} setUsername={setUsername}
+													email={email} setEmail={setEmail}
+													password={password} setPassword={setPassword}
+													passwordR={passwordR} setPasswordR={setPasswordR}
+													avatar={avatar} setAvatar={setAvatar}
+													submitHandler={submitHandler}
+													setError={setError}
+												/>
+												<p className="text-center text-muted mt-5 mb-0">
+													Already have an account?&nbsp;
+													<Link href="/account/login" className="fw-bold text-body">
+														<u>Log in here</u>
+													</Link>
+												</p>
+											</>
+										)}
 
 									</div>
 								</div>
