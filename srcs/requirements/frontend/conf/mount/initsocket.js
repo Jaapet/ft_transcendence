@@ -100,6 +100,7 @@ const PONG3_BALL_RESPAWN_TIME = 500;				// In ms
 const PONG3_TIME_TO_WIN = 30;								// In seconds
 
 async function setInGameStatus(userId, value) {
+	console.log(`SET_IN_GAME_STATUS: IDs:`, JSON.stringify(ids, null, 1)); // debug
 	fetch(`https://backend:8000/api/edit_ingame_status`, {
 		method: 'PUT',
 		headers: {
@@ -125,23 +126,41 @@ io.on('connection', socket => {
 
 	// DISCONNECT HANDLER
 	socket.on('disconnect', () => {
-		// TODO: Remove them from tourney too!
-		//console.log(`Client disconnected: ${socket.id}`);
-		let room = findRoomByPlayerIdSlow(socket.id);
-		if (room) {
-			//console.log(`Found room ${room.id}`); // debug
-			if (room.launched) {
-				//console.log(`Room ${room.id} is launched`); // debug
-				io.to(room.id).emit('gameError', { message: 'A player disconnected' });
-				removePlayerFromRoom(socket.id);
+		console.log(`Client disconnected: ${socket.id}`);
+
+		// TOURNEYS
+		let tourney = findTourneyByPlayerIdSlow(socket.id);
+		if (tourney) {
+			console.log(`Found tourney ${tourney.id}`); // debug
+			if (tourney.launched) {
+				console.log(`Tourney ${tourney.id} is launched`); // debug
+				if (!tourney.ended)
+					io.to(tourney.id).emit('gameError', { message: 'A player disconnected' });
+				removePlayerFromTourney(socket.id);
 			} else {
-				//console.log(`Room ${room.id} is not launched`); // debug
-				removePlayerFromRoom(socket.id);
-				io.to(room.id).emit('updatePlayers', { players: room.players });
+				console.log(`Tourney ${tourney.id} is not launched`); // debug
+				removePlayerFromTourney(socket.id);
+				io.to(tourney.id).emit('updateTourneyPlayers', { tourneyPlayers: tourney.players });
+			}
+		} else {
+			// ROOMS
+			let room = findRoomByPlayerIdSlow(socket.id);
+			if (room) {
+				//console.log(`Found room ${room.id}`); // debug
+				if (room.launched) {
+					//console.log(`Room ${room.id} is launched`); // debug
+					io.to(room.id).emit('gameError', { message: 'A player disconnected' });
+					removePlayerFromRoom(socket.id);
+				} else {
+					//console.log(`Room ${room.id} is not launched`); // debug
+					removePlayerFromRoom(socket.id);
+					io.to(room.id).emit('updatePlayers', { players: room.players });
+				}
 			}
 		}
 		connected[socket.id] = false;
 		setInGameStatus(ids[socket.id], false);
+		delete ids[socket.id];
 	});
 
 	// JOIN_TOURNEY HANDLER
@@ -151,22 +170,22 @@ io.on('connection', socket => {
 		ids[socket.id] = userId;
 		setInGameStatus(ids[socket.id], true);
 
-		console.log(`JOIN_TOURNEY: New user ${userName}`); // debug
+		//console.log(`JOIN_TOURNEY: New user ${userName}`); // debug
 
 		let tourney = findTourney(gameType);
 		if (tourney) // Join Existing Tourney
 		{
-			console.log(`JOIN_TOURNEY: User ${userName} found tourney ${tourney.id}`); // debug
+			//console.log(`JOIN_TOURNEY: User ${userName} found tourney ${tourney.id}`); // debug
 			addPlayerToTourney(gameType, tourney, socket, userId, userName, userELO, userAvatar);
-			console.log(`JOIN_TOURNEY: User ${userName} added to tourney ${tourney.id}`); // debug
+			//console.log(`JOIN_TOURNEY: User ${userName} added to tourney ${tourney.id}`); // debug
 		}
 		else // Create New Tourney
 		{
-			console.log(`JOIN_TOURNEY: User ${userName} creating new tourney`); // debug
+			//console.log(`JOIN_TOURNEY: User ${userName} creating new tourney`); // debug
 			tourney = createTourney(gameType);
 			console.log(`Created tourney=${tourney.id} type=${gameType} by user=${userName}`); // ELK LOG
 			addPlayerToTourney(gameType, tourney, socket, userId, userName, userELO, userAvatar);
-			console.log(`JOIN_TOURNEY: User ${userName} added to tourney ${tourney.id}`); // debug
+			//console.log(`JOIN_TOURNEY: User ${userName} added to tourney ${tourney.id}`); // debug
 		}
 
 		checkTourneyStart(tourney, gameType);
@@ -362,18 +381,24 @@ io.on('connection', socket => {
 			return ;
 
 		// Find current room of player
-		const room = findRoomByPlayerId(gameType, socket.id);
-		if (room) {
-			// Broadcast input to all players in the room
-			socket.to(room.id).emit('input', { playerId: socket.id, input });
-			switch (gameType) {
-				case 'pong3':
-					pong3Input(room, input);
-					break ;
-				case 'pong2':
-					pong2Input(room, input);
-					break ;
-			}
+		let room = findRoomByPlayerId(gameType, socket.id);
+		if (!room) {
+			const tourney = findTourneyByPlayerId(gameType, socket.id);
+			if (!tourney)
+				return ;
+			room = findTourneyRoomByPlayerId(tourney, socket.id);
+			if (!room)
+				return ;
+		}
+		// Broadcast input to all players in the room
+		socket.to(room.id).emit('input', { playerId: socket.id, input });
+		switch (gameType) {
+			case 'pong3':
+				pong3Input(room, input);
+				break ;
+			case 'pong2':
+				pong2Input(room, input);
+				break ;
 		}
 	});
 
@@ -474,6 +499,7 @@ io.on('connection', socket => {
 		tourneys[gameType][newTourneyId] = {
 			id: newTourneyId,
 			launched: false,
+			ended: false,
 			maxPlayers: PONG2_TOURNEY_NB_PLAYERS,
 			timeStamp: now,
 			players: {},
@@ -696,7 +722,7 @@ io.on('connection', socket => {
 
 		const role = chooseTourneyRole(tourney);
 
-		console.log('ADD_PLAYER_TO_TOURNEY: Role is',  JSON.stringify(role, null, 2));
+		//console.log('ADD_PLAYER_TO_TOURNEY: Role is',  JSON.stringify(role, null, 2)); // debug
 
 		if (tourney && socket) {
 			socket.join(tourney.id);
@@ -720,6 +746,15 @@ io.on('connection', socket => {
 			// Update all players of new player
 			io.to(tourney.id).emit('updateTourneyPlayers', { tourneyPlayers: tourney.players });
 			//console.log("\n\nCurrent tourney structure:", JSON.stringify(tourney, null, 2)); // debug
+		}
+	}
+
+	function choosePong2TourneyRole(room) {
+		const playerNb = tourneyRoomPlayerNb(room);
+		if (playerNb === 0) {
+			return "leftPaddle";
+		} else {
+			return "rightPaddle";
 		}
 	}
 
@@ -757,7 +792,7 @@ io.on('connection', socket => {
 		if (!connected[playerSocket.id])
 			return ;
 
-		let role = choosePong2Role(room);
+		let role = choosePong2TourneyRole(room);
 		let roomType = gameType;
 
 		if (room && playerSocket) {
@@ -836,20 +871,39 @@ io.on('connection', socket => {
 		}
 	}
 
-	// Removes player from their room
-	function removePlayerFromTourneyRoom(tourney, room, matchType, gameType, playerSocket) {
-		if (room.players[playerSocket.id]) {
-			//console.log(`REMOVE_PLAYER_FROM_TOURNEY_ROOM: Removing user ${room.players[playerSocket.id].id} from room ${room.id}`); // debug
-			delete room.players[playerSocket.id];
-			playerSocket.leave(room.id);
-			// If the room becomes empty, delete it
-			if (roomPlayerNb(gameType, room.id) === 0) {
-				//console.log(`REMOVE_PLAYER_FROM_TOURNEY_ROOM: Deleting room ${room.id}`); // debug
-				console.log(`Deleted room=${room.id}`); // ELK LOG
-				delete tourney.matches[matchType];
+	function deleteTourneyRoom(tourney, room, matchType) {
+		console.log(`DELETE_TOURNEY_ROOM: Deleting ${room.id}`); // debug
+		console.log(`Deleted room=${room.id}`); // ELK LOG
+		delete tourney.matches[matchType];
+	}
+
+	// Removes player from their tourney
+	function removePlayerFromTourney(playerId) {
+		for (const gameType in tourneys) {
+			for (const tourneyId in tourneys[gameType]) {
+				const tourney = tourneys[gameType][tourneyId];
+				if (tourney.players[playerId]) {
+					//console.log(`REMOVE_PLAYER_FROM_TOURNEY: Deleting player ${playerId} from tourney ${tourneyId}`); // debug
+					delete tourney.players[playerId];
+					socket.leave(tourneyId);
+	
+					if (tourneyPlayerNb(gameType, tourneyId) === 0) {
+						//console.log(`REMOVE_PLAYER_FROM_TOURNEY: Deleting tourney ${tourneyId}`); // debug
+						console.log(`Deleted tourney=${tourneyId}`); // ELK LOG
+						delete tourneys[gameType][tourneyId];
+					}
+				}
 			}
-			return ;
 		}
+	}
+
+	// Removes player from their room
+	function removePlayerFromTourneyRoom(room, playerSocket) {
+		if (!room.players[playerSocket.id])
+			return ;
+		//console.log(`REMOVE_PLAYER_FROM_TOURNEY_ROOM: Removing user ${room.players[playerSocket.id].id} from room ${room.id}`); // debug
+		delete room.players[playerSocket.id];
+		playerSocket.leave(room.id);
 	}
 
 	// Removes player from their room
@@ -973,6 +1027,18 @@ io.on('connection', socket => {
 
 	// Returns the current number of players in a room
 	// Returns -1 if the room does not exist
+	function tourneyRoomPlayerNb(room) {
+		if (!connected[socket.id])
+			return -1;
+
+		if (room)
+			return Object.keys(room.players).length;
+
+		return -1;
+	}
+
+	// Returns the current number of players in a room
+	// Returns -1 if the room does not exist
 	function roomPlayerNb(gameType, roomId) {
 		if (!connected[socket.id])
 			return -1;
@@ -981,6 +1047,28 @@ io.on('connection', socket => {
 			return Object.keys(rooms[gameType][roomId].players).length;
 
 		return -1;
+	}
+
+	// Returns the player's current tourney by player ID
+	// Returns null if it can't find it
+	function findTourneyByPlayerIdSlow(playerId) {
+		//console.log(`FIND_TOURNEY_BY_PLAYER_ID_SLOW: Entered`); // debug
+		if (!connected[socket.id])
+			return null;
+
+		//console.log(`FIND_TOURNEY_BY_PLAYER_ID_SLOW: Searching for ${playerId}`); // debug
+
+		for (const gameType in tourneys) {
+			for (const tourneyId in tourneys[gameType]) {
+				//console.log(`FIND_TOURNEY_BY_PLAYER_ID_SLOW: Checking ${tourneyId}`); // debug
+				if (tourneys[gameType][tourneyId].players[playerId]) {
+					//console.log(`FIND_TOURNEY_BY_PLAYER_ID_SLOW: ${playerId} is in tourney ${tourneyId}`); // debug
+					return tourneys[gameType][tourneyId];
+				}
+			}
+		}
+
+		return null;
 	}
 
 	// Returns the player's current room by player ID
@@ -1004,6 +1092,32 @@ io.on('connection', socket => {
 					return rooms[gameType][roomId];
 				}
 			}
+		}
+		return null;
+	}
+
+	// Returns the player's current tourney by player ID
+	// Returns null if it can't find it
+	function findTourneyByPlayerId(gameType, playerId) {
+		if (!connected[socket.id])
+			return null;
+
+		for (const tourneyId in tourneys[gameType]) {
+			if (tourneys[gameType][tourneyId].players[playerId])
+				return tourneys[gameType][tourneyId];
+		}
+		return null;
+	}
+
+	// Returns the player's current tourney by player ID
+	// Returns null if it can't find it
+	function findTourneyRoomByPlayerId(tourney, playerId) {
+		if (!connected[socket.id] || !tourney)
+			return null;
+
+		for (const roomId in tourney.matches) {
+			if (tourney.matches[roomId].players[playerId])
+				return tourney.matches[roomId];
 		}
 		return null;
 	}
@@ -1035,12 +1149,12 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return ;
 
-		console.log(`CHECK_TOURNEY_START: Checking ${gameType} tourney ${tourney.id}`); // debug
+		//console.log(`CHECK_TOURNEY_START: Checking ${gameType} tourney ${tourney.id}`); // debug
 		if (!tourney || isTourneyLaunched(gameType, tourney.id)) {
 			return ;
 		}
 
-		console.log(`CHECK_TOURNEY_START: ${gameType} tourney ${tourney.id} exists and has not been launched`); // debug
+		//console.log(`CHECK_TOURNEY_START: ${gameType} tourney ${tourney.id} exists and has not been launched`); // debug
 		startPong2Tourney(tourney, gameType);
 	}
 
@@ -1051,58 +1165,79 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return ;
 
-		console.log(`START_PONG2_TOURNEY: Checking ${gameType} tourney ${tourney.id}`); // debug
+		//console.log(`START_PONG2_TOURNEY: Checking ${gameType} tourney ${tourney.id}`); // debug
 
 		if (!tourney || isTourneyLaunched(gameType, tourney.id)) {
 			return ;
 		}
 
-		console.log(`START_PONG2_TOURNEY: ${gameType} tourney ${tourney.id} exists and has not been launched`); // debug
+		//console.log(`START_PONG2_TOURNEY: ${gameType} tourney ${tourney.id} exists and has not been launched`); // debug
 
 		// If the tourney is full, launch the tourney
 		if (isTourneyFull(gameType, tourney.id)) {
-			console.log(`START_PONG2_TOURNEY: ${gameType} tourney ${tourney.id} is full, launching tourney`); // debug
-			launchTourney(gameType, tourney);
+			//console.log(`START_PONG2_TOURNEY: ${gameType} tourney ${tourney.id} is full, launching tourney`); // debug
+			setTimeout(() => launchTourney(gameType, tourney), 3000); // 3 seconds
 		}
 	}
 
-	// Sends a tourneyStart message to all players in the tourney and sets launched to true
+	// Sends a message to all players in the tourney and sets launched to true
 	// Does nothing if tourney does not exist, is already launched, or if its players are not ready
 	function launchTourney(gameType, tourney) {
 		if (!connected[socket.id])
 			return ;
 
 		console.log(`LAUNCH_TOURNEY: Launching ${gameType} tourney ${tourney.id}`); // debug
+		console.log('TOURNEY STRUCTURE:', JSON.stringify(tourney, null, 3)); // debug
 
-		if (!tourney || tourney.launched) {
+		if (!tourney || !gameType || tourney.launched) {
 			return ;
 		}
 
-		console.log(`LAUNCH_TOURNEY: ${gameType} tourney ${tourney.id} exists and has not been launched`); // debug
+		//console.log(`LAUNCH_TOURNEY: ${gameType} tourney ${tourney.id} exists and has not been launched`); // debug
 
 		const playersString = Object.values(tourney.players).map(player => player.username).join(',');
 		console.log(`Launched tourney=${tourney.id} players=${playersString}`); // ELK LOG
 		tourney.launched = true;
 		io.to(tourney.id).emit('tourneyStart', { players: tourney.players });
-		console.log(`LAUNCH_TOURNEY: Emitted tourneyStart to ${gameType} tourney ${tourney.id}`); // debug
+		//console.log(`LAUNCH_TOURNEY: Emitted tourneyStart to ${gameType} tourney ${tourney.id}`); // debug
 
-		// TODO: Launch first 2 games and keep track of them
 		let sfup = createTourneyRoom(tourney, 'SFUP');
+		console.log(`Created room=${sfup.id} type=${gameType} for tourney=${tourney.id}`); // ELK LOG
 		let sfdo = createTourneyRoom(tourney, 'SFDO');
+		console.log(`Created room=${sfdo.id} type=${gameType} for tourney=${tourney.id}`); // ELK LOG
 		let wf = createTourneyRoom(tourney, 'WF');
+		console.log(`Created room=${wf.id} type=${gameType} for tourney=${tourney.id}`); // ELK LOG
 		let lf = createTourneyRoom(tourney, 'LF');
+		console.log(`Created room=${lf.id} type=${gameType} for tourney=${tourney.id}`); // ELK LOG
+		for (const playerId in tourney.players) {
+			tourney.players[playerId].role.rank = 'SemiFinals';
+		}
+		io.to(tourney.id).emit('updateTourneyPlayers', { tourneyPlayers: tourney.players });
+		setTimeout(() => announceFirstTourneyMatch(gameType, tourney, sfup, sfdo, wf, lf), 5000); // Wait for 5 seconds
+	}
+	
+	function announceFirstTourneyMatch (gameType, tourney, sfup, sfdo, wf, lf) {
+		if (!tourney || !gameType || !tourney.launched || !sfup || !sfdo || !wf || !lf)
+			return ;
+
 		for (const playerId in tourney.players) {
 			const player = tourney.players[playerId];
 			const playerSocket = io.sockets.sockets.get(playerId);
 
-			player.role.rank = 'SemiFinals';
 			if (player.role.group === 1) {
 				addPlayerToTourneyRoom(sfup, gameType, playerSocket, player.id, player.username, player.elo, player.avatar);
 			} else if (player.role.group === 2) {
 				addPlayerToTourneyRoom(sfdo, gameType, playerSocket, player.id, player.username, player.elo, player.avatar);
 			}
 		}
-		// TODO: Wait for a few seconds (next match announcement)
+
+		setTimeout(() => launchFirstTourneyMatch(gameType, tourney, sfup, sfdo, wf, lf), 3000); // Wait for 3 seconds
+	}
+
+	function launchFirstTourneyMatch (gameType, tourney, sfup, sfdo, wf, lf) {
+		if (!tourney || !gameType || !tourney.launched || !sfup || !sfdo || !wf || !lf)
+			return ;
+
 		launchGame(gameType, sfup);
 		launchGame(gameType, sfdo);
 
@@ -1110,46 +1245,84 @@ io.on('connection', socket => {
 		let sfupEnd = false;
 		let sfdoEnd = false;
 		function waitForSemiFinalsEnd() {
-			function checkIfGameEnded(room, matchType, checker) {
-				if (room.runtime.end) {
-					checker = true;
-	
-					const leftWon = room.runtime.score.l > room.runtime.score.r;
-					const winner = leftWon ? getPlayerRoleInRoom(room, 'leftPaddle') : getPlayerRoleInRoom(room, 'rightPaddle');
-					const loser = leftWon ? getPlayerRoleInRoom(room, 'rightPaddle') : getPlayerRoleInRoom(room, 'leftPaddle');
-	
-					for (const playerId in tourney.players) {
-						const player = tourney.players[playerId];
-						const playerSocket = io.sockets.sockets.get(playerId);
+			function checkIfGameEnded(room, matchType) {
+				if (!room.runtime.end)
+					return ;
 
-						if (player.id === winner.id) {
-							player.role.rank = 'WinnersFinals';
-							removePlayerFromTourneyRoom(tourney, room, matchType, gameType, playerSocket);
-							addPlayerToTourneyRoom(wf, gameType, playerSocket, player.id, player.username, player.elo, player.avatar);
-						} else if (player.id === loser.id) {
-							player.role.rank = 'LosersFinals';
-							removePlayerFromTourneyRoom(tourney, room, matchType, gameType, playerSocket);
-							addPlayerToTourneyRoom(lf, gameType, playerSocket, player.id, player.username, player.elo, player.avatar);
-						}
+				if (matchType === 'SFUP')
+					sfupEnd = true;
+				else if (matchType === 'SFDO')
+					sfdoEnd = true;
+
+				const leftWon = room.runtime.score.l > room.runtime.score.r;
+				const winner = leftWon ? getPlayerRoleInRoom(room, 'leftPaddle') : getPlayerRoleInRoom(room, 'rightPaddle');
+				const loser = leftWon ? getPlayerRoleInRoom(room, 'rightPaddle') : getPlayerRoleInRoom(room, 'leftPaddle');
+
+				let p1s, p2s = null;
+
+				for (const playerId in tourney.players) {
+					const player = tourney.players[playerId];
+					
+					if (player.id === winner.id) {
+						const playerSocket = io.sockets.sockets.get(playerId);
+						p1s = playerSocket;
+						player.role.rank = 'WinnersFinals';
+						removePlayerFromTourneyRoom(room, playerSocket);
+					} else if (player.id === loser.id) {
+						const playerSocket = io.sockets.sockets.get(playerId);
+						p2s = playerSocket;
+						player.role.rank = 'LosersFinals';
+						removePlayerFromTourneyRoom(room, playerSocket);
 					}
+				}
+				deleteTourneyRoom(tourney, room, matchType);
+				io.to(tourney.id).emit('updateTourneyPlayers', { tourneyPlayers: tourney.players });
+				if (p1s) {
+					io.to(p1s.id).emit('resetGameState');
+					io.to(p1s.id).emit('endMatch');
+					io.to(p1s.id).emit('updateRoom', { room: null, players: null });
+				}
+				if (p2s) {
+					io.to(p2s.id).emit('resetGameState');
+					io.to(p2s.id).emit('endMatch');
+					io.to(p2s.id).emit('updateRoom', { room: null, players: null });
 				}
 			}
 
 			if (!sfupEnd)
-				checkIfGameEnded(sfup, 'SFUP', sfupEnd);
+				checkIfGameEnded(sfup, 'SFUP');
 			if (!sfdoEnd)
-				checkIfGameEnded(sfdo, 'SFDO', sfdoEnd);
+				checkIfGameEnded(sfdo, 'SFDO');
 
 			if (sfupEnd && sfdoEnd)
-				continueTourney(gameType, tourney, wf, lf); // TODO: THIS FUNCTION
+				setTimeout(() => announceSecondTourneyMatch(gameType, tourney, wf, lf), 5000); // Wait for 5 seconds
 			else
 				setTimeout(waitForSemiFinalsEnd, 1000); // Once every second
 		}
 		waitForSemiFinalsEnd();
 	}
 
-	function continueTourney(gameType, tourney, wf, lf) {
-		// TODO: Wait for a few seconds (next match announcement)
+	function announceSecondTourneyMatch(gameType, tourney, wf, lf) {
+		if (!tourney || !gameType || !tourney.launched || !wf || !lf)
+			return ;
+
+		for (const playerId in tourney.players) {
+			const player = tourney.players[playerId];
+			const playerSocket = io.sockets.sockets.get(playerId);
+
+			if (player.role.rank === 'WinnersFinals')
+				addPlayerToTourneyRoom(wf, gameType, playerSocket, player.id, player.username, player.elo, player.avatar);
+			else if (player.role.rank === 'LosersFinals')
+				addPlayerToTourneyRoom(lf, gameType, playerSocket, player.id, player.username, player.elo, player.avatar);
+		}
+
+		setTimeout(() => launchSecondTourneyMatch(gameType, tourney, wf, lf), 3000); // Wait for 3 seconds
+	}
+
+	function launchSecondTourneyMatch(gameType, tourney, wf, lf) {
+		if (!tourney || !gameType || !tourney.launched || !wf || !lf)
+			return ;
+
 		launchGame(gameType, lf);
 		launchGame(gameType, wf);
 
@@ -1158,38 +1331,82 @@ io.on('connection', socket => {
 		let lfEnd = false;
 		function waitForFinalsEnd() {
 			function checkIfWFEnded() {
-				if (wf.runtime.end) {
-					wfEnd = true;
+				if (!wf.runtime.end)
+					return ;
 
-					const leftWon = wf.runtime.score.l > wf.runtime.score.r;
-					const winner = leftWon ? getPlayerRoleInRoom(wf, 'leftPaddle') : getPlayerRoleInRoom(wf, 'rightPaddle');
+				wfEnd = true;
 
-					for (const playerId in tourney.players) {
-						const player = tourney.players[playerId];
+				const leftWon = wf.runtime.score.l > wf.runtime.score.r;
+				const winner = leftWon ? getPlayerRoleInRoom(wf, 'leftPaddle') : getPlayerRoleInRoom(wf, 'rightPaddle');
+				const loser = leftWon ? getPlayerRoleInRoom(wf, 'rightPaddle') : getPlayerRoleInRoom(wf, 'leftPaddle');
+
+				let p1s, p2s = null;
+
+				for (const playerId in tourney.players) {
+					const player = tourney.players[playerId];
+					
+					if (player.id === winner.id) {
 						const playerSocket = io.sockets.sockets.get(playerId);
-
-						if (player.id === winner.id)
-							player.role.rank = 'Winner';
-						removePlayerFromTourneyRoom(tourney, wf, matchType, gameType, playerSocket);
+						p1s = playerSocket;
+						player.role.rank = 'Winner';
+						removePlayerFromTourneyRoom(wf, playerSocket);
+					} else if (player.id === loser.id) {
+						const playerSocket = io.sockets.sockets.get(playerId);
+						p2s = playerSocket;
+						removePlayerFromTourneyRoom(wf, playerSocket);
 					}
+				}
+				deleteTourneyRoom(tourney, wf, 'WF');
+				io.to(tourney.id).emit('updateTourneyPlayers', { tourneyPlayers: tourney.players });
+				if (p1s) {
+					io.to(p1s.id).emit('resetGameState');
+					io.to(p1s.id).emit('endMatch');
+					io.to(p1s.id).emit('updateRoom', { room: null, players: null });
+				}
+				if (p2s) {
+					io.to(p2s.id).emit('resetGameState');
+					io.to(p2s.id).emit('endMatch');
+					io.to(p2s.id).emit('updateRoom', { room: null, players: null });
 				}
 			}
 
 			function checkIfLFEnded() {
-				if (lf.runtime.end) {
-					lfEnd = true;
+				if (!lf.runtime.end)
+					return ;
 
-					const leftWon = lf.runtime.score.l > lf.runtime.score.r;
-					const loser = leftWon ? getPlayerRoleInRoom(lf, 'rightPaddle') : getPlayerRoleInRoom(lf, 'leftPaddle');
+				lfEnd = true;
 
-					for (const playerId in tourney.players) {
-						const player = tourney.players[playerId];
+				const leftWon = lf.runtime.score.l > lf.runtime.score.r;
+				const winner = leftWon ? getPlayerRoleInRoom(lf, 'leftPaddle') : getPlayerRoleInRoom(lf, 'rightPaddle');
+				const loser = leftWon ? getPlayerRoleInRoom(lf, 'rightPaddle') : getPlayerRoleInRoom(lf, 'leftPaddle');
+
+				let p1s, p2s = null;
+
+				for (const playerId in tourney.players) {
+					const player = tourney.players[playerId];
+					
+					if (player.id === winner.id) {
 						const playerSocket = io.sockets.sockets.get(playerId);
-
-						if (player.id === loser.id)
-							player.role.rank = 'Loser';
-						removePlayerFromTourneyRoom(tourney, lf, matchType, gameType, playerSocket);
+						p1s = playerSocket;
+						removePlayerFromTourneyRoom(lf, playerSocket);
+					} else if (player.id === loser.id) {
+						const playerSocket = io.sockets.sockets.get(playerId);
+						p2s = playerSocket;
+						player.role.rank = 'Loser';
+						removePlayerFromTourneyRoom(lf, playerSocket);
 					}
+				}
+				deleteTourneyRoom(tourney, lf, 'LF');
+				io.to(tourney.id).emit('updateTourneyPlayers', { tourneyPlayers: tourney.players });
+				if (p1s) {
+					io.to(p1s.id).emit('resetGameState');
+					io.to(p1s.id).emit('endMatch');
+					io.to(p1s.id).emit('updateRoom', { room: null, players: null });
+				}
+				if (p2s) {
+					io.to(p2s.id).emit('resetGameState');
+					io.to(p2s.id).emit('endMatch');
+					io.to(p2s.id).emit('updateRoom', { room: null, players: null });
 				}
 			}
 
@@ -1198,8 +1415,10 @@ io.on('connection', socket => {
 			if (!lfEnd)
 				checkIfLFEnded();
 
-			if (wfEnd && lfEnd)
-				return ; // TODO: Something here maybe???
+			if (wfEnd && lfEnd) {
+				tourney.ended = true;
+				io.to(tourney.id).emit('tourneyEnd');
+			}
 			else
 				setTimeout(waitForFinalsEnd, 1000); // Once every second
 		}
@@ -1262,7 +1481,7 @@ io.on('connection', socket => {
 		console.log(`Launched room=${room.id} players=${playersString}`); // ELK LOG
 		room.launched = true;
 		io.to(room.id).emit('gameStart', { players: room.players });
-		//console.log(`LAUNCH_GAME: Emitted gameStart to ${gameType} room ${room.id}`); // debug
+		console.log(`LAUNCH_GAME: Emitted gameStart to ${gameType} room ${room.id}`); // debug
 		switch (gameType) {
 			case 'pong3':
 				Pong3Loop(room);
@@ -1280,7 +1499,26 @@ io.on('connection', socket => {
 	}
 
 	function RoomStillExists(gameType, room) {
-		return (room && rooms[gameType][room.id]);
+		if (!room) return false;
+
+		//console.log(`ROOM_STILL_EXISTS: Entered`); // debug
+
+		if (rooms[gameType][room.id]) return true;
+
+		//console.log(`ROOM_STILL_EXISTS: Room ${room.id} is not a regular room`); // debug
+
+		for (const tourneyId in tourneys[gameType]) {
+			//console.log(`ROOM_STILL_EXISTS: Checking tourney ${tourneyId}`); // debug
+			for (const matchType in tourneys[gameType][tourneyId].matches) {
+				if (tourneys[gameType][tourneyId].matches[matchType].id === room.id)
+					return true;
+			}
+		}
+
+		//console.log(`ROOM_STILL_EXISTS: Room ${room.id} is not a tourney room`); // debug
+
+		//console.log(`ROOM_STILL_EXISTS: Room ${room.id} does not exist anymore`); // debug
+		return false;
 	}
 
 // PONG 2
@@ -1288,12 +1526,12 @@ io.on('connection', socket => {
 	function Pong2Loop(room) {
 		if (!room)
 			return null;
-		//console.log(`PONG2_LOOP: room ${room.id} exists`); // debug
+		console.log(`PONG2_LOOP: room ${room.id} exists`); // debug
 		if (!connected[socket.id])
 			return LoopError(room, 'A player disconnected');
 
 		// Wait for timer start
-		//console.log(`PONG2_LOOP: room ${room.id} waits for readyTimer`); // debug
+		console.log(`PONG2_LOOP: room ${room.id} waits for readyTimer`); // debug
 		function waitForReadyTimer() {
 			if (!RoomStillExists('pong2', room))
 				return ;
@@ -1302,7 +1540,7 @@ io.on('connection', socket => {
 				//console.log(`PONG2_LOOP: room ${room.id} is not readyTimer`); // debug
 				setTimeout(waitForReadyTimer, 1000); // Once every second
 			} else {
-				//console.log(`PONG2_LOOP: room ${room.id} is readyTimer`); // debug
+				console.log(`PONG2_LOOP: room ${room.id} is readyTimer`); // debug
 				Pong2LoopReadyTimer(room);
 			}
 		}
@@ -1313,10 +1551,10 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return LoopError(room, 'A player disconnected');
 		io.to(room.id).emit('startTimer');
-		//console.log(`PONG2_LOOP_READY_TIMER: Emitted startTimer to room ${room.id}`); // debug
+		console.log(`PONG2_LOOP_READY_TIMER: Emitted startTimer to room ${room.id}`); // debug
 
 		// Wait for gameplay start
-		//console.log(`PONG2_LOOP_READY_TIMER: room ${room.id} waits for ready`); // debug
+		console.log(`PONG2_LOOP_READY_TIMER: room ${room.id} waits for ready`); // debug
 		function waitForReady() {
 			if (!RoomStillExists('pong2', room))
 				return ;
@@ -1325,7 +1563,7 @@ io.on('connection', socket => {
 				//console.log(`PONG2_LOOP_READY_TIMER: room ${room.id} is not ready`); // debug
 				setTimeout(waitForReady, 1000); // Once every second
 			} else {
-				//console.log(`PONG2_LOOP_READY_TIMER: room ${room.id} is ready`); // debug
+				console.log(`PONG2_LOOP_READY_TIMER: room ${room.id} is ready`); // debug
 				Pong2LoopReady(room);
 			}
 		}
@@ -1340,7 +1578,7 @@ io.on('connection', socket => {
 		room.runtime.ballZeroTime = room.runtime.startTime;
 		room.runtime.ballRespawnTime = room.runtime.startTime - PONG2_BALL_RESPAWN_TIME;
 		io.to(room.id).emit('startGameplay');
-		//console.log(`PONG2_LOOP_READY: Emitted startGameplay to room ${room.id}`); // debug
+		console.log(`PONG2_LOOP_READY: Emitted startGameplay to room ${room.id}`); // debug
 
 		// Checks intersection between two non-rotated rectangles
 		// rectangles should be represented as [left, top, right, bottom]
@@ -1866,9 +2104,15 @@ io.on('connection', socket => {
 		if (!connected[socket.id] || !['pong2', 'pong3'].includes(gameType))
 			return ;
 
-		const room = findRoomByPlayerId(gameType, socket.id);
-		if (!room)
-			return ;
+		let room = findRoomByPlayerId(gameType, socket.id);
+		if (!room) {
+			const tourney = findTourneyByPlayerId(gameType, socket.id);
+			if (!tourney)
+				return ;
+			room = findTourneyRoomByPlayerId(tourney, socket.id);
+			if (!room)
+				return ;
+		}
 		room.players[socket.id].ready = true;
 	});
 
@@ -1876,9 +2120,18 @@ io.on('connection', socket => {
 		if (!connected[socket.id] || !['pong2', 'pong3'].includes(gameType))
 			return ;
 
-		const room = findRoomByPlayerId(gameType, socket.id);
-		if (!room)
-			return ;
+		let room = findRoomByPlayerId(gameType, socket.id);
+		if (!room) {
+			const tourney = findTourneyByPlayerId(gameType, socket.id);
+			if (!tourney)
+				return ;
+			room = findTourneyRoomByPlayerId(tourney, socket.id);
+			if (!room)
+				return ;
+			console.log(`READY_TIMER: Received readyTimer from ${socket.id} for tourney room ${room.id}`); // debug
+		} else {
+			console.log(`READY_TIMER: Received readyTimer from ${socket.id} for room ${room.id}`); // debug
+		}
 		room.players[socket.id].readyTimer = true;
 	});
 });

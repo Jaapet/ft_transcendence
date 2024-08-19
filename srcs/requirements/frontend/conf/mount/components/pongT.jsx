@@ -1,16 +1,17 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import * as THREE from 'three';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import io from 'socket.io-client';
 import WaitList from './WaitList';
+import TourneyDisplay from './TourneyDisplay';
 import styles from '../styles/game.module.css';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { useAuth } from '../context/AuthenticationContext';
 import { useGame } from '../context/GameContext';
 import React from 'react';
 import PongResults from './pongResults';
+import { setQuaternionFromProperEuler } from 'three/src/math/MathUtils.js';
 
 const PongT = ({
 	scoreL, setScoreL,
@@ -18,66 +19,63 @@ const PongT = ({
 	gameEnd, setGameEnd,
 	setWinner, setWinnerScore,
 	gameError, setGameError,
-	setErrorMessage
+	setErrorMessage,
+	socket
 }) => {
 	const { user } = useAuth();
 	const {
-		inQueue,
+		tourneyStarted,
+		tourneyEnded,
 		gameStarted,
 		gameEnded,
 		gameErrored,
-		gameType,
+		tourney,
+		tourneyPlayers,
 		room,
-		players,
 		setGameStarted,
 		setGameEnded,
 		setGameErrored,
 		updateRoom,
 		updatePlayers,
 		setTourneyStarted,
-		updateTourney,
-		updateTourneyPlayers,
-		resetAll
+		setTourneyEnded
 	} = useGame();
 	const canvasRef = useRef(null);
+	const [matchNb, setMatchNb] = useState(1);
 
 	useEffect(() => {
-		if (!user || !gameType || gameType !== 'pong2' || !setGameStarted || !updateRoom || !updatePlayers || !resetAll)
+//		console.log(`USE_EFFECT_DEBUG: user=`, user); // debug
+		if (!socket || !user || matchNb > 2)
+			return ;
+		if (!setGameStarted || !updateRoom || !updatePlayers || tourneyEnded)
 			return ;
 
-		const socket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`);
-
-		// TODO: Replace useAuth's user with an API call
-		socket.emit('joinTourney', { gameType: 'pong2', userId: user.id, userName: user.username, userELO: user.elo_pong, userAvatar: user.avatar });
-
-		// Gérer les événements de connexion et d'erreur
-		socket.on('connect', () => {
-			console.log('Connected to websocket server');
-		});
-		socket.on('connect_error', (error) => {
-			console.error('Connection error for websocket server:', error);
-		});
-		socket.on('disconnect', () => {
-			console.log('Disconnected from websocket server');
+		socket.on('resetGameState', () => {
+			updateRoom(null, null);
+			setWinner(null);
+			setGameStarted(false);
+			setGameEnd(false);
+			setGameEnded(false);
+			setScoreL(0);
+			setScoreR(0);
 		});
 
-		socket.on('updateRoom', ({ room, players }) => {
-			//console.log('Room updated to', room); // debug
-			//console.log('With players:', players); // debug
-			updateRoom(room, players);
+		socket.on('tourneyStart', ({ players }) => {
+			console.log(`PONG_CMPT: Received tourneyStart`); // debug
+			//console.log(`PONG_CMPT: Received player list:`, players); // debug
+			tourneyStart = true;
+			setTourneyStarted(true);
 		});
 
-		socket.on('updatePlayers', ({ players }) => {
-			//console.log('Room updated with these new players:', players); // debug
-			updatePlayers(players);
+		socket.on('tourneyEnd', () => {
+			console.log(`PONG_CMPT: Received tourneyEnd`); // debug
+			tourneyEnd = true;
+			setTourneyEnded(true);
 		});
 
-		socket.on('updateTourney', ({ tourney, tourneyPlayers }) => {
-			updateTourney(tourney, tourneyPlayers);
-		});
-
-		socket.on('updateTourneyPlayers', ({ tourneyPlayers }) => {
-			updateTourneyPlayers(tourneyPlayers);
+		socket.on('endMatch', () => {
+			setMatchNb(matchNb + 1);
+			console.log(`NEW_MATCH_NB: ${matchNb}`); // debug
 		});
 
 		/// SCENE
@@ -87,7 +85,7 @@ const PongT = ({
 		const canvas = canvasRef.current;
 
 		/// RENDERER
-		const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
+		const renderer = canvas ? new THREE.WebGLRenderer({ antialias: true, canvas }) : null;
 
 		/// CANVAS
 
@@ -413,11 +411,11 @@ const PongT = ({
 		scene.add(planmesh3);
 
 		/// ORBITAL CONTROL
-		const controls = new OrbitControls(camera, canvas);
-		controls.unableDamping = true;
-		controls.target.set(0, 0, 0);
-		//controls.maxDistance = 300;
-		controls.update();
+		const controls = canvas ? new OrbitControls(camera, canvas) : null;
+		if (controls) controls.unableDamping = true;
+		controls?.target.set(0, 0, 0);
+		//if (controls) controls.maxDistance = 300;
+		controls?.update();
 
 		/// LUMIERES
 		// lumiere ambiante
@@ -506,6 +504,7 @@ const PongT = ({
 		scene.add(skyboxMesh);*/
 
 		let tourneyStart = false;
+		let tourneyEnd = false;
 		let gameStart = false;
 		let startTimer = false;
 		let startGameplay = false;
@@ -558,7 +557,7 @@ const PongT = ({
 
 		/// RENDER
 		var frame = 0;
-		renderer.render(scene, camera);
+		renderer?.render(scene, camera);
 
 		/// FUNCTIONS
 		function makeObj(geometry, map)
@@ -595,13 +594,6 @@ const PongT = ({
 		}
 
 		let startRender = Date.now();
-
-		socket.on('tourneyStart', ({ players }) => {
-			//console.log(`PONG_CMPT: Received tourneyStart`); // debug
-			//console.log(`PONG_CMPT: Received player list:`, players); // debug
-			tourneyStart = true;
-			setTourneyStarted(true);
-		});
 
 		socket.on('gameStart', ({ players }) => {
 			//console.log(`PONG_CMPT: Received gameStart`); // debug
@@ -839,7 +831,7 @@ const PongT = ({
 
 			lastLoopTime = Date.now();
 			if (!gameEnd && !gameError) {
-				renderer.render(scene, camera);
+				renderer?.render(scene, camera);
 				requestAnimationFrame(render);
 			}
 		}
@@ -856,10 +848,10 @@ const PongT = ({
 
 		return () =>
 		{
-			setGameEnd(true);
 			//console.log("Entered useEffect's return function"); // debug
+			//console.log(`USE_EFFECT_RETURN_DEBUG: user=`, user); // debug
+			setGameEnd(true);
 			gameStart = false;
-			socket.disconnect();
 			document.removeEventListener('keydown', handleKeyDown);
 			document.removeEventListener('keyup', handleKeyUp);
 
@@ -894,11 +886,11 @@ const PongT = ({
 					}
 				}
 			}
-			renderer && renderer.renderLists.dispose();
-			renderer.dispose();
+			renderer?.renderLists.dispose();
+			renderer?.dispose();
 			cancelAnimationFrame(render);
 		};
-	}, [user, gameType]);
+	}, [user, socket, matchNb]);
 
 	useEffect(() => {
 		if (gameEnded || gameErrored) {
@@ -908,11 +900,9 @@ const PongT = ({
 		}
 	}, [gameEnded, gameErrored]);
 
-	// TODO: Rework this and add tourney diplay :)
-
 	let testmessage = <></>;
 	let hidden = '';
-	if (!room) {
+	if (!tourney) {
 		hidden = 'hidden';
 		testmessage = (
 			<div className={React.background}>
@@ -920,12 +910,21 @@ const PongT = ({
 			</div>
 		);
 	}
-	else if (inQueue) {
+	else if (!tourneyStarted) {
 		hidden = 'hidden';
 		testmessage = (
 			<div className={React.background}>
-				<p style={{color: 'white'}}>In {gameType} waitlist</p>
-				<WaitList players={players} />
+				<p style={{color: 'white'}}>In tourney {tourney?.id}, waiting for other players . . .</p>
+				<WaitList players={tourneyPlayers} />
+			</div>
+		);
+	}
+	else if (!room) { // TODO: ACTUAL TOURNAMENT DISPLAY
+		hidden = 'hidden';
+		testmessage = (
+			<div className={React.background}>
+				<p style={{color: 'white'}}>In tourney {tourney?.id}, waiting for next match.</p>
+				<TourneyDisplay players={tourneyPlayers} />
 			</div>
 		);
 	}
@@ -933,7 +932,7 @@ const PongT = ({
 		hidden = 'hidden';
 		testmessage = (
 			<div className={React.background}>
-				<p style={{color: 'white'}}>In room {room?.id}, waiting for an opponent . . .</p>
+				<p style={{color: 'white'}}>In room {room?.id}, waiting for your opponent . . .</p>
 			</div>
 		);
 	} else {

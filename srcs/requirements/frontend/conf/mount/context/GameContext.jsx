@@ -17,6 +17,7 @@ export const GameProvider = ({ children }) => {
 	// Tourney
 	const [inTourney, setInTourney] = useState(false);
 	const [tourneyStarted, setTourneyStarted] = useState(false);
+	const [tourneyEnded, setTourneyEnded] = useState(false);
 	const [tourney, setTourney] = useState(null);
 	const [tourneyPlayers, setTourneyPlayers] = useState(null);
 
@@ -69,7 +70,7 @@ export const GameProvider = ({ children }) => {
 
 	// Sets InQueue, Room and Players
 	const updateRoom = (room, players) => {
-		if (!room.type || room.type === 'queue')
+		if (room && (!room.type || room.type === 'queue'))
 			setInQueue(true);
 		else
 			setInQueue(false);
@@ -93,7 +94,7 @@ export const GameProvider = ({ children }) => {
 		setTourneyPlayers(players);
 	}
 
-	// Resets all states to default
+	// Resets all non-tourney states to default
 	const resetAll = () => {
 		isLoggedIn();
 		setInQueue(false);
@@ -102,20 +103,36 @@ export const GameProvider = ({ children }) => {
 		setGameErrored(false);
 		setRoom(null);
 		setPlayers(null);
+		leaveGame();
+	}
+
+	// Resets all states to default
+	const resetAllTourney = () => {
+		isLoggedIn();
+		setInQueue(false);
+		setGameStarted(false);
+		setGameEnded(false);
+		setGameErrored(false);
+		setRoom(null);
+		setPlayers(null);
+		setTourneyStarted(false);
+		setTourneyEnded(false);
+		setTourney(null);
+		setTourneyPlayers(null);
 		leaveTourney();
 	}
 
 	return (
 		<GameContext.Provider value={{
 			inQueue, inGame, inTourney, gameStarted, gameEnded, gameErrored,
-			gameType, room, players, tourneyStarted, tourney, tourneyPlayers,
+			gameType, room, players, tourneyStarted, tourneyEnded, tourney, tourneyPlayers,
 			joinPong2Game, joinPong2Tourney,
 			joinPong3Game, joinRoyalGame,
 			setGameStarted, setGameEnded, setGameErrored,
 			updateRoom, updatePlayers,
-			setTourneyStarted,
+			setTourneyStarted, setTourneyEnded,
 			updateTourney, updateTourneyPlayers,
-			resetAll
+			resetAll, resetAllTourney
 		}}>
 			{children}
 		</GameContext.Provider>

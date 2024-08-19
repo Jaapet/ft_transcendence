@@ -4,29 +4,22 @@ import { useEffect, useState } from 'react';
 import styles from '../styles/base.module.css';
 import PongT from '../components/pongT';
 import PongPlayerCard from '../components/PongPlayerCard';
-import PongResults from '../components/pongResults';
+import TourneyDisplay from '../components/TourneyDisplay';
 import { useAuth } from '../context/AuthenticationContext';
 import DrawingCanvas from '../components/Drawing';
 import { useGame } from '../context/GameContext';
+import io from 'socket.io-client';
 
-export default function PongTourney({ status, detail }) {
+export default function PongTourney({ status, detail, user }) {
 	const { logout } = useAuth();
-	const { joinPong2Tourney, resetAll, inQueue, room, players, tourney, tourneyPlayers } = useGame();
-
-	// Tourney states
-	/*
-		Inside TOURNEY PLAYER:
-			Upper or Lower group
-			Upper or Lower player in group
-			const TourneyState = {
-				Start: 'Start',									// 0 (starting pos)
-				SemiFinals: 'SemiFinals',				// 1 (first match)
-				LosersFinals: 'LosersFinals',		// 1 (final for 3rd)
-				Loser: 'Loser',									// 0 (final for 4th)
-				WinnersFinals: 'WinnersFinals',	// 2 (final for 2nd)
-				Winner: 'Winner'								// 3 (final for 1st)
-			};
-	*/
+	const {
+		joinPong2Tourney, resetAllTourney,
+		inQueue, room, players,
+		tourney, tourneyPlayers,
+		updateRoom, updatePlayers,
+		updateTourney, updateTourneyPlayers,
+		tourneyEnded
+	} = useGame();
 
 	// Game states
 	const [playerL, setPlayerL] = useState(null);
@@ -38,6 +31,8 @@ export default function PongTourney({ status, detail }) {
 	const [winnerScore, setWinnerScore] = useState(0);
 	const [gameError, setGameError] = useState(false);
 	const [errorMessage, setErrorMessage] = useState('');
+
+	const [socket, setSocket] = useState(null);
 
 	const handleLogout = async () => {
 		await logout();
@@ -58,9 +53,45 @@ export default function PongTourney({ status, detail }) {
 
 	useEffect(() => {
 		joinPong2Tourney();
+		const mySocket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`);
+		setSocket(mySocket);
+
+		mySocket.emit('joinTourney', { gameType: 'pong2', userId: user.id, userName: user.username, userELO: user.elo_pong, userAvatar: user.avatar });
+
+		// Gérer les événements de connexion et d'erreur
+		mySocket.on('connect', () => {
+			console.log('Connected to websocket server');
+		});
+		mySocket.on('connect_error', (error) => {
+			console.error('Connection error for websocket server:', error);
+		});
+		mySocket.on('disconnect', () => {
+			console.log('Disconnected from websocket server');
+		});
+
+		mySocket.on('updateRoom', ({ room, players }) => {
+			console.log('Room updated to', room); // debug
+			console.log('With players:', players); // debug
+			updateRoom(room, players);
+		});
+
+		mySocket.on('updatePlayers', ({ players }) => {
+			//console.log('Room updated with these new players:', players); // debug
+			updatePlayers(players);
+		});
+
+		mySocket.on('updateTourney', ({ tourney, tourneyPlayers }) => {
+			updateTourney(tourney, tourneyPlayers);
+		});
+
+		mySocket.on('updateTourneyPlayers', ({ tourneyPlayers }) => {
+			updateTourneyPlayers(tourneyPlayers);
+		});
 
 		return () => {
-			resetAll();
+			resetAllTourney();
+			mySocket.disconnect();
+			setSocket(null);
 		}
 	}, []);
 
@@ -112,11 +143,12 @@ export default function PongTourney({ status, detail }) {
 		);
 	}
 
-	if (gameEnd && winner) {
-		// TODO: Replace by tourney results (or let it show for a bit only, then switch back to tourney results?)
+	if (tourneyEnded) {
+		// TODO: Replace by actual tourney results
 		return (
 			<div className={`${styles.container} pt-5`}>
-				<PongResults winner={winner} winnerScore={winnerScore} />
+				<p>THE TOURNEY HAS ENDED!</p>
+				<TourneyDisplay players={tourneyPlayers} />
 				<div className={styles.retrybuttonContainer}>
 					<Link href="/chooseGame" passHref className={styles.retrybutton}>
 						Play Again
@@ -159,6 +191,7 @@ export default function PongTourney({ status, detail }) {
 					setWinner={setWinner} setWinnerScore={setWinnerScore}
 					gameError={gameError} setGameError={setGameError}
 					setErrorMessage={setErrorMessage}
+					socket={socket}
 				/>
 
 				{ room && !inQueue ?
@@ -192,7 +225,8 @@ export async function getServerSideProps(context) {
 			return {
 				props: {
 					status: 404,
-					detail: 'Resource not found'
+					detail: 'Resource not found',
+					user: null
 				}
 			}
 		}
@@ -208,14 +242,16 @@ export async function getServerSideProps(context) {
 		return {
 			props: {
 				status: 200,
-				detail: 'Success'
+				detail: 'Success',
+				user: data.user
 			}
 		}
 	} catch (error) {
 		return {
 			props: {
 				status: 401,
-				detail: error.message
+				detail: error.message,
+				user: null
 			}
 		}
 	}
