@@ -11,7 +11,7 @@ Our group is called ***"Comment devenir millionaire" par Rachid*** and is compri
 As we are not required to complete all modules, here is our definitive selection:
 ### Major modules
 - ✅ Back-end in Django
-- ✅ Standard user management, ✅ authentification and 🛠️ tournaments
+- ✅ Standard user management, ✅ authentification and ✅ tournaments
 - ✅ Advanced 3D with ThreeJS
 - ✅ Distant players (playing online from different computers)
 - ✅ Multiple players (more than 2 in one game)
