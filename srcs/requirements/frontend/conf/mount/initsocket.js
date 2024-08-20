@@ -20,10 +20,12 @@ const server = https.createServer(credentials, app);
 const io = socketIO(server, {
 	cors: {
 		origin: [
+			`https://${process.env.NEXT_PUBLIC_FQDN}`,
 			`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_FRONT_PORT}`,
 			`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`,
 		],
-		methods: ["GET", "POST"]
+		methods: ["GET", "POST"],
+		credentials: true
 	}
 });
 
