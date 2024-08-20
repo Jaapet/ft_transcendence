@@ -36,7 +36,7 @@ export default async (req, res) => {
 
 		return res.status(200).json({ user: userData, access: accessToken });
 	} catch (error) {
-		console.error('API USER:', error);
+		//console.error('API USER:', error);
 		return res.status(401).json({ message: error.message });
 	}
 }

@@ -183,7 +183,7 @@ export async function getServerSideProps(context) {
 			}
 		}
 	} catch (error) {
-		console.error('USER MATCH HISTORY:', error);
+		//console.error('USER MATCH HISTORY:', error);
 		return {
 			props: {
 				status: 401,

@@ -15,16 +15,16 @@ module.exports = {
 			pathname: '/media/**',
 		}],
 	},
-	async rewrites() {
-		return [
-			{
-				source: '/fapi/:path*',
-				destination: 'http://localhost:3000/api/:path*'
-			},
+//	async rewrites() {
+//		return [
+//			{
+//				source: '/fapi/:path*',
+//				destination: 'http://localhost:3000/api/:path*'
+//			},
 //			{
 //				source: '/bapi/:path*',
 //				destination: 'http://backend:8000/api/:path*'
 //			}
-		]
-	}
+//		]
+//	}
 }

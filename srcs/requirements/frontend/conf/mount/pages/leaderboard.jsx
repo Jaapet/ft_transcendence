@@ -130,7 +130,7 @@ export async function getServerSideProps(context) {
 			}
 		}
 	} catch (error) {
-		console.error('USER LEADERBOARDS:', error);
+		//console.error('USER LEADERBOARDS:', error);
 		return {
 			props: {
 				status: 401,

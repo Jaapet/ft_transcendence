@@ -179,7 +179,7 @@ const LoginForm = () => {
 
 	useEffect(() => {
 		if (error) {
-			console.error(error);
+			//console.error(error);
 			setErrorMessage(error);
 			setShowError(true);
 			clearError();

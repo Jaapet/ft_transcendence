@@ -1,12 +1,3 @@
-# TODO: Remove LogHostMiddleware and MiddlewareMixin import
-
-from django.utils.deprecation import MiddlewareMixin
-
-class LogHostMiddleware(MiddlewareMixin):
-	def process_request(self, request):
-		host = request.get_host()
-		print(f"Host header received: {host}")
-
 class UpdateLastActivityMiddleware:
 	def __init__(self, get_response):
 		self.get_response = get_response

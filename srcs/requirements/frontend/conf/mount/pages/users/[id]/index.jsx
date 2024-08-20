@@ -330,7 +330,7 @@ export async function getServerSideProps(context) {
 			}
 		}
 	} catch (error) {
-		console.error('USER PROFILE:', error);
+		//console.error('USER PROFILE:', error);
 		return {
 			props: {
 				status: 401,

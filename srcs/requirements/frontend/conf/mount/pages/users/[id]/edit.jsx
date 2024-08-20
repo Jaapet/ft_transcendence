@@ -388,7 +388,7 @@ export async function getServerSideProps(context) {
 			}
 		}
 	} catch (error) {
-		console.error('USER EDIT:', error);
+		//console.error('USER EDIT:', error);
 		return {
 			props: {
 				status: 401,

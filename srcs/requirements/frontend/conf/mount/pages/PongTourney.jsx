@@ -58,15 +58,8 @@ export default function PongTourney({ status, detail, user }) {
 
 		mySocket.emit('joinTourney', { gameType: 'pong2', userId: user.id, userName: user.username, userELO: user.elo_pong, userAvatar: user.avatar });
 
-		// Gérer les événements de connexion et d'erreur
-		mySocket.on('connect', () => {
-			console.log('Connected to websocket server');
-		});
 		mySocket.on('connect_error', (error) => {
-			console.error('Connection error for websocket server:', error);
-		});
-		mySocket.on('disconnect', () => {
-			console.log('Disconnected from websocket server');
+			//console.error('Connection error for websocket server:', error);
 		});
 
 		mySocket.on('updateRoom', ({ room, players }) => {

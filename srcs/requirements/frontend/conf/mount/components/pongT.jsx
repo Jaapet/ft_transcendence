@@ -73,7 +73,7 @@ const PongT = ({
 
 		socket.on('endMatch', () => {
 			setMatchNb(matchNb + 1);
-			console.log(`NEW_MATCH_NB: ${matchNb}`); // debug
+			//console.log(`NEW_MATCH_NB: ${matchNb}`); // debug
 		});
 
 		/// SCENE
@@ -592,7 +592,7 @@ const PongT = ({
 		let startRender = Date.now();
 
 		socket.on('gameStart', ({ players }) => {
-			console.log(`PONG_CMPT: Received gameStart`); // debug
+			//console.log(`PONG_CMPT: Received gameStart`); // debug
 			//console.log(`PONG_CMPT: Received player list:`, players); // debug
 			for (const playerKey in players) {
 				if (players[playerKey].id === myUser.id) {
@@ -621,7 +621,7 @@ const PongT = ({
 		});
 
 		socket.on('gameError', ({ message }) => {
-			console.log('RECEIVED GAME_ERROR'); // debug
+			//console.log('RECEIVED GAME_ERROR'); // debug
 			setGameErrored(true);
 			setGameError(true);
 			setErrorMessage(message);

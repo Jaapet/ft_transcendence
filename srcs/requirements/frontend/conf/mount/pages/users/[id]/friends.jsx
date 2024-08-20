@@ -304,7 +304,7 @@ export async function getServerSideProps(context) {
 			}
 		}
 	} catch (error) {
-		console.error('USER FRIEND LIST:', error);
+		//console.error('USER FRIEND LIST:', error);
 		return {
 			props: {
 				status: 401,

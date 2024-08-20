@@ -2,13 +2,14 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+// TODO: Make something actually good with this please
+
 const TourneyDisplayHead = () => {
 	return (
 		<thead>
 			<tr key="0">
 				<th scope="col">Avatar</th>
 				<th scope="col">Username</th>
-				<th scope="col">ELO</th>
 				<th scope="col">Rank</th>
 			</tr>
 		</thead>
@@ -29,7 +30,6 @@ const TourneyDisplayRow = ({ player }) => {
 				</Link>
 			</td>
 			<td>{player.username}</td>
-			<td>{player.elo}</td>
 			<td>{player.role.rank}</td>
 		</tr>
 	);

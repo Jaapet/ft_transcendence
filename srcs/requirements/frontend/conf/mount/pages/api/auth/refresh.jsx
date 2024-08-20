@@ -52,7 +52,7 @@ export default async (req, res) => {
 
 		return res.status(200).json({ access: tokData.access });
 	} catch (error) {
-		console.error('API REFRESH:', error);
+		//console.error('API REFRESH:', error);
 		return res.status(401).json({ message: 'API could not refresh access token'});
 	}
 }

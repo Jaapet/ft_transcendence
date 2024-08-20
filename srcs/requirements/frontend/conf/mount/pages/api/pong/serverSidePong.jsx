@@ -45,7 +45,7 @@ let gameState = {
   
 	// Ball out of bounds
 	if (ball.position.x >= 43 || ball.position.x <= -43) {
-	  console.log('Ball out of bounds!');
+	  //console.log('Ball out of bounds!');
 	  // Reset ball position
 	  ball.position = { x: 0, y: 2, z: 4 };
 	  ball.direction = { x: 0.99999, z: 0.00001 };

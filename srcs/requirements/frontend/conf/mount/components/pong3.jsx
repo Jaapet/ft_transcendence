@@ -54,16 +54,9 @@ const Pong3 = ({
 		// TODO: Replace useAuth's user with an API call
 		socket.emit('join', { gameType: 'pong3', userId: user.id, userName: user.username, userELO: user.elo_pong, userAvatar: user.avatar });
 
-		// Gérer les événements de connexion et d'erreur
-		/*socket.on('connect', () => {
-			console.log('Connected to websocket server');
-		});
 		socket.on('connect_error', (error) => {
-			console.error('Connection error for websocket server:', error);
+			//console.error('Connection error for websocket server:', error);
 		});
-		socket.on('disconnect', () => {
-			console.log('Disconnected from websocket server');
-		});*/
 
 		socket.on('updateRoom', ({ room, players }) => {
 			//console.log('Room updated to', room); // debug
@@ -622,7 +615,7 @@ const Pong3 = ({
 		});
 
 		socket.on('gameError', ({ message }) => {
-			console.log('RECEIVED GAME_ERROR'); // debug
+			//console.log('RECEIVED GAME_ERROR'); // debug
 			setGameErrored(true);
 			setGameError(true);
 			setErrorMessage(message);

@@ -321,7 +321,7 @@ export async function getServerSideProps(context) {
 			}
 		}
 	} catch (error) {
-		console.error('USER EDIT 2FA:', error);
+		//console.error('USER EDIT 2FA:', error);
 		return {
 			props: {
 				status: 401,

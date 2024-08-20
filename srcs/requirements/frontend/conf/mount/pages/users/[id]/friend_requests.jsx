@@ -465,7 +465,7 @@ export async function getServerSideProps(context) {
 			}
 		}
 	} catch (error) {
-		console.error('USER FRIEND REQUESTS:', error);
+		//console.error('USER FRIEND REQUESTS:', error);
 		return {
 			props: {
 				status: 401,

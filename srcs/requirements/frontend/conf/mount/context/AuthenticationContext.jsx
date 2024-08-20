@@ -49,7 +49,7 @@ export const AuthenticationProvider = ({ children }) => {
 
 			return null;
 		} catch (error) {
-			console.error('CONTEXT LOGIN:', error);
+			//console.error('CONTEXT LOGIN:', error);
 			setError(error.message);
 			return null;
 		}
@@ -82,7 +82,7 @@ export const AuthenticationProvider = ({ children }) => {
 			setAccessToken(data.access);
 
 		} catch (error) {
-			console.error('CONTEXT LOGIN 2FA:', error);
+			//console.error('CONTEXT LOGIN 2FA:', error);
 			setError(error.message);
 		}
 	}
@@ -110,7 +110,7 @@ export const AuthenticationProvider = ({ children }) => {
 
 			router.push('/account/login');
 		} catch (error) {
-			console.error('CONTEXT LOGOUT:', error);
+			//console.error('CONTEXT LOGOUT:', error);
 			setError(error.message);
 		}
 	}
@@ -142,7 +142,7 @@ export const AuthenticationProvider = ({ children }) => {
 
 			await login({ username, password });
 		} catch (error) {
-			console.error('CONTEXT REGISTER:', error);
+			//console.error('CONTEXT REGISTER:', error);
 			setError(error.message);
 		}
 	}
@@ -166,7 +166,7 @@ export const AuthenticationProvider = ({ children }) => {
 			setUser(data.user);
 			setAccessToken(data.access);
 		} catch (error) {
-			console.error('CONTEXT LOGIN REFRESH:', error);
+			//console.error('CONTEXT LOGIN REFRESH:', error);
 			// We don't set user error here cause not being logged in is not an error
 			await logout();
 		}

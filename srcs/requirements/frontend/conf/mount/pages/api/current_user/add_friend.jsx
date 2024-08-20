@@ -43,7 +43,7 @@ export default async (req, res) => {
 
 		return res.status(201).json({ message: reqData.detail });
 	} catch (error) {
-		console.error('API ADD FRIEND:', error);
+		//console.error('API ADD FRIEND:', error);
 		return res.status(401).json({ message: error.message });
 	}
 }
