@@ -7,6 +7,7 @@ class UsersConfig(AppConfig):
 	name = 'game'
 
 	def ready(self):
+		import game.signals
 		try:
 			# Check if 'game_member' table exists in DB
 			with connection.cursor() as cursor:

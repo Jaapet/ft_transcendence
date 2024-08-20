@@ -10,12 +10,6 @@ const PORT = 3001; // Using port 3001 for WebSocket server
 
 const app = express();
 
-app.use((req, res, next) => {
-	const origin = req.headers.origin || 'Unknown origin';
-	console.log(`Request received from origin: ${origin}`);
-	next();
-});
-
 const server = https.createServer(credentials, app);
 const io = socketIO(server, {
 	cors: {
@@ -27,12 +21,6 @@ const io = socketIO(server, {
 		methods: ["GET", "POST"],
 		credentials: true
 	}
-});
-
-io.use((socket, next) => {
-	const origin = socket.handshake.headers.origin || 'Unknown origin';
-	console.log(`WebSocket connection attempted from origin: ${origin}`);
-	next();
 });
 
 /* HOW TO USE
