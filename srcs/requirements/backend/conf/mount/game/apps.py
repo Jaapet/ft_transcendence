@@ -22,7 +22,5 @@ class UsersConfig(AppConfig):
 			if table_exists:
 				Member = apps.get_model('game', 'Member')
 				Member.objects.all().update(is_ingame=False)
-			else:
-				print("Member model does not yet exist")
 		except OperationalError as e:
-			print(f"Database error: {e}")
+			pass
