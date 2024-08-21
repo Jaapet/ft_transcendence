@@ -47,7 +47,7 @@ const UserTableRow = ({ user }) => {
 
 			{/* status colored dot */}
 			<td>
-				<StatusCircle status={user.is_online} />
+				<StatusCircle userId={user.id} />
 			</td>
 
 			<td>{user.elo_pong}</td>

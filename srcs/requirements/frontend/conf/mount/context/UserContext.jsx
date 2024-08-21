@@ -105,6 +105,34 @@ export const UserProvider = ({ children }) => {
 		}
 	}
 
+	const getUserStatus = async ({ target_id }) => {
+		try {
+			const response = await fetch(`/api/users/user_status/?user_id=${target_id}`, {
+				method: 'GET',
+				headers: {
+					'Accept': 'application/json',
+					'Content-Type': 'application/json'
+				}
+			});
+			if (!response) {
+				throw new Error('Failed to fetch user status');
+			}
+
+			const data = await response.json();
+			if (!data) {
+				throw new Error('Failed to fetch user status');
+			}
+			if (!response.ok) {
+				throw new Error(data.message || 'Failed to fetch user status');
+			}
+
+			return data;
+		} catch (error) {
+			//console.error('CHECK USER STATUS:', error);
+			return null;
+		}
+	};
+
 	const isFriends = async ({ target_id }) => {
 		if (!user) {
 			return ;
@@ -136,7 +164,7 @@ export const UserProvider = ({ children }) => {
 			//console.error('CHECK FRIENDSHIP:', error);
 			return null;
 		}
-};
+	};
 
 	const addFriend = async ({ target_id }) => {
 		if (!user) {
@@ -324,6 +352,7 @@ export const UserProvider = ({ children }) => {
 			userError, setUserError, clearUserError,
 			userMsg, setUserMsg, clearUserMsg,
 			edit, enable2FA, disable2FA,
+			getUserStatus,
 			isFriends, addFriend, removeFriend,
 			acceptFriendRequest, declineFriendRequest, deleteFriendRequest
 		}}>

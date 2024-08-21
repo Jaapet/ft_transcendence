@@ -69,7 +69,7 @@ const UserFriendListFriend = ({ myFriends, setMyFriends, friend }) => {
 						marginTop:'9px'
 					}}
 				>
-					<StatusCircle status={friend.is_online} />
+					<StatusCircle userId={friend.id} />
 				</div>
 				<div>
 					<RemoveFriendButton

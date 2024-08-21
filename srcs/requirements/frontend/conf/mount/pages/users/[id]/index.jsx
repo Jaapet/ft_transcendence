@@ -19,14 +19,14 @@ const ProfileMemberCardPicture = ({ user }) => {
 				src={user.avatar}
 				alt="Profile Picture"
 				width={220} height={220}
-				style={{ objectFit: 'cover', width: 'auto', height: 'auto' }}
+				style={{ objectFit: 'cover', width: 'auto', height: '220px' }}
 				className="card-img-top"
 				priority={true}
 			/>
 			<div className="card-body">
 				<div className={`card-body ${styles.cardInfo}`}>
 					<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'start' }}>
-						<StatusCircle status={user.is_online} />
+						<StatusCircle userId={user.id} />
 						<h2 className="card-title" style={{ margin: 0, marginLeft: 5 }}>{user.username}</h2>
 					</div>
 				</div>
