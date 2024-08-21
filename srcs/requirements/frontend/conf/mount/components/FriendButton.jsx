@@ -27,7 +27,7 @@ const RemoveFriendButton = ({ target_id, setShowError, setErrorMsg, setShowMsg, 
 		<button
 			type="button"
 			className="btn btn-danger"
-			style={{fontSize: '25px', textAlign: 'center', minWidth: '200px'}}
+			style={{fontSize: '25px', textAlign: 'center'}}
 			onClick={handleClick}
 		>
 			Remove friend
@@ -60,7 +60,7 @@ const AddFriendButton = ({ target_id, setShowError, setErrorMsg, setShowMsg, set
 		<button
 			type="button"
 			className="btn btn-primary"
-			style={{fontSize: '25px'}}
+			style={{fontSize: '25px', textAlign: 'center'}}
 			onClick={handleClick}
 		>
 			Add as friend

@@ -4,8 +4,8 @@ import Image from 'next/image';
 import styles from '../../../styles/base.module.css';
 import Link from 'next/link';
 import { useAuth } from '../../../context/AuthenticationContext';
-import { useUser } from '../../../context/UserContext';
-import { Card, Button } from 'react-bootstrap';
+import { Card } from 'react-bootstrap';
+import StatusCircle from '../../../components/StatusCircle';
 import MatchScoreCard from '../../../components/MatchScoreCard';
 import FriendButton from '../../../components/FriendButton';
 import ToastList from '../../../components/toasts/ToastList';
@@ -14,43 +14,30 @@ import SuccessToast from '../../../components/toasts/SuccessToast';
 
 const ProfileMemberCardPicture = ({ user }) => {
 	return (
-		<Card className={`${styles.customCard}`} style={{ width: '200px' }}>
-			<Image src={user.avatar} alt="Profile Picture" width={200} height={200} style={{ width: '200px', height: '200px' , objectFit: 'cover'}}  className="card-img-top" priority={true} />
+		<Card className={`${styles.customCard}`} style={{ width: '220px', backgroundColor: '#212529' }}>
+			<Image
+				src={user.avatar}
+				alt="Profile Picture"
+				width={220} height={220}
+				style={{ objectFit: 'cover', width: 'auto', height: 'auto' }}
+				className="card-img-top"
+				priority={true}
+			/>
 			<div className="card-body">
 				<div className={`card-body ${styles.cardInfo}`}>
-					<h2 className="card-title">{user.username}</h2>
+					<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'start' }}>
+						<StatusCircle status={user.is_online} />
+						<h2 className="card-title" style={{ margin: 0, marginLeft: 5 }}>{user.username}</h2>
+					</div>
 				</div>
 			</div>
 		</Card>
 	);
 }
 
-/*
-    <Card style={{ width: '18rem' }}>
-      <Card.Img variant="top" src="holder.js/100px180" />
-      <Card.Body>
-        <Card.Title>Card Title</Card.Title>
-        <Card.Text>
-          Some quick example text to build on the card title and make up the
-          bulk of the card's content.
-        </Card.Text>
-        <Button variant="primary">Go somewhere</Button>
-      </Card.Body>
-    </Card>
-*/
-const ProfileMemberCardELOroyal = ({ user }) => {
-	return (
-		<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '20px',  minWidth: '200px'}}>
-			<div className="card-body" style={{backgroundColor:'rgba(255, 255, 255, 0.1)'}}>
-				<p className="card-text" >Royal:{user.elo_royal}</p>
-			</div>
-		</div>
-	);
-}
-
 const ProfileMemberCardELO = ({ user }) => {
 	return (
-		<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '20px', minWidth: '200px'}}>
+		<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '20px', minWidth: '220px'}}>
 			<div className="card-body" style={{backgroundColor:'rgba(255, 255, 255, 0.1)'}}>
 				<p className="card-text"> Pong:{user.elo_pong} </p>
 			</div>
@@ -66,7 +53,7 @@ const ProfileMemberCardFriendButton = ({ target_user, setShowError, setErrorMsg,
 	}
 
 	return (
-		<div className={`card ${styles.customCard}`} style={{marginTop: '15px'}}>
+		<div className={`card ${styles.customCard}`} style={{marginTop: '15px', minWidth: '220px'}}>
 			<FriendButton
 				target_id={target_user.id}
 				setShowError={setShowError}
@@ -78,8 +65,7 @@ const ProfileMemberCardFriendButton = ({ target_user, setShowError, setErrorMsg,
 	);
 }
 
-/*
-const ProfileMemberCardFriendsButton = ({ target_user }) => {
+const ProfileMemberCardEditButton = ({ target_user }) => {
 	const { user } = useAuth();
 
 	if (!user || !target_user || !user.id || !target_user.id || user.id !== target_user.id) {
@@ -87,21 +73,17 @@ const ProfileMemberCardFriendsButton = ({ target_user }) => {
 	}
 
 	return (
-			<Link href={`${user.id}/friends`} className={styles.minorbutton} passHref>
-				<strong>Friend List</strong>
+		<div className={`card ${styles.customCard}`} style={{marginTop: '15px', minWidth: '220px'}}>
+			<Link
+				href={`${user.id}/edit`}
+				type="button"
+				className="btn btn-warning"
+				style={{fontSize: '25px', textAlign: 'center'}}
+			>
+				Edit
 			</Link>
-			
+		</div>
 	);
-}
-*/
-
-const ProfileMemberCardEditButton = ({ target_user }) => {
-	const { user } = useAuth();
-
-	if (!user || !target_user || !user.id || !target_user.id || user.id !== target_user.id) {
-		return ;
-	}
-	
 
 	return (
 		<Link href={`${user.id}/edit`} className={styles.minorbutton} passHref>
@@ -125,14 +107,13 @@ const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg
 				setMsg={setMsg}
 			/>
 
-		<div className='buttonVerticalContainer'>
-			{/* Edit button */}
-			<ProfileMemberCardEditButton target_user={user} />
+			<div className='buttonVerticalContainer'>
+				{/* Edit button */}
+				<ProfileMemberCardEditButton target_user={user} />
+			</div>
 
-				</div>
 			{/* elo */}
 			<ProfileMemberCardELO user={user} />
-			<ProfileMemberCardELOroyal user={user} />
 
 		</div>
 	);
