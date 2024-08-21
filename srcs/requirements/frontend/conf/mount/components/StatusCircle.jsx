@@ -43,7 +43,7 @@ const StatusCircle = ({ status }) => {
 					width: '15px',
 					height: '15px',
 					borderRadius: '50%',
-					backgroundColor: status === "offline" ? 'red' : status === "ingame" ? 'orange' : 'green' ,
+					backgroundColor: status === "offline" ? '#ff1a1a' : status === "ingame" ? 'darkorange' : 'seagreen' ,
 					marginRight: '5px',
 					verticalAlign: 'middle'
 				}}
