@@ -91,8 +91,7 @@ const FriendButton = ({ target_id, setShowError, setErrorMsg, setShowMsg, setMsg
 			const status = await isFriends({ target_id });
 			if (status === null) {
 				setShow(false);
-			}
-			else {
+			}else {
 				setIsFriend(status.message);
 				setShow(true);
 			}

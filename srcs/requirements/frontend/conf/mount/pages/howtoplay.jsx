@@ -49,7 +49,7 @@ export default function HowToPlay({ status, detail }) {
 									The first to reach 5 points wins.
 								</p>
 							) : (
-								<p class="text-justify">
+								<p className="text-justify">
 									In this modified version of Pong for 3 players, the objective of the ball player is to pass behind a paddle before the timer runs out. The paddles win if the timer runs out before the ball can score.
 									Each paddle player controls a paddle vertically and tries to block the ball. The ball player can influence the ball's movement vertically. All players use the up and down arrow keys.
 								</p>
