@@ -341,6 +341,22 @@ class CheckFriendshipStatusAPIView(APIView):
 		except Member.DoesNotExist:
 			return Response({"detail": "One or both users do not exist."}, status=status.HTTP_404_NOT_FOUND)
 
+# Checks a user's online status
+class CheckOnlineStatusAPIView(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def get(self, request):
+		user_id = request.query_params.get('user_id')
+		if not (user_id):
+			return Response({"detail": "User ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+		try:
+			user = Member.objects.get(id=user_id)
+			user_status = user.is_online
+			return Response({"detail": user_status}, status=status.HTTP_200_OK)
+		except Member.DoesNotExist:
+			return Response({"detail": "User does not exist."}, status=status.HTTP_404_NOT_FOUND)
+
 class SendFriendRequestAPIView(APIView):
 	permission_classes = [permissions.IsAuthenticated]
 
