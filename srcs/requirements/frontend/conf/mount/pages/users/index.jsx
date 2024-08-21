@@ -20,9 +20,7 @@ const UserTableHead = ({ onSort, sortConfig }) => {
 				<th scope="col">Avatar</th>
 				<th scope="col" onClick={() => onSort('username')}>Username {getSortDirection('username')}</th>
 				<th scope="col" onClick={() => onSort('is_online')}>Online? {getSortDirection('is_online')}</th>
-				<th scope="col" onClick={() => onSort('elo_pong')}>Pong ELO {getSortDirection('elo_pong')}</th>
-				<th scope="col" onClick={() => onSort('elo_royal')}>Royal ELO {getSortDirection('elo_royal')}</th>
-				<th scope="col" onClick={() => onSort('join_date')}>Join date {getSortDirection('join_date')}</th>
+				<th scope="col" onClick={() => onSort('elo_pong')}>ELO {getSortDirection('elo_pong')}</th>
 			</tr>
 		</thead>
 	)
@@ -53,14 +51,12 @@ const UserTableRow = ({ user }) => {
 			</td>
 
 			<td>{user.elo_pong}</td>
-			<td>{user.elo_royal}</td>
-			<td>{user.join_date}</td>
 		</tr>
 	);
 }
 
 const UserTable = ({ users, onSort, sortConfig }) => (
-	<table className="table table-sm table-striped table-dark mt-4 w-75 mx-auto" style={{marginBottom: '2cm'}}>
+	<table className="table table-sm table-striped table-dark mt-4 w-50 mx-auto" style={{marginBottom: '2cm'}}>
 		<UserTableHead onSort={onSort} sortConfig={sortConfig} />
 		<tbody>
 			{ users.map(user => (
@@ -73,11 +69,10 @@ const UserTable = ({ users, onSort, sortConfig }) => (
 export default function Users({ status, detail, users }) {
 	const { logout } = useAuth();
 	const [sortedUsers, setSortedUsers] = useState(users);
-	const [sortConfig, setSortConfig] = useState({ key: 'username', direction: 'ascending' });
+	const [sortConfig, setSortConfig] = useState({ key: 'username', direction: 'descending' });
 
 	useEffect(() => {
-		setSortedUsers(users);
-		setSortConfig({ key: 'username', direction: 'ascending' });
+		handleSort('username');
 	}, [users]);
 
 	const handleLogout = async () => {
@@ -103,13 +98,43 @@ export default function Users({ status, detail, users }) {
 			direction = 'descending';
 
 		const sortedData = [...users].sort((a, b) => {
-			if (a[column] < b[column])
-				return direction === 'ascending' ? -1 : 1;
+			if (column === 'is_online') { // Online Status
+				const order = {
+					online: 1,
+					ingame: 2,
+					offline: 3
+				};
 
-			if (a[column] > b[column])
-				return direction === 'ascending' ? 1 : -1;
+				const aVal = order[a[column]];
+				const bVal = order[b[column]];
 
-			return 0;
+				if (aVal < bVal)
+					return direction === 'ascending' ? -1 : 1;
+
+				if (aVal > bVal)
+					return direction === 'ascending' ? 1 : -1;
+
+				return 0;
+			} else if (column === 'username') { // Username
+				const aName = a[column].toUpperCase();
+				const bName = b[column].toUpperCase();
+
+				if (aName < bName)
+					return direction === 'ascending' ? -1 : 1;
+
+				if (aName > bName)
+					return direction === 'ascending' ? 1 : -1;
+
+				return 0;
+			} else { // ELO
+				if (a[column] < b[column])
+						return direction === 'ascending' ? 1 : -1;
+
+				if (a[column] > b[column])
+						return direction === 'ascending' ? -1 : 1;
+
+				return 0;
+			}
 		});
 		setSortConfig({ key: column, direction });
 		setSortedUsers(sortedData);
