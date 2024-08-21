@@ -8,8 +8,9 @@ from django.core.exceptions import ValidationError
 from django.template.response import TemplateResponse
 from .models import Member, FriendRequest, Match, Match3, MatchR, RoyalPlayer
 
-# The content of this file is only used on Django Admin
-# You can ignore it for correction
+# The content of this file is only used on Django Admin,
+# which was removed when Django was put in Production mode.
+# You can thus ignore it for correction.
 
 # New member form
 class MemberCreationForm(forms.ModelForm):
