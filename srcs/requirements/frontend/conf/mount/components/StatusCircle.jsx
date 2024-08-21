@@ -20,25 +20,35 @@ const StatusCircle = ({ status }) => {
 	}
 
 	const tooltip = (
-		<Tooltip id='tooltip'>
+		<Tooltip
+			id='tooltip'
+			style={{
+				position: 'fixed',
+				zIndex: 1000,
+				pointerEvents: 'none'
+			}}
+			>
 			{hoverTip}
 		</Tooltip>
 	);
 
 	return (
-		<OverlayTrigger placement="top" overlay={tooltip}>
-			<span
+		<OverlayTrigger
+			placement="top"
+			overlay={tooltip}
+		>
+			<div
 				style={{
 					display: 'inline-block',
 					width: '15px',
 					height: '15px',
 					borderRadius: '50%',
-					backgroundColor: status === "offline" ? 'red' : status === "ingame" ? 'blueviolet' : 'green' ,
+					backgroundColor: status === "offline" ? 'red' : status === "ingame" ? 'orange' : 'green' ,
 					marginRight: '5px',
 					verticalAlign: 'middle'
 				}}
 			>
-			</span>
+			</div>
 		</OverlayTrigger>
 	);
 };
