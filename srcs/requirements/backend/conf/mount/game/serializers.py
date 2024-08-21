@@ -1,5 +1,7 @@
 from .models import Member, FriendRequest, Match, Match3, MatchR, RoyalPlayer
 from django.core.validators import RegexValidator
+from rest_framework.validators import UniqueValidator
+from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -79,7 +81,14 @@ class RegisterMemberSerializer(serializers.HyperlinkedModelSerializer):
 			RegexValidator(
 				regex=USERNAME_PATTERN,
 				message='Username must be 4 to 8 characters long and only contain alphanumeric characters'
-			)
+			),
+			UniqueValidator(queryset=Member.objects.all(), message="This username is already taken.")
+		]
+	)
+
+	email = serializers.EmailField(
+		validators=[
+			UniqueValidator(queryset=Member.objects.all(), message="This email is already in use.")
 		]
 	)
 
@@ -137,7 +146,14 @@ class UpdateMemberSerializer(serializers.HyperlinkedModelSerializer):
 			RegexValidator(
 				regex=USERNAME_PATTERN,
 				message='Username must be 4 to 8 characters long and only contain alphanumeric characters'
-			)
+			),
+			UniqueValidator(queryset=Member.objects.all(), message="This username is already taken.")
+		]
+	)
+
+	email = serializers.EmailField(
+		validators=[
+			UniqueValidator(queryset=Member.objects.all(), message="This email is already in use.")
 		]
 	)
 
