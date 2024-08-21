@@ -15,7 +15,7 @@ export default async (req, res) => {
 			() => {res.setHeader('Set-Cookie', 'refresh=; HttpOnly; Secure; Max-Age=0; SameSite=Strict; Path=/');}
 		);
 		if (!accessToken) {
-			throw new Error('Not logged in');
+			return res.status(200).json({ detail: 'Not logged in' });
 		}
 
 		// Fetch user data
@@ -36,7 +36,7 @@ export default async (req, res) => {
 
 		return res.status(200).json({ user: userData, access: accessToken });
 	} catch (error) {
-		//console.error('API USER:', error);
+		//console.error('API USER:', error); // debug
 		return res.status(401).json({ message: error.message });
 	}
 }

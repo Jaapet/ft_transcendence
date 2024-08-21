@@ -162,6 +162,11 @@ export const AuthenticationProvider = ({ children }) => {
 				throw new Error('Login refresh failed');
 			if (!response.ok)
 				throw new Error(data.message || 'Login refresh failed');
+			if (data.detail) {
+				setUser(null);
+				setAccessToken(null);
+				return ;
+			}
 
 			setUser(data.user);
 			setAccessToken(data.access);
