@@ -19,7 +19,7 @@ const ProfileMemberCardPicture = ({ user }) => {
 				src={user.avatar}
 				alt="Profile Picture"
 				width={220} height={220}
-				style={{ objectFit: 'cover', width: '218px', height: 'auto' }}
+				style={{ objectFit: 'cover', width: 'auto', height: '218px' }}
 				className="card-img-top"
 				priority={true}
 			/>
