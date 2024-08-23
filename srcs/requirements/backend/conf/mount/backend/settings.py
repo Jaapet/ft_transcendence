@@ -81,8 +81,7 @@ MIDDLEWARE = [
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
 	'django_otp.middleware.OTPMiddleware',
-	'game.middleware.UpdateLastActivityMiddleware',
-#	'game.middleware.LogHostMiddleware' TODO: Remove this before submitting
+	'game.middleware.UpdateLastActivityMiddleware'
 ]
 
 # CORS_ALLOW_ALL_ORIGINS = True

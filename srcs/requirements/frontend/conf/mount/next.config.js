@@ -1,11 +1,3 @@
-/*
-TODO:
-Once HTTPS is configured, we could in theory remove the /fapi replacement
-But if it's useful, feel free to keep it and even uncomment the backend one
-
-TODO: Also, check if fapi is ever useful please
-*/
-
 module.exports = {
 	images: {
 		remotePatterns: [{
@@ -14,17 +6,5 @@ module.exports = {
 			port: '',
 			pathname: '/media/**',
 		}],
-	},
-//	async rewrites() {
-//		return [
-//			{
-//				source: '/fapi/:path*',
-//				destination: 'http://localhost:3000/api/:path*'
-//			},
-//			{
-//				source: '/bapi/:path*',
-//				destination: 'http://backend:8000/api/:path*'
-//			}
-//		]
-//	}
+	}
 }

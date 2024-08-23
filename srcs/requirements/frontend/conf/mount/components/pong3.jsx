@@ -51,7 +51,6 @@ const Pong3 = ({
 
 		const socket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`);
 
-		// TODO: Replace useAuth's user with an API call
 		socket.emit('join', { gameType: 'pong3', userId: user.id, userName: user.username, userELO: user.elo_pong, userAvatar: user.avatar });
 
 		socket.on('connect_error', (error) => {
@@ -754,7 +753,6 @@ const Pong3 = ({
 						}
 						ballObj.position.z = Math.min(Math.max(ballObj.position.z, -BALL_MAX_Z), BALL_MAX_Z);
 
-						// TODO: Make ball user able to input influence over ball
 						const ballInfluence = BALL_INPUT_FORCE * timeSinceLastLoop;
 						const way = ballDir[0] > 0 ? 1 : -1;
 						if (role === "ball") {

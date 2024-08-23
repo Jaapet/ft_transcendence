@@ -87,10 +87,9 @@ def calculate_pong3_elo(paddle1_elo, paddle2_elo, ball_elo, ball_won, k=40, min_
 
 	# 1 means winning, 0 means losing
 	# Weighted cause winning as the ball is assumed to be harder
-	# TODO: Adjust this if winning as the ball is not as hard as expected
-	new_ball_elo = ball_elo + k * ((1.1 if ball_won else 0.1) - expected_ball_win)
-	new_paddle1_elo = paddle1_elo + k * ((-0.1 if ball_won else 0.9) - expected_paddles_win)
-	new_paddle2_elo = paddle2_elo + k * ((-0.1 if ball_won else 0.9) - expected_paddles_win)
+	new_ball_elo = ball_elo + k * ((1 if ball_won else 0) - expected_ball_win)
+	new_paddle1_elo = paddle1_elo + k * ((0 if ball_won else 1) - expected_paddles_win)
+	new_paddle2_elo = paddle2_elo + k * ((0 if ball_won else 1) - expected_paddles_win)
 
 	new_ball_elo = min(max(new_ball_elo, min_elo), max_elo)
 	new_paddle1_elo = min(max(new_paddle1_elo, min_elo), max_elo)

@@ -53,7 +53,6 @@ const Pong = ({
 
 		const socket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`);
 
-		// TODO: Replace useAuth's user with an API call
 		socket.emit('join', { gameType: 'pong2', userId: user.id, userName: user.username, userELO: user.elo_pong, userAvatar: user.avatar });
 
 		socket.on('connect_error', (error) => {
