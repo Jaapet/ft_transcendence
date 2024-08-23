@@ -148,11 +148,9 @@ export default function PongTourney({ status, detail, user }) {
 	}
 
 	if (tourneyEnded) {
-		// TODO: Replace by actual tourney results
 		return (
 			<div className={`${styles.container} pt-5`}>
-				<p>THE TOURNEY HAS ENDED!</p>
-				<TourneyDisplay players={tourneyPlayers} />
+				<TourneyDisplay matches={tourney?.matches || null} />
 				<div className={styles.retrybuttonContainer}>
 					<Link href="/chooseGame" passHref className={styles.retrybutton}>
 						Play Again
@@ -170,7 +168,7 @@ export default function PongTourney({ status, detail, user }) {
 			<div
 				style={{
 					display: 'flex',
-					justifyContent: 'space-between',
+					justifyContent: room && !inQueue ? 'space-between' : 'center',
 					alignItems: 'center',
 					width: '100vw',
 					height: '78vh',
@@ -186,7 +184,7 @@ export default function PongTourney({ status, detail, user }) {
 					<></>
 				}
 
-				<DrawingCanvas />
+				{<DrawingCanvas />}
 				<PongT
 					tourney={tourney} tourneyPlayers={tourneyPlayers}
 					scoreL={scoreL} setScoreL={setScoreL}

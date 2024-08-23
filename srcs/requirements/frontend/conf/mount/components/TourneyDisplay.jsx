@@ -1,51 +1,109 @@
 import React from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import styles from '../styles/tourney.module.css';
 
-// TODO: Make something actually good with this please
+const TourneyDisplayGamePlayerCard = ({ player, winner, finals }) => {
+	let playerClass = `${styles.player}`;
+	let placement = '';
+	if (winner && player) {
+		const won = (winner.id === player.id);
+		if (finals) {
+			if (finals === 'wf') {
+				playerClass += won ? ` ${styles.playerFirst}` : ` ${styles.playerSecond}`;
+				placement = won ? '1st ' : '2nd ';
+			} else if (finals === 'lf') {
+				playerClass += won ? ` ${styles.playerThird}` : ` ${styles.playerLast}`;
+				placement = won ? '3rd ' : '4th ';
+			}
+		}
+		playerClass += won ? ` ${styles.playerWinner}` : ` ${styles.playerLoser}`;
+	}
 
-const TourneyDisplayHead = () => {
 	return (
-		<thead>
-			<tr key="0">
-				<th scope="col">Avatar</th>
-				<th scope="col">Username</th>
-				<th scope="col">Rank</th>
-			</tr>
-		</thead>
-	)
-}
-
-const TourneyDisplayRow = ({ player }) => {
-	return (
-		<tr key={player.id}>
-			<td>
-				<Link href={`/users/${player.id}`} passHref>
-					<Image
-						src={player.avatar}
-						alt={`${player.username}'s avatar`}
-						width={50}
-						height={50}
-					/>
-				</Link>
-			</td>
-			<td>{player.username}</td>
-			<td>{player.role.rank}</td>
-		</tr>
+		<div className={playerClass}>
+			<Image
+				src={player?.avatar || '/images/default.png'}
+				alt={`${player?.username || 'Someone'}'s avatar`}
+				width={50}
+				height={50}
+				style={{
+					borderRadius: '35%',
+					height: '4vh',
+					width: '4vh',
+					marginLeft: '0.5vw',
+					marginRight: '0.5vw'
+				}}
+			/>
+			{placement + `${player?.username || ''}`}
+		</div>
 	);
 }
 
-const TourneyDisplay = ({ players }) => {
+const TourneyDisplayGame = ({ player1, player2, winner, finals }) => {
 	return (
-		<table className="table table-sm table-striped table-dark mt-4 w-75 mx-auto">
-			<TourneyDisplayHead />
-			<tbody>
-			{ players ? Object.entries(players).map(([key, player]) => (
-				<TourneyDisplayRow key={key} player={player} />
-			)) : <></> }
-			</tbody>
-		</table>
-	)
+		<div className={styles.game}>
+			<TourneyDisplayGamePlayerCard player={player1} winner={winner} finals={finals} />
+			<TourneyDisplayGamePlayerCard player={player2} winner={winner} finals={finals} />
+		</div>
+	);
+}
+
+const TourneyDisplayFirstRound = ({ up, down }) => {
+	return (
+		<ul className={styles.round}>
+			<h4 className={styles.title}>Semifinals</h4>
+			<TourneyDisplayGame
+				player1={up?.p1 || null}
+				player2={up?.p2 || null}
+				winner={up?.winner || null}
+				finals={null}
+			/>
+			<div>&nbsp;</div>
+			<TourneyDisplayGame
+				player1={down?.p1 || null}
+				player2={down?.p2 || null}
+				winner={down?.winner || null}
+				finals={null}
+			/>
+		</ul>
+	);
+}
+
+const TourneyDisplaySecondRound = ({ wf, lf }) => {
+	return (
+		<ul className={styles.round}>
+			<h4 className={styles.title}>Winners Finals</h4>
+			<TourneyDisplayGame
+				player1={wf?.p1 || null}
+				player2={wf?.p2 || null}
+				winner={wf?.winner || null}
+				finals='wf'
+			/>
+			<div>&nbsp;</div>
+			<div>&nbsp;</div>
+			<h4 className={styles.title}>Losers Finals</h4>
+			<TourneyDisplayGame
+				player1={lf?.p1 || null}
+				player2={lf?.p2 || null}
+				winner={lf?.winner || null}
+				finals='lf'
+			/>
+		</ul>
+	);
+}
+
+const TourneyDisplay = ({ matches }) => {
+	const up =		matches ? matches['SFUP'] || null : null;
+	const down =	matches ? matches['SFDO'] || null : null;
+	const wf =		matches ? matches['WF'] || null : null;
+	const lf =		matches ? matches['LF'] || null : null;
+
+	return (
+		<div className={styles.container}>
+			<TourneyDisplayFirstRound up={up} down={down} />
+			<TourneyDisplaySecondRound wf={wf} lf={lf} />
+		</div>
+	);
 }
 
 export default TourneyDisplay;

@@ -913,12 +913,12 @@ const PongT = ({
 			</div>
 		);
 	}
-	else if (!room) { // TODO: ACTUAL TOURNAMENT DISPLAY
+	else if (!room) {
 		hidden = 'hidden';
 		testmessage = (
 			<div className={React.background}>
 				<p style={{color: 'white'}}>In tourney {tourney?.id}, waiting for next match.</p>
-				<TourneyDisplay players={tourneyPlayers} />
+				<TourneyDisplay matches={tourney?.matches || null} />
 			</div>
 		);
 	}

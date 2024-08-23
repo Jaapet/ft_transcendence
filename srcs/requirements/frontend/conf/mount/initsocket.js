@@ -491,7 +491,8 @@ io.on('connection', socket => {
 			maxPlayers: PONG2_TOURNEY_NB_PLAYERS,
 			timeStamp: now,
 			players: {},
-			matches: {}
+			matches: {},
+			displayMatches: {}
 		};
 	}
 
@@ -523,6 +524,12 @@ io.on('connection', socket => {
 				end: false
 			}
 		};
+
+		tourney.displayMatches[matchType] = {
+			p1: null,
+			p2: null,
+			winner: null
+		}
 	}
 
 	function createPong2Room(gameType, newRoomId, now, userELO) {
@@ -727,7 +734,8 @@ io.on('connection', socket => {
 			io.to(socket.id).emit('updateTourney', {
 				tourney: {
 					type: gameType,
-					id: tourney.id
+					id: tourney.id,
+					matches: null
 				},
 				tourneyPlayers: tourney.players
 			});
@@ -1198,9 +1206,25 @@ io.on('connection', socket => {
 		let lf = createTourneyRoom(tourney, 'LF');
 		console.log(`Created room=${lf.id} type=${gameType} for tourney=${tourney.id}`); // ELK LOG
 		for (const playerId in tourney.players) {
-			tourney.players[playerId].role.rank = 'SemiFinals';
+			const player = tourney.players[playerId];
+
+			player.role.rank = 'SemiFinals';
+			const matchType = player.role.group === 1 ? 'SFUP' : 'SFDO';
+			if (player.role.position === 'up') {
+				tourney.displayMatches[matchType].p1 = player;
+			} else if (player.role.position === 'down') {
+				tourney.displayMatches[matchType].p2 = player;
+			}
 		}
-		io.to(tourney.id).emit('updateTourneyPlayers', { tourneyPlayers: tourney.players });
+
+		io.to(tourney.id).emit('updateTourney', {
+			tourney: {
+				type: gameType,
+				id: tourney.id,
+				matches: tourney.displayMatches
+			},
+			tourneyPlayers: tourney.players
+		});
 		setTimeout(() => announceFirstTourneyMatch(gameType, tourney, sfup, sfdo, wf, lf), 5000); // Wait for 5 seconds
 	}
 	
@@ -1245,6 +1269,7 @@ io.on('connection', socket => {
 				const leftWon = room.runtime.score.l > room.runtime.score.r;
 				const winner = leftWon ? getPlayerRoleInRoom(room, 'leftPaddle') : getPlayerRoleInRoom(room, 'rightPaddle');
 				const loser = leftWon ? getPlayerRoleInRoom(room, 'rightPaddle') : getPlayerRoleInRoom(room, 'leftPaddle');
+				tourney.displayMatches[matchType].winner = winner;
 
 				let p1s, p2s = null;
 
@@ -1255,16 +1280,33 @@ io.on('connection', socket => {
 						const playerSocket = io.sockets.sockets.get(playerId);
 						p1s = playerSocket;
 						player.role.rank = 'WinnersFinals';
+						if (tourney.displayMatches['WF'].p1) {
+							tourney.displayMatches['WF'].p2 = player;
+						} else {
+							tourney.displayMatches['WF'].p1 = player;
+						}
 						removePlayerFromTourneyRoom(room, playerSocket);
 					} else if (player.id === loser.id) {
 						const playerSocket = io.sockets.sockets.get(playerId);
 						p2s = playerSocket;
 						player.role.rank = 'LosersFinals';
+						if (tourney.displayMatches['LF'].p1) {
+							tourney.displayMatches['LF'].p2 = player;
+						} else {
+							tourney.displayMatches['LF'].p1 = player;
+						}
 						removePlayerFromTourneyRoom(room, playerSocket);
 					}
 				}
 				deleteTourneyRoom(tourney, room, matchType);
-				io.to(tourney.id).emit('updateTourneyPlayers', { tourneyPlayers: tourney.players });
+				io.to(tourney.id).emit('updateTourney', {
+					tourney: {
+						type: gameType,
+						id: tourney.id,
+						matches: tourney.displayMatches
+					},
+					tourneyPlayers: tourney.players
+				});
 				if (p1s) {
 					io.to(p1s.id).emit('resetGameState');
 					io.to(p1s.id).emit('endMatch');
@@ -1327,6 +1369,7 @@ io.on('connection', socket => {
 				const leftWon = wf.runtime.score.l > wf.runtime.score.r;
 				const winner = leftWon ? getPlayerRoleInRoom(wf, 'leftPaddle') : getPlayerRoleInRoom(wf, 'rightPaddle');
 				const loser = leftWon ? getPlayerRoleInRoom(wf, 'rightPaddle') : getPlayerRoleInRoom(wf, 'leftPaddle');
+				tourney.displayMatches['WF'].winner = winner;
 
 				let p1s, p2s = null;
 
@@ -1345,7 +1388,14 @@ io.on('connection', socket => {
 					}
 				}
 				deleteTourneyRoom(tourney, wf, 'WF');
-				io.to(tourney.id).emit('updateTourneyPlayers', { tourneyPlayers: tourney.players });
+				io.to(tourney.id).emit('updateTourney', {
+					tourney: {
+						type: gameType,
+						id: tourney.id,
+						matches: tourney.displayMatches
+					},
+					tourneyPlayers: tourney.players
+				});
 				if (p1s) {
 					io.to(p1s.id).emit('resetGameState');
 					io.to(p1s.id).emit('endMatch');
@@ -1367,6 +1417,7 @@ io.on('connection', socket => {
 				const leftWon = lf.runtime.score.l > lf.runtime.score.r;
 				const winner = leftWon ? getPlayerRoleInRoom(lf, 'leftPaddle') : getPlayerRoleInRoom(lf, 'rightPaddle');
 				const loser = leftWon ? getPlayerRoleInRoom(lf, 'rightPaddle') : getPlayerRoleInRoom(lf, 'leftPaddle');
+				tourney.displayMatches['LF'].winner = winner;
 
 				let p1s, p2s = null;
 
@@ -1385,7 +1436,14 @@ io.on('connection', socket => {
 					}
 				}
 				deleteTourneyRoom(tourney, lf, 'LF');
-				io.to(tourney.id).emit('updateTourneyPlayers', { tourneyPlayers: tourney.players });
+				io.to(tourney.id).emit('updateTourney', {
+					tourney: {
+						type: gameType,
+						id: tourney.id,
+						matches: tourney.displayMatches
+					},
+					tourneyPlayers: tourney.players
+				});
 				if (p1s) {
 					io.to(p1s.id).emit('resetGameState');
 					io.to(p1s.id).emit('endMatch');
@@ -1431,7 +1489,6 @@ io.on('connection', socket => {
 	// Starts a game of pong2 (1v1) or pong3 (1v2)
 	// Does nothing if there are less than required players in the room
 	// Does nothing if room does not exist, is already launched, or if its players are not ready
-	// TODO: Check if all players have the right roles and reassign them in case not!
 	function startPongGame(room, gameType) {
 		if (!connected[socket.id])
 			return ;
@@ -1700,7 +1757,6 @@ io.on('connection', socket => {
 					paddleZ = room.runtime.paddleZ.r;
 				}
 				// Only check collision if ball is going in direction of paddle
-				// TODO: Check if Bounce Mercy Period is useful
 				if (
 					Date.now() - room.runtime.lastBallBounce.when > PONG2_BALL_BOUNCE_MERCY_PERIOD
 					&& ((paddleX < 0 && room.runtime.ballDirection.x < 0)
@@ -2000,7 +2056,6 @@ io.on('connection', socket => {
 					paddleZ = room.runtime.paddleZ.r;
 				}
 				// Only check collision if ball is going in direction of paddle
-				// TODO: Check if Bounce Mercy Period is useful
 				if (
 					Date.now() - room.runtime.lastBallBounce.when > PONG3_BALL_BOUNCE_MERCY_PERIOD
 					&& ((paddleX < 0 && room.runtime.ballDirection.x < 0)
@@ -2031,7 +2086,6 @@ io.on('connection', socket => {
 			if (room.runtime.ballPosition.x > PONG3_BALL_MAX_X - 2.5 || room.runtime.ballPosition.x < -PONG3_BALL_MAX_X + 2.5)
 				bounce();
 
-			// TODO: Make ball user able to input influence over ball
 			/// Ball
 			const ballInfluence = PONG3_BALL_INPUT_FORCE * timeSinceLastLoop;
 			const way = room.runtime.ballDirection.x > 0 ? 1 : -1;

@@ -1,54 +1,98 @@
-/*
-** https://blog.codepen.io/2018/02/16/need-make-tournament-bracket/
-** “Tournament Bracket with Flexbox” by Aron Duby
-*/
+.container {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	align-content: flex-start;
 
-main{
-	display:flex;
-	flex-direction:row;
-}
-.round{
-	display:flex;
-	flex-direction:column;
-	justify-content:center;
-	width:200px;
-	list-style:none;
-	padding:0;
-}
-	.round .spacer{ flex-grow:1; }
-	.round .spacer:first-child,
-	.round .spacer:last-child{ flex-grow:.5; }
-
-	.round .game-spacer{
-		flex-grow:1;
-	}
-
-body{
-	font-family:sans-serif;
-	font-size:small;
-	padding:10px;
-	line-height:1.4em;
+	height: 60vh;
+	width: 50vw;
+	margin: auto;
+	border-radius: 20% 5%;
+	background-color: #212529;
 }
 
-li.game{
-	padding-left:20px;
+.round {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	align-items: center;
+	align-content: center;
+
+	width: 20vw;
+	padding: 1vmin;
+	border-radius: 20% 5%;
+	background-color: #212529;
 }
 
-	li.game.winner{
-		font-weight:bold;
-	}
-	li.game span{
-		float:right;
-		margin-right:5px;
-	}
+.round:hover {
+	background-color: #2e3338;
+	transform: scale(1.05);
+}
 
-	li.game-top{ border-bottom:1px solid #aaa; }
+.game {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: stretch;
+	align-content: flex-start;
 
-	li.game-spacer{ 
-		border-right:1px solid #aaa;
-		min-height:40px;
-	}
+	height: 12vh;
+}
 
-	li.game-bottom{ 
-		border-top:1px solid #aaa;
-	}
+.player {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	align-items: center;
+	align-content: center;
+
+	border-radius: 5% / 50%;
+	margin: 1px;
+	width: 15vw;
+	height: 5vh;
+
+	background-color: #4e5761;
+	color: white;
+	font-size: 2vmin;
+	text-align: center;
+}
+
+.player:hover {
+	transform: scale(1.05);
+}
+
+.playerLoser {
+	background-color: #8b1010;
+	color: white;
+}
+
+.playerWinner {
+	background-color: #0b9238;
+	color: white;
+}
+
+.playerFirst {
+	background-color: #fcc200;
+	color: black;
+}
+
+.playerSecond {
+	background-color: #d6d6d6;
+	color: black;
+}
+
+.playerThird {
+	background-color: #ad6c2b;
+	color: white;
+}
+
+.playerLast {
+	background-color: #520785;
+	color: white;
+}
+
+.title {
+	color: white;
+	font-size: 3vmin;
+}
