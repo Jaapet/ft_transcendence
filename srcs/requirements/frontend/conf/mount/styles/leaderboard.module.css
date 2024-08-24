@@ -1,0 +1,94 @@
+.container {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	align-items: center;
+	align-content: flex-start;
+
+	height: 65vmin;
+	width: 80vmin;
+	margin-top: 1vmin;
+	margin-bottom: auto;
+	padding: 3vmin;
+	border-radius: 20% 5%;
+	background-color: #212529;
+}
+
+.playerNameContainer {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	align-items: center;
+	align-content: center;
+
+	width: 28vmin;
+}
+
+.playerName {
+	font-family: verdana;
+}
+
+.playerElo {
+	font-family: verdana;
+	font-size: 3vmin;
+	margin-right: 1.5vmin;
+}
+
+.player {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	align-content: center;
+
+	border-radius: 2% / 50%;
+	margin: 1px;
+	width: 55vmin;
+	height: 10vmin;
+
+	background-color: #4e5761;
+	color: white;
+	font-size: 5vmin;
+	text-align: center;
+}
+
+.player:hover {
+	transform: scale(1.05);
+}
+
+.playerFirst {
+	background-color: #fcc200;
+	color: black;
+	width: 57vmin;
+	height: 12vmin;
+	font-size: 6vmin;
+}
+
+.playerSecond {
+	background-color: #d6d6d6;
+	color: black;
+	width: 56vmin;
+	height: 11vmin;
+	font-size: 5.5vmin;
+}
+
+.playerThird {
+	background-color: #ad6c2b;
+	color: white;
+}
+
+.playerFourth {
+	background-color: #0b9238;
+	color: white;
+	width: 54vmin;
+	height: 9vmin;
+	font-size: 4.5vmin;
+}
+
+.playerFifth {
+	background-color: #0b5192;
+	color: white;
+	width: 53vmin;
+	height: 8vmin;
+	font-size: 4vmin;
+}
