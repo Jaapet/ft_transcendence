@@ -161,57 +161,137 @@ const Royal = () => {
 		addball(-10, 2, 4, makeObj(ball, texture));
 		addwall(0, -300.5, 0, makeObj(wall, texture4));
 
-		/// SKYBOX
+		/// CONTROLS
 
-		const skybox = new THREE.IcosahedronGeometry(800,50);
-		const skyboxMaterial = new THREE.MeshBasicMaterial({map: texture, side: THREE.BackSide});
-		const skyboxMesh = new THREE.Mesh(skybox, skyboxMaterial);
-		skyboxMesh.position.z = 29.5;
-		scene.add(skyboxMesh);
+		var ballUp;
+		var ballDown;
+		var ballLeft;
+		var ballRight;
 
-		document.addEventListener('keydown', function(event) {
-			console.log(event.key);
+
+		function handleKeyDown(event) {
+			if (event.repeat)
+				return ;
+			//console.log(event.key); // debug
 			switch (event.key) {
-				case "w":
-				case "W":
-					ballmove[0] = -0.1;
+				case "ArrowUp":
+					if (!ballUp) {
+						ballUp = true;
+						socket.emit('input', { gameType: 'royal', input: { key: event.key, type: 'keydown' } });
+					}
 					break;
-				case "a":
-				case "A":
-					ballmove[1] = -0.1;
+				case "ArrowDown":
+					if (!ballDown) {
+						ballDown = true;
+						socket.emit('input', { gameType: 'royal', input: { key: event.key, type: 'keydown' } });
+					}
 					break;
-				case "s":
-				case "S":
-					ballmove[0] = 0.1;
+				case "ArrowLeft":
+					if (!ballLeft) {
+						ballLeft = true;
+						socket.emit('input', { gameType: 'royal', input: { key: event.key, type: 'keydown' } });
+					}
 					break;
-				case "d":
-				case "D":
-					ballmove[1] = 0.1;
+				case "ArrowRight":
+						if (!ballRight) {
+							ballRight = true;
+							socket.emit('input', { gameType: 'royal', input: { key: event.key, type: 'keydown' } });
+						}
+						break;
+			}
+		}
+		document.addEventListener('keydown', handleKeyDown);
+
+
+		
+		function handleKeyUp(event) {
+			if (event.repeat)
+				return ;
+			//console.log(event.key); // debug
+			switch (event.key) {
+				case "ArrowUp":
+					if (!ballUp) {
+						ballUp = false;
+						socket.emit('input', { gameType: 'royal', input: { key: event.key, type: 'keyUp' } });
+					}
+					break;
+				case "ArrowUp":
+					if (!ballUp) {
+						ballUp = false;
+						socket.emit('input', { gameType: 'royal', input: { key: event.key, type: 'keyUp' } });
+					}
+					break;
+				case "ArrowLeft":
+					if (!ballLeft) {
+						ballLeft = false;
+						socket.emit('input', { gameType: 'royal', input: { key: event.key, type: 'keyUp' } });
+					}
+					break;
+				case "ArrowRight":
+					if (!ballRight) {
+						ballRight = false;
+						socket.emit('input', { gameType: 'royal', input: { key: event.key, type: 'keyUp' } });
+					}
 					break;
 			}
-		});
+		}
+		document.addEventListener('keyUp', handleKeyUp);
+		
+		/*
+				document.addEventListener('keydown', function(event) {
+					console.log(event.key);
+					switch (event.key) {
+						case "w":
+						case "W":
+							ballmove[0] = -0.1;
+							break;
+						case "a":
+						case "A":
+							ballmove[1] = -0.1;
+							break;
+						case "s":
+						case "S":
+							ballmove[0] = 0.1;
+							break;
+						case "d":
+						case "D":
+							ballmove[1] = 0.1;
+							break;
+					}
+				});
+		
+				document.addEventListener('keyup', function(event) {
+					switch (event.key) {
+						case "w":
+						case "W":
+							ballmove[0] = 0;
+							break;
+						case "a":
+						case "A":
+							ballmove[1] = 0;
+							break;
+						case "s":
+						case "S":
+							ballmove[0] = 0;
+							break;
+						case "d":
+						case "D":
+							ballmove[1] = 0;
+							break;
+					}
+				});
+		*/
 
-		document.addEventListener('keyup', function(event) {
-			switch (event.key) {
-				case "w":
-				case "W":
-					ballmove[0] = 0;
-					break;
-				case "a":
-				case "A":
-					ballmove[1] = 0;
-					break;
-				case "s":
-				case "S":
-					ballmove[0] = 0;
-					break;
-				case "d":
-				case "D":
-					ballmove[1] = 0;
-					break;
-			}
-		});
 
+		///// SKYBOX
+//
+		//const skybox = new THREE.IcosahedronGeometry(800,50);
+		//const skyboxMaterial = new THREE.MeshBasicMaterial({map: texture, side: THREE.BackSide});
+		//const skyboxMesh = new THREE.Mesh(skybox, skyboxMaterial);
+		//skyboxMesh.position.z = 29.5;
+		//scene.add(skyboxMesh);
+		
+		/// RENDER
 		renderer.render(scene, camera);
 
 		/// FUNCTIONS
@@ -244,7 +324,7 @@ const Royal = () => {
 			scene.add(obj);
 		}
 
-
+/*
 		// Hitbox de la Ball
 		function BallHit(ball, Balls) {
 			const ballBox = new THREE.Box3().setFromObject(ball);
@@ -262,9 +342,79 @@ const Royal = () => {
 					}
 			});
 			return (hit)
-		}
+		}*/
 		
+		let startRender = Date.now();
 
+		socket.on('gameStart', ({ players }) => {
+			for (const playerKey in players) {
+				if (players[playerKey].id === user.id) {
+					role = players[playerKey].role;
+				}
+			}
+			gameStart = true;
+			setGameStarted(true);
+		});
+
+		socket.on('startTimer', () => {
+			startTimer = true;
+			startRender = Date.now();
+			//console.log(`PONG_CMPT: Received startTimer`); // debug
+		});
+
+		socket.on('startGameplay', () => {
+			startGameplay = true;
+			startTime = Date.now();
+			//console.log(`PONG_CMPT: Received startGameplay`); // debug
+		});
+
+		socket.on('gameEnd', (/*{ winner, score }*/) => {
+			setGameEnded(true);
+			//setWinner(winner);
+			//setWinnerScore(score);
+			setGameEnd(true);
+		});
+
+		socket.on('gameError', ({ message }) => {
+			console.log('RECEIVED GAME_ERROR'); // debug
+			setGameErrored(true);
+			setGameError(true);
+			setErrorMessage(message);
+		});
+
+		//let last = Date.now(); // debug
+		socket.on('gameStatus', ({
+			ballX, ballZ,
+			ballDirX, ballDirZ 
+		}) => {
+
+
+			/// X Pos
+			ballObj.position.x = ballX;
+			/// Z Pos
+			ballObj.position.z = ballZ;
+			/// X Dir
+			ballDir[0] = ballDirX;
+			/// Z Dir
+			ballDir[1] = ballDirZ;
+			/// Rotation
+			if (resetRotation) {
+				ballObj.rotation.z = 0;
+				ballObj.rotation.x = 0;
+				ballObj.rotation.y = 0;
+			}
+
+		});
+
+		// Gameplay constants
+		// TODO: Check if these are synced with server-side code
+		const FPS = 60;
+		const BASE_BALL_SPEED = 60;						// units per second
+		const BALL_MAX_X = 42.5;
+		const BALL_MAX_Z = 20;
+		let ballSpeed = BASE_BALL_SPEED;
+
+		let first = 0;
 		function render(time)
 		{
 			/*if (!modelsLoaded)

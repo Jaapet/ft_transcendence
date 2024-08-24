@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthenticationContext';
 
 export default function ChooseGame({ status, detail }) {
 	const { logout } = useAuth();
-	const [isChecked, setIsChecked] = useState(false);
+	const [isChecked, setIsChecked] = useState(true);
 	
 	const handleCheckboxChange = () => {
 		setIsChecked(!isChecked); 
@@ -47,7 +47,7 @@ export default function ChooseGame({ status, detail }) {
 						checked={isChecked}
 						onChange={handleCheckboxChange}
 					/>
-					Performance Mode ?
+					Performance Mode
 				</label>
      		 </div>
 			<div className={styles.buttonContainer}>
@@ -57,9 +57,9 @@ export default function ChooseGame({ status, detail }) {
 				<Link href="/Pong3Page" passHref className={styles.button}>
 					1 vs 2 Pong
 				</Link>
-			{/* 	<Link href="/RoyalPage" passHref className={styles.button}>
+			{ 	<Link href="/RoyalPage" passHref className={styles.button}>
 					Royal Pong
-				</Link> */}
+				</Link> }
 			
 		</div>
 			{isChecked && <p className={styles.backCard}>Performance Mode Activated!</p>}

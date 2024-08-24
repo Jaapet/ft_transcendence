@@ -61,10 +61,10 @@ export const GameProvider = ({ children }) => {
 	}
 
 	// Sets InGame and GameType
-/* 	const joinRoyalGame = () => {
+ 	const joinRoyalGame = () => {
 		setGameType('royal');
 		joinGame();
-	} */
+	} 
 
 	// Sets InQueue, Room and Players
 	const updateRoom = (room, players) => {
@@ -109,7 +109,7 @@ export const GameProvider = ({ children }) => {
 			inQueue, inGame, inTourney, gameStarted, gameEnded, gameErrored,
 			gameType, room, players, tourney, tourneyPlayers,
 			joinPong2Game, joinPong2Tourney,
-			joinPong3Game,
+			joinPong3Game, joinRoyalGame,
 			setGameStarted, setGameEnded, setGameErrored,
 			updateRoom, updatePlayers,
 			updateTourney, updateTourneyPlayers,

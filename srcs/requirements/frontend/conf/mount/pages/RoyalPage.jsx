@@ -1,11 +1,23 @@
 import React from 'react';
 import styles from '../styles/base.module.css';
 import DrawingCanvas from '../components/Drawing';
-
+import Royal from '../components/royal';
+import { useEffect, useState } from 'react';
+import Link from "next/link";
 import { useAuth } from '../context/AuthenticationContext';
+import { useGame } from '../context/GameContext';
 
 export default function RoyalPage({ status, detail }) {
 	const { logout } = useAuth();
+	const { joinRoyalGame, resetAll, inQueue, room, players } = useGame();
+	const [player1, setPlayer1] = useState(null);
+	const [player2, setPlayer2] = useState(null);
+	const [player3, setPlayer3] = useState(null);
+	const [player4, setPlayer4] = useState(null);
+	const [gameEnd, setGameEnd] = useState(false);
+
+	const [gameError, setGameError] = useState(false);
+	const [errorMessage, setErrorMessage] = useState('');
 
 	const handleLogout = async () => {
 		await logout();
@@ -24,6 +36,71 @@ export default function RoyalPage({ status, detail }) {
 		);
 	}
 
+	useEffect(() => {
+		joinRoyalGame();
+
+		return () => {
+			resetAll();
+		}
+	}, []);
+
+	useEffect(() => {
+		//console.log('PONG PAGE PLAYERS:', players); // debug
+		if (players) {
+			Object.entries(players).map(([key, player]) => {
+				//console.log('PONG PAGE PLAYER ROLE:', player.role); // debug
+				if (player.role === '1')
+					setPlayer1(player);
+				else if (player.role === '2')
+					setPlayer2(player);
+				else if (player.role === '3')
+					setPlayer3(player);
+				else if (player.role === '4')
+					setPlayer4(player);
+			});
+		}
+	}, [players]);
+
+	if (gameError) {
+		return (
+			<div className={`${styles.container} pt-5`}>
+				<div className={`card ${styles.customCard} mt-5`}>
+					<div className={`card-body ${styles.cardInfo}`}>
+						{ errorMessage ?
+							<h1>{errorMessage}</h1>
+						:
+							<h1>Something went wrong...</h1>
+						}
+					</div>
+				</div>
+				<div className={styles.retrybuttonContainer}>
+					<Link href="/chooseGame" passHref className={styles.retrybutton}>
+						Play Again
+					</Link>
+					<Link href="/" passHref className={styles.retrybutton}>
+						Main Menu
+					</Link>
+				</div>
+			</div>
+		);
+	}
+
+	if (gameEnd) {
+		return (
+			<div className={`${styles.container} pt-5`}>
+				<div className={styles.retrybuttonContainer}>
+					<Link href="/chooseGame" passHref className={styles.retrybutton}>
+						Play Again
+					</Link>
+					<Link href="/" passHref className={styles.retrybutton}>
+						Main Menu
+					</Link>
+				</div>
+			</div>
+		);
+	}
+
+
 	return (
 		<div className={styles.container}>
 		<div
@@ -34,6 +111,25 @@ export default function RoyalPage({ status, detail }) {
 			width: '100%', 
 		  }}
 		>
+
+			{ room && !inQueue ?
+					<>
+						{/* Player 1 */}
+						<RoyalPlayerCard nb={1} player={player1} />
+					</>
+				:
+					<></>
+			}
+
+			{ room && !inQueue ?
+					<>
+						{/* Player 2 */}
+						<PongPlayerCard nb={2} player={player2} />
+					</>
+				:
+					<></>
+			}
+
 
 
 		  {/* Current leaderboard */}
@@ -57,7 +153,11 @@ export default function RoyalPage({ status, detail }) {
 
 		{/* Game canvas */}
 		<DrawingCanvas/>
-		  <Royal />
+		  <Royal
+				gameEnd={gameEnd} setGameEnd={setGameEnd}
+				gameError={gameError} setGameError={setGameError}
+				setErrorMessage={setErrorMessage}
+			/>
 		</div>
 	);
 }

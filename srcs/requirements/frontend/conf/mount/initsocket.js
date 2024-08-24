@@ -881,6 +881,290 @@ io.on('connection', socket => {
 		return (room && rooms[gameType][room.id]);
 	}
 
+
+// ROYAL
+
+	function RoyalLoop(room) {
+		if (!room)
+			return null;
+		//console.log(`Royal_LOOP: room ${room.id} exists`); // debug
+		if (!connected[socket.id])
+			return LoopError(room, 'A player disconnected');
+
+		// Wait for timer start
+		//console.log(`Royal_LOOP: room ${room.id} waits for readyTimer`); // debug
+		function waitForReadyTimer() {
+			if (!RoomStillExists('royal', room))
+				return ;
+			const test = allPlayersReadyTimer(room.players);
+			if (!test) {
+				//console.log(`Royal_LOOP: room ${room.id} is not readyTimer`); // debug
+				setTimeout(waitForReadyTimer, 1000); // Once every second
+			} else {
+				//console.log(`Royal_LOOP: room ${room.id} is readyTimer`); // debug
+				RoyalLoopReadyTimer(room);
+			}
+		}
+		waitForReadyTimer();
+	}
+
+	function RoyalLoopReadyTimer(room) {
+		if (!connected[socket.id])
+			return LoopError(room, 'A player disconnected');
+		io.to(room.id).emit('startTimer');
+		//console.log(`Royal_LOOP_READY_TIMER: Emitted startTimer to room ${room.id}`); // debug
+
+		// Wait for gameplay start
+		//console.log(`Royal_LOOP_READY_TIMER: room ${room.id} waits for ready`); // debug
+		function waitForReady() {
+			if (!RoomStillExists('royal', room))
+				return ;
+			const test = allPlayersReady(room.players);
+			if (!test) {
+				//console.log(`Royal_LOOP_READY_TIMER: room ${room.id} is not ready`); // debug
+				setTimeout(waitForReady, 1000); // Once every second
+			} else {
+				//console.log(`Royal_LOOP_READY_TIMER: room ${room.id} is ready`); // debug
+				RoyalLoopReady(room);
+			}
+		}
+		waitForReady();
+	}
+
+	
+
+
+
+
+
+
+
+
+	function RoyalLoopReady(room) {
+		if (!connected[socket.id])
+			return LoopError(room, 'A player disconnected');
+		room.runtime.started = true;
+		room.runtime.startTime = Date.now();
+		io.to(room.id).emit('startGameplay');
+
+		const checkBounce = (rect1, rect2) => {
+			const [left1, top1, right1, bottom1] = [...rect1];
+			const [left2, top2, right2, bottom2] = [...rect2];
+
+			if (!(top1 < bottom2 || top2 < bottom1 || right1 < left2 || right2 < left1)) {
+				const center1 = bottom1 + ((top1 - bottom1) / 2);
+				const center2 = bottom2 + ((top2 - bottom2) / 2);
+				return ({ happened: true, hit: center1 - center2 });
+			}
+			return ({ happened: false, hit: 0.0 });
+		}
+
+		/*const sendResults = (room, leftWon) => {
+			if (room.runtime.end)
+				return ;
+
+			console.log(`Ended room=${room.id}`); // ELK LOG
+
+			room.runtime.end = true;
+			const winner = leftWon ? getPlayerRoleInRoom(room, 'leftPaddle') : getPlayerRoleInRoom(room, 'rightPaddle');
+			const loser = leftWon ? getPlayerRoleInRoom(room, 'rightPaddle') : getPlayerRoleInRoom(room, 'leftPaddle');
+			// Send match info to backend
+			const data = {
+				type: 'pong2',
+				winner_id: winner ? winner.id : 0,
+				loser_id: loser ? loser.id : 0,
+				winner_score: leftWon ? room.runtime.score.l : room.runtime.score.r,
+				loser_score: leftWon ? room.runtime.score.r : room.runtime.score.l,
+				start_datetime: new Date(room.runtime.startTime).toISOString(),
+				end_datetime: new Date(Date.now()).toISOString()
+			};
+
+			fetch('https://backend:8000/api/game/pong2/save', {
+				method: 'POST',
+				headers: {
+					'Authorization': `Bearer ${process.env.WS_TOKEN_BACKEND}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(data)
+			})
+			.then(response => {
+				if (!response || !response.ok)
+					throw new Error('Could not register match results');
+
+					return response.json();
+			})
+			.catch(error => {
+				console.error('Error:', error);
+			});
+
+			io.to(room.id).emit('gameEnd', { winner: winner, score: data.winner_score });
+		}*/
+
+		function gameLoop() {
+			if (!connected[socket.id])
+				return ;
+
+			// update paddle positions
+			const displaceP = room.runtime.paddleSpeed * timeSinceLastLoop;
+			/// Left Paddle
+			//// Go Up
+			if (room.runtime.goUp.l)
+				room.runtime.paddleZ.l -= displaceP;
+			//// Go Down
+			if (room.runtime.goDown.l)
+				room.runtime.paddleZ.l += displaceP;
+			room.runtime.paddleZ.l = Math.min(Math.max(room.runtime.paddleZ.l, -PONG2_PADDLE_MAX_Z), PONG2_PADDLE_MAX_Z);
+
+			/// Right Paddle
+			//// Go Up
+			if (room.runtime.goUp.r)
+				room.runtime.paddleZ.r -= displaceP;
+			//// Go Down
+			if (room.runtime.goDown.r)
+				room.runtime.paddleZ.r += displaceP;
+			room.runtime.paddleZ.r = Math.min(Math.max(room.runtime.paddleZ.r, -PONG2_PADDLE_MAX_Z), PONG2_PADDLE_MAX_Z);
+
+			// update ball position
+			/// Update X
+			const displaceX = (room.runtime.ballSpeed * timeSinceLastLoop) * Math.abs(room.runtime.ballDirection.x);
+			if (room.runtime.ballDirection.x > 0)
+				room.runtime.ballPosition.x += displaceX;
+			else if (room.runtime.ballDirection.x < 0)
+				room.runtime.ballPosition.x -= displaceX;
+			room.runtime.ballPosition.x = Math.min(Math.max(room.runtime.ballPosition.x, -PONG2_BALL_MAX_X), PONG2_BALL_MAX_X);
+
+			/// Update Z
+			const displaceZ = (room.runtime.ballSpeed * timeSinceLastLoop) * Math.abs(room.runtime.ballDirection.z);
+			if (room.runtime.ballDirection.z > 0)
+				room.runtime.ballPosition.z += displaceZ;
+			else if (room.runtime.ballDirection.z < 0)
+				room.runtime.ballPosition.z -= displaceZ;
+			/// Bounce on top and bottom walls
+			if (room.runtime.ballPosition.z > PONG2_BALL_MAX_Z
+				|| room.runtime.ballPosition.z < -PONG2_BALL_MAX_Z)
+				room.runtime.ballDirection.z *= -1;
+			room.runtime.ballPosition.z = Math.min(Math.max(room.runtime.ballPosition.z, -PONG2_BALL_MAX_Z), PONG2_BALL_MAX_Z);
+
+			/// Check Bounces
+			function bounce() {
+				// TODO: Check data consistency with client-side
+				//// - Ball has radius of 2
+				const ballRad = 2;
+				const ballX = room.runtime.ballPosition.x;
+				const ballZ = room.runtime.ballPosition.z;
+				//// - Paddle has X-length of 2 and Z-length of 10
+				const paddleRadX = 1;
+				const paddleRadZ = 5;
+				//// - Paddle is either on X = -43 or X = 43
+				let paddleX = -43;
+				let paddleZ = room.runtime.paddleZ.l;
+				if (ballX > 0) {
+					paddleX *= -1;
+					paddleZ = room.runtime.paddleZ.r;
+				}
+				// Only check collision if ball is going in direction of paddle
+				// TODO: Check if Bounce Mercy Period is useful
+				if (
+					Date.now() - room.runtime.lastBallBounce.when > PONG2_BALL_BOUNCE_MERCY_PERIOD
+					&& ((paddleX < 0 && room.runtime.ballDirection.x < 0)
+						|| (paddleX > 0 && room.runtime.ballDirection.x > 0))
+				) {
+					//// Left, Top, Right, Bottom
+					const { happened, hit } = checkBounce(
+						[ballX - ballRad,				ballZ + ballRad,			ballX + ballRad,			ballZ - ballRad],
+						[paddleX - paddleRadX,	paddleZ + paddleRadZ,	paddleX + paddleRadX,	paddleZ - paddleRadZ]
+					);
+					if (happened) {
+						room.runtime.ballDirection.x *= -1;
+						const offset = hit * 0.1;
+						room.runtime.ballDirection.z += offset;
+						room.runtime.ballDirection.x -= offset;
+						const absSum = Math.abs(room.runtime.ballDirection.x) + Math.abs(room.runtime.ballDirection.z);
+						if (absSum !== 1)
+						{
+							const ratio = 1 / absSum;
+							room.runtime.ballDirection.x *= ratio;
+							room.runtime.ballDirection.z *= ratio;
+						}
+						room.runtime.lastBallBounce.happened = true;
+						room.runtime.lastBallBounce.when = Date.now();
+					}
+				}
+			}
+			if (room.runtime.ballPosition.x > PONG2_BALL_MAX_X - 2.5
+				|| room.runtime.ballPosition.x < -PONG2_BALL_MAX_X + 2.5) {
+					bounce();
+				}
+
+			/// Clamp Ball Z Direction
+			room.runtime.ballDirection.z = Math.min(Math.max(room.runtime.ballDirection.z, -PONG2_BALL_MAX_Z_DIR), PONG2_BALL_MAX_Z_DIR);
+			const absSum = Math.abs(room.runtime.ballDirection.x) + Math.abs(room.runtime.ballDirection.z);
+			if (absSum !== 1)
+			{
+				const ratio = 1 / absSum;
+				room.runtime.ballDirection.x *= ratio;
+				room.runtime.ballDirection.z *= ratio;
+			}
+
+			/// Check if someone scored (if ballX is behind a paddleX and going towards wall)
+			if ((room.runtime.ballPosition.x > PONG2_BALL_MAX_X - 0.5 && room.runtime.ballDirection.x > 0)
+				|| (room.runtime.ballPosition.x < -PONG2_BALL_MAX_X + 0.5 && room.runtime.ballDirection.x < 0)) {
+					const leftScored = room.runtime.ballPosition.x > 0;
+					room.runtime.paddleSpeed = 0;
+					room.runtime.ballPosition.x = 0;
+					room.runtime.ballPosition.z = 0;
+					room.runtime.ballDirection.z = 0.00001;
+					room.runtime.ballSpeed = 0;
+					room.runtime.ballZeroTime = Date.now() + PONG2_BALL_RESPAWN_TIME;
+					room.runtime.ballRespawnTime = Date.now();
+					room.runtime.resetRotation = true;
+					room.runtime.paddleZ.l = 0;
+					room.runtime.paddleZ.r = 0;
+					if (leftScored) {
+						room.runtime.score.l += 1;
+						room.runtime.ballDirection.x = 0.99999;
+						// Left won the game
+						if (room.runtime.score.l >= PONG2_SCORE_TO_WIN)
+							sendResults(room, true);
+					} else {
+						room.runtime.score.r += 1;
+						room.runtime.ballDirection.x = -0.99999;
+						// Right won the game
+						if (room.runtime.score.r >= PONG2_SCORE_TO_WIN)
+							sendResults(room, false);
+					}
+				}
+
+			io.to(room.id).emit('gameStatus', {
+				leftScore: room.runtime.score.l,
+				rightScore: room.runtime.score.r,
+				newPaddleSpeed: room.runtime.paddleSpeed,
+				ballX: room.runtime.ballPosition.x,
+				ballZ: room.runtime.ballPosition.z,
+				newBallSpeed: room.runtime.ballSpeed,
+				ballDirX: room.runtime.ballDirection.x,
+				ballDirZ: room.runtime.ballDirection.z,
+				resetRotation: room.runtime.lastBallBounce.happened,
+				leftPaddleZ: room.runtime.paddleZ.l,
+				rightPaddleZ: room.runtime.paddleZ.r
+			});
+			room.runtime.lastBallBounce.happened = false;
+			room.runtime.lastLoopTime = Date.now();
+
+			setTimeout(gameLoop, 1000 / PONG2_FPS);
+		}
+		room.runtime.lastLoopTime = Date.now();
+		gameLoop();
+	}
+
+
+
+
+
+
+
+
+
 // PONG 2
 
 	function Pong2Loop(room) {
