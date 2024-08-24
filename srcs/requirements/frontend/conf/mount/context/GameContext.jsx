@@ -62,12 +62,6 @@ export const GameProvider = ({ children }) => {
 		joinGame();
 	}
 
-	// Sets InGame and GameType
-	const joinRoyalGame = () => {
-		setGameType('royal');
-		joinGame();
-	}
-
 	// Sets InQueue, Room and Players
 	const updateRoom = (room, players) => {
 		if (room && (!room.type || room.type === 'queue'))
@@ -126,8 +120,7 @@ export const GameProvider = ({ children }) => {
 		<GameContext.Provider value={{
 			inQueue, inGame, inTourney, gameStarted, gameEnded, gameErrored,
 			gameType, room, players, tourneyStarted, tourneyEnded, tourney, tourneyPlayers,
-			joinPong2Game, joinPong2Tourney,
-			joinPong3Game, joinRoyalGame,
+			joinPong2Game, joinPong2Tourney, joinPong3Game,
 			setGameStarted, setGameEnded, setGameErrored,
 			updateRoom, updatePlayers,
 			setTourneyStarted, setTourneyEnded,

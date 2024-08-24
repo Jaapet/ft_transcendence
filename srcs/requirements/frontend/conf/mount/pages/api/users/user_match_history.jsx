@@ -81,27 +81,7 @@ export default async (req, res) => {
 			throw new Error(pong3Data.detail || `Could not fetch pong3 match history for user ${id}`);
 		}
 
-		// Fetch user's royal match history
-		const royalRes = await fetch(`https://backend:8000/api/royal_matches/player_matches/?player_id=${id}`, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${access}`
-			}
-		});
-		if (!royalRes) {
-			throw new Error(`Could not fetch royal match history for user ${id}`);
-		}
-
-		const royalData = await royalRes.json();
-		if (!royalData) {
-			throw new Error(`Could not fetch royal match history for user ${id}`);
-		}
-		if (royalRes.status !== 404 && !royalRes.ok) {
-			throw new Error(royalData.detail || `Could not fetch royal match history for user ${id}`);
-		}
-
-		return res.status(200).json({ user: userData, pong2_matches: pong2Data, pong3_matches: pong3Data, royal_matches: royalData });
+		return res.status(200).json({ user: userData, pong2_matches: pong2Data, pong3_matches: pong3Data });
 	} catch (error) {
 		//console.error('API USER MATCH HISTORY:', error);
 		return res.status(401).json({ message: error.message });

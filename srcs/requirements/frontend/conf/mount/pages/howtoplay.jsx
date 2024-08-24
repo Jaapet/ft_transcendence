@@ -5,7 +5,6 @@ import { useAuth } from '../context/AuthenticationContext';
 
 export default function HowToPlay({ status, detail }) {
 	const [selectedGame, setSelectedGame] = useState('game1');
-	const [numberOfPlayers, setNumberOfPlayers] = useState(2);
 	const { logout } = useAuth();
 
 	const handleLogout = async () => {
@@ -32,44 +31,28 @@ export default function HowToPlay({ status, detail }) {
 				<Card className={styles.customCard}>
 					<Card.Body>
 						<Card.Title className={styles.cardInfo}>Classic Pong Rules</Card.Title>
-						<Dropdown>
-							<Dropdown.Toggle variant="success" id="dropdown-basic">
-								{numberOfPlayers} Players
-							</Dropdown.Toggle>
-							<Dropdown.Menu>
-								<Dropdown.Item onClick={() => setNumberOfPlayers(2)}>2 Players</Dropdown.Item>
-								<Dropdown.Item onClick={() => setNumberOfPlayers(3)}>3 Players</Dropdown.Item>
-							</Dropdown.Menu>
-						</Dropdown>
-						<div className="mt-3">
-							{numberOfPlayers === 2 ? (
-								<p className="text-justify">
-									In 2-player Classic Pong, the goal is to score by hitting the ball past your opponent's paddle.
-									Players move their paddles vertically with the up and down arrow keys in order to hit the ball.
-									The first to reach 5 points wins.
-								</p>
-							) : (
-								<p className="text-justify">
-									In this modified version of Pong for 3 players, the objective of the ball player is to pass behind a paddle before the timer runs out. The paddles win if the timer runs out before the ball can score.
-									Each paddle player controls a paddle vertically and tries to block the ball. The ball player can influence the ball's movement vertically. All players use the up and down arrow keys.
-								</p>
-							)}
-						</div>
+						<Card.Text style={{ textAlign: 'justify' }}>
+							- In 2-player Classic Pong, the goal is to score by hitting the ball past your opponent's paddle.<br/>
+							- Players move their paddles vertically with the <b style={{ color: '#fcc200' }}>up and down arrow keys</b> in order to hit the ball.<br/>
+							- The first to reach <b style={{ color: '#fcc200' }}>4 points</b> wins.
+						</Card.Text>
 					</Card.Body>
 				</Card>
 			);
 		}
 
-		/* royal pong */
+		/* 1v2 pong */
 		else if (selectedGame === 'game2') {
 			return (
 				<Card className={styles.customCard}>
 					<Card.Body>
-						<Card.Title className={styles.cardInfo}>Royal Pong Rules</Card.Title>
-						<Card.Text>
-							Royal Pong is a battle royale game inspired by Pong where every player controls a ball.
-							The balls bounce off each other, allowing players to push the others around.
-							The objective is to be the last ball remaining on the platform. If you get pushed off the platform, your game ends there.
+						<Card.Title className={styles.cardInfo}>1v2 Pong Rules</Card.Title>
+						<Card.Text style={{ textAlign: 'justify' }}>
+							- In this modified version of Pong for 3 players, the objective of the ball player is to pass behind a paddle before the <b style={{ color: '#fcc200' }}>30s timer</b> runs out.<br/>
+							- The paddles win if the timer runs out before the ball can score.<br/>
+							- Each paddle player controls a paddle vertically and tries to block the ball.<br/>
+							- The ball player can influence the ball's movement vertically.<br/>
+							- <b style={{ color: '#fcc200' }}>All players use the up and down arrow keys</b>.
 						</Card.Text>
 					</Card.Body>
 				</Card>
@@ -97,7 +80,7 @@ export default function HowToPlay({ status, detail }) {
 								style={{ fontSize: '38px' }}
 								onClick={() => setSelectedGame('game2')}
 							>
-								Royal Pong
+								1v2 Pong
 							</Button>
 					</Col>
 				</Row>

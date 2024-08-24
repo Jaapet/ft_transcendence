@@ -54,19 +54,17 @@ const UserMatchHistoryListMatch = ({ user, matches }) => {
 	);
 }
 
-const UserMatchHistoryList = ({ user, activeTab, pong2_matches, pong3_matches, royal_matches }) => {
+const UserMatchHistoryList = ({ user, activeTab, pong2_matches, pong3_matches }) => {
 	if (activeTab === '#pong2') {
 		return (<UserMatchHistoryListMatch user={user} matches={pong2_matches} />);
 	} else if (activeTab === '#pong3') {
 		return (<UserMatchHistoryListMatch user={user} matches={pong3_matches} />);
-	} else if (activeTab === '#royal') {
-		return (<UserMatchHistoryListMatch user={user} matches={royal_matches} />);
 	} else {
 		return (<Card.Text>Somethig went wrong...</Card.Text>);
 	}
 }
 
-export default function UserMatchHistory({ status, detail, user, pong2_matches, pong3_matches, royal_matches }) {
+export default function UserMatchHistory({ status, detail, user, pong2_matches, pong3_matches }) {
 	const { logout } = useAuth();
 	const [activeTab, setActiveTab] = useState('#pong2');
 
@@ -82,7 +80,7 @@ export default function UserMatchHistory({ status, detail, user, pong2_matches, 
 		handleLogout();
 	}
 
-	if (status !== 200 || !user || !pong2_matches || !pong3_matches || !royal_matches) {
+	if (status !== 200 || !user || !pong2_matches || !pong3_matches) {
 		return (
 			<div className={styles.container}>
 				<p className="bg-light text-black">Something went wrong...</p>
@@ -94,7 +92,7 @@ export default function UserMatchHistory({ status, detail, user, pong2_matches, 
 	return (
 		<div className={styles.container}>
 			<Head>
-				<title>Profile Page</title>
+				<title>Match History</title>
 			</Head>
 			
 			<h1 className={`mt-1 ${styles.background_title}`}>{user.username}</h1>
@@ -116,9 +114,6 @@ export default function UserMatchHistory({ status, detail, user, pong2_matches, 
 						<Nav.Item>
 							<Nav.Link href='#pong3'>Pong 1v2 ({pong3_matches.length})</Nav.Link>
 						</Nav.Item>
-						<Nav.Item>
-							<Nav.Link href='#royal'>Royal Pong ({royal_matches.length})</Nav.Link>
-						</Nav.Item>
 					</Nav>
 				</Card.Header>
 				<Card.Body>
@@ -127,7 +122,6 @@ export default function UserMatchHistory({ status, detail, user, pong2_matches, 
 						activeTab={activeTab}
 						pong2_matches={pong2_matches}
 						pong3_matches={pong3_matches}
-						royal_matches={royal_matches}
 					/>
 				</Card.Body>
 			</Card>
@@ -158,8 +152,7 @@ export async function getServerSideProps(context) {
 					detail: 'Resource not found',
 					user: null,
 					pong2_matches: null,
-					pong3_matches: null,
-					royal_matches: null
+					pong3_matches: null
 				}
 			}
 		}
@@ -178,8 +171,7 @@ export async function getServerSideProps(context) {
 				detail: 'Success',
 				user: data.user,
 				pong2_matches: data.pong2_matches,
-				pong3_matches: data.pong3_matches,
-				royal_matches: data.royal_matches
+				pong3_matches: data.pong3_matches
 			}
 		}
 	} catch (error) {
@@ -190,8 +182,7 @@ export async function getServerSideProps(context) {
 				detail: error.message,
 				user: null,
 				pong2_matches: null,
-				pong3_matches: null,
-				royal_matches: null
+				pong3_matches: null
 			}
 		}
 	}
