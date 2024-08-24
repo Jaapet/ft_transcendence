@@ -1,5 +1,5 @@
 import os
-from .models import Member, FriendRequest, Match, Match3, MatchR, RoyalPlayer
+from .models import Member, FriendRequest, Match, Match3
 from django.db import transaction
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
@@ -33,7 +33,6 @@ from .serializers import (
 	RemoveFriendSerializer,
 	MatchSerializer,
 	Match3Serializer,
-	MatchRSerializer,
 	RegisterMatchSerializer,
 	RegisterMatch3Serializer
 )
@@ -227,16 +226,12 @@ class LeaderboardsAPIView(APIView):
 		members_by_date = Member.objects.order_by('join_date')
 		
 		pong_leaders = sorted(members_by_date, key=lambda member: member.elo_pong, reverse=True)[:5]
-		royal_leaders = sorted(members_by_date, key=lambda member: member.elo_royal, reverse=True)[:5]
 
 		serialized_leaders = {
-			"pong": [],
-			"royal": []
+			"pong": []
 		}
 		for leader in pong_leaders:
 			serialized_leaders["pong"].append(RestrictedMemberSerializer(leader, context={'request': request}).data)
-		for leader in royal_leaders:
-			serialized_leaders["royal"].append(RestrictedMemberSerializer(leader, context={'request': request}).data)
 
 		return Response(serialized_leaders)
 
@@ -498,44 +493,6 @@ class Match3ViewSet(viewsets.ModelViewSet):
 		serializer = self.get_serializer(player_matches, many=True)
 		return Response(serializer.data)
 
-# Custom permissions for MatchRViewSet
-class MatchRViewSetPermissions(permissions.BasePermission):
-	def has_permission(self, request, view):
-		# Admins have full access
-		if request.user and request.user.is_staff:
-			return True
-		# Users can only use these actions (all matches, 1 match, all matches for 1 user, 3 last matches for 1 user)
-		if request.user and view.action in ['list', 'retrieve', 'player_matches', 'last_player_matches']:
-			return True
-		return False
-
-# Queries all royal matches ordered by most recently finished
-# Requires authentication
-class MatchRViewSet(viewsets.ModelViewSet):
-	permission_classes = [permissions.IsAuthenticated, MatchRViewSetPermissions]
-	serializer_class = MatchRSerializer
-	queryset = MatchR.objects.all().order_by('-end_datetime')
-
-	# Get all matches involving 1 player
-	@action(detail=False, methods=['get'])
-	def player_matches(self, request, pk=None):
-		player_id = request.query_params.get('player_id', None)
-		if (player_id is None):
-			return Response({'error': 'Player ID is required'}, status=status.HTTP_400_BAD_REQUEST)
-		player_matches = MatchR.objects.filter(players__member_id=player_id).distinct().order_by('-end_datetime')
-		serializer = self.get_serializer(player_matches, many=True)
-		return Response(serializer.data)
-
-	# Get a player's last 3 matches
-	@action(detail=False, methods=['get'])
-	def last_player_matches(self, request, pk=None):
-		player_id = request.query_params.get('player_id', None)
-		if (player_id is None):
-			return Response({'error': 'Player ID is required'}, status=status.HTTP_400_BAD_REQUEST)
-		player_matches = MatchR.objects.filter(players__member_id=player_id).distinct().order_by('-end_datetime')[:3]
-		serializer = self.get_serializer(player_matches, many=True)
-		return Response(serializer.data)
-
 class LastThreeMatchesAPIView(APIView):
 	permission_classes = [permissions.IsAuthenticated]
 
@@ -552,10 +509,9 @@ class LastThreeMatchesAPIView(APIView):
 		# Fetch the last 3 matches of each type
 		matches2 = list(Match.objects.filter(Q(winner=user) | Q(loser=user)).select_related("winner", "loser").order_by('-end_datetime')[:3])
 		matches3 = list(Match3.objects.filter(Q(paddle1=user) | Q(paddle2=user) | Q(ball=user)).select_related("paddle1", "paddle2", "ball").order_by('-end_datetime')[:3])
-		matchesR = list(MatchR.objects.filter(players__member=user).distinct().order_by('-end_datetime')[:3])
 
 		# Combine and sort the matches by date
-		all_matches = matches2 + matches3 + matchesR
+		all_matches = matches2 + matches3
 		all_matches_sorted = sorted(all_matches, key=lambda x: x.end_datetime, reverse=True)
 
 		# Get the last 3 matches
@@ -567,8 +523,6 @@ class LastThreeMatchesAPIView(APIView):
 				serialized_matches.append(MatchSerializer(match, context={'request': request}).data)
 			elif isinstance(match, Match3):
 				serialized_matches.append(Match3Serializer(match, context={'request': request}).data)
-			elif isinstance(match, MatchR):
-				serialized_matches.append(MatchRSerializer(match, context={'request': request}).data)
 
 		return Response(serialized_matches)
 
@@ -670,14 +624,11 @@ class MetricsView(APIView):
 		metrics += self.collect_ingame_users()
 		metrics += self.collect_users_friends()
 		metrics += self.collect_users_elo_pong()
-		metrics += self.collect_users_elo_royal()
 		metrics += self.collect_total_friend_requests()
 		metrics += self.collect_total_pong2_matches()
 		metrics += self.collect_won_pong2_matches()
 		metrics += self.collect_total_pong3_matches()
 		metrics += self.collect_won_pong3_matches()
-		metrics += self.collect_total_royal_matches()
-		metrics += self.collect_won_royal_matches()
 		return '\n'.join(metrics)
 
 	def collect_total_users(self):
@@ -738,18 +689,6 @@ class MetricsView(APIView):
 		users = Member.objects.all()
 		for user in users:
 			metric.append(f'back_users_elo_pong{{user="{user.username}"}} {user.elo_pong}')
-
-		return metric
-
-	def collect_users_elo_royal(self):
-		metric = [
-			'# HELP back_users_elo_royal Royal ELO of all users',
-			'# TYPE back_users_elo_royal counter'
-		]
-
-		users = Member.objects.all()
-		for user in users:
-			metric.append(f'back_users_elo_royal{{user="{user.username}"}} {user.elo_royal}')
 
 		return metric
 
@@ -836,37 +775,5 @@ class MetricsView(APIView):
 			user_match_count_paddle = matches.filter(Q(ball_won=False) & (Q(paddle1=user) | Q(paddle2=user))).count()
 			metric.append(f'back_won_pong3_matches{{player="{user.username}",role="ball"}} {user_match_count_ball}')
 			metric.append(f'back_won_pong3_matches{{player="{user.username}",role="paddle"}} {user_match_count_paddle}')
-
-		return metric
-
-	def collect_total_royal_matches(self):
-		total_royal_matches = MatchR.objects.count()
-		metric = [
-			'# HELP back_total_royal_matches Number of played royal matches',
-			'# TYPE back_total_royal_matches counter',
-			f'back_total_royal_matches {total_royal_matches}'
-		]
-
-		users = Member.objects.all()
-		royal_players = RoyalPlayer.objects.all()
-		for user in users:
-			user_match_count = royal_players.filter(Q(member=user)).count()
-			metric.append(f'back_total_royal_matches{{player="{user.username}"}} {user_match_count}')
-
-		return metric
-
-	def collect_won_royal_matches(self):
-		won_royal_matches = MatchR.objects.count()
-		metric = [
-			'# HELP back_won_royal_matches Number of won royal matches',
-			'# TYPE back_won_royal_matches counter',
-			f'back_won_royal_matches {won_royal_matches}'
-		]
-
-		users = Member.objects.all()
-		royal_players = RoyalPlayer.objects.all()
-		for user in users:
-			user_match_count = royal_players.filter(Q(member=user) & Q(position=1)).count()
-			metric.append(f'back_won_royal_matches{{player="{user.username}"}} {user_match_count}')
 
 		return metric

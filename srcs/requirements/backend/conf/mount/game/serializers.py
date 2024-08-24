@@ -1,4 +1,4 @@
-from .models import Member, FriendRequest, Match, Match3, MatchR, RoyalPlayer
+from .models import Member, FriendRequest, Match, Match3
 from django.core.validators import RegexValidator
 from rest_framework.validators import UniqueValidator
 from django.db import IntegrityError
@@ -52,7 +52,6 @@ class RestrictedMemberSerializer(serializers.HyperlinkedModelSerializer):
 			'join_date',
 			'is_admin',
 			'elo_pong',
-			'elo_royal',
 			'is_online'
 		]
 
@@ -452,34 +451,3 @@ class Match3Serializer(serializers.HyperlinkedModelSerializer):
 
 	def get_ball_id(self, obj):
 		return obj.ball.id if obj.ball else None
-
-class MatchRSerializer(serializers.HyperlinkedModelSerializer):
-	players = serializers.SerializerMethodField()
-	start_date = serializers.DateTimeField(source='start_datetime', format='%B %d %Y')
-	end_date = serializers.DateTimeField(source='end_datetime', format='%B %d %Y')
-	start_time = serializers.DateTimeField(source='start_datetime', format='%H:%M')
-	end_time = serializers.DateTimeField(source='end_datetime', format='%H:%M')
-
-	class Meta:
-		model = MatchR
-		fields = [
-			'url',
-			'id',
-			'type',
-			'players',
-			'start_date',
-			'end_date',
-			'start_time',
-			'end_time'
-		]
-
-	def get_players(self, obj):
-		players = RoyalPlayer.objects.filter(match=obj).select_related('member').order_by('position')
-		return [
-			{
-				'username': player.member.username if player.member else 'Deleted user',
-				'id': player.member.id if player.member else None,
-				'position': player.position
-			}
-			for player in players
-		]

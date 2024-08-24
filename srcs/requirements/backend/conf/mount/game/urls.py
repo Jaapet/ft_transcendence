@@ -23,7 +23,6 @@ from .views import (
 	RemoveFriendAPIView,
 	MatchViewSet,
 	Match3ViewSet,
-	MatchRViewSet,
 	LastThreeMatchesAPIView,
 	RegisterMatchAPIView,
 	RegisterMatch3APIView,
@@ -39,7 +38,6 @@ router.register(r'members', MemberViewSet)
 router.register(r'friend_requests', FriendRequestViewSet)
 router.register(r'pong2_matches', MatchViewSet)
 router.register(r'pong3_matches', Match3ViewSet)
-router.register(r'royal_matches', MatchRViewSet)
 
 urlpatterns = [
 	path('', include(router.urls)),

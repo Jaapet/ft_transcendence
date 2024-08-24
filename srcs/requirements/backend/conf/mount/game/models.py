@@ -50,7 +50,6 @@ class MemberManager(BaseUserManager):
 # - last_activity	(DateTimeField)
 # - friends				(ManyToManyField Member)
 # - elo_pong			(IntegerField)
-# - elo_royal			(IntegerField)
 # - everything else is from AbstractBaseUser
 #
 # From Match objects:
@@ -68,7 +67,6 @@ class MemberManager(BaseUserManager):
 # - join_date + username
 # - DESC join_date + username
 # - elo_pong
-# - elo_royal
 class Member(AbstractBaseUser, PermissionsMixin):
 	username = models.CharField(
 		max_length=25,
@@ -142,14 +140,6 @@ class Member(AbstractBaseUser, PermissionsMixin):
 		verbose_name="Pong ELO rating"
 	)
 
-	elo_royal = models.IntegerField(
-		default=1000,
-		null=False,
-		blank=False,
-		db_comment="ELO rating for the royal game",
-		verbose_name="Royal ELO rating"
-	)
-
 	objects = MemberManager()
 
 	# Required for extending AbstractBaseUser
@@ -165,8 +155,7 @@ class Member(AbstractBaseUser, PermissionsMixin):
 			models.Index(fields=["last_activity"], name="member_last_activity_idx"),
 			models.Index(fields=["join_date", "username"], name="member_join_date_idx"),
 			models.Index(fields=["-join_date", "username"], name="member_join_date_rev_idx"),
-			models.Index(fields=["elo_pong"], name="member_elo_pong_idx"),
-			models.Index(fields=["elo_royal"], name="member_elo_royal_idx")
+			models.Index(fields=["elo_pong"], name="member_elo_pong_idx")
 		]
 
 	def __str__(self):
@@ -462,90 +451,3 @@ class Match3(models.Model):
 		if (self.ball_won == True):
 			result = "ball won"
 		return f"{paddle1_name} & {paddle2_name} vs {ball_name} ({result})"
-
-# MatchR objects contain:
-# - type						(CharField)
-# - start_datetime	(DateTimeField)
-# - end_datetime		(DateTimeField)
-#
-# From RoyalPlayer:
-# - players
-#
-# Indexed on:
-# - end_datetime
-class MatchR(models.Model):
-	type = models.CharField(
-		null=False,
-		blank=False,
-		default='royal',
-		db_comment="Type of the game",
-		verbose_name="Game Type"
-	)
-
-	start_datetime = models.DateTimeField(
-		auto_now_add=True,
-		db_comment="Date and time of the start of the match",
-		verbose_name="Start of match"
-	)
-
-	end_datetime = models.DateTimeField(
-		db_comment="Date and time of the end of the match",
-		verbose_name="End of match"
-	)
-
-	class Meta:
-		verbose_name = "royal match"
-		verbose_name_plural = "royal matches"
-		indexes = [
-			models.Index(fields=["end_datetime"], name="royal_match_date_idx")
-		]
-
-# RoyalPlayer objects contain:
-# - match				(MatchR Foreign Key)
-# - member			(Member Foreign Key)
-# - position		(PositiveSmallIntegerField)
-#
-# Indexed on:
-# - match
-# - member
-class RoyalPlayer(models.Model):
-	match = models.ForeignKey(
-		MatchR,
-		related_name='players',
-		on_delete=models.CASCADE
-	)
-
-	member = models.ForeignKey(
-		Member,
-		null=True,
-		on_delete=models.SET_NULL,
-		db_comment="Player object for Royal",
-		verbose_name="Player"
-	)
-
-	position = models.PositiveSmallIntegerField(
-		default=0,
-		null=False,
-		blank=False,
-		validators=[MinValueValidator(1), MaxValueValidator(8)],
-		db_comment="Position in associated game's results",
-		verbose_name="Position in game"
-	)
-
-	class Meta:
-		verbose_name = "royal player"
-		verbose_name_plural = "royal players"
-		indexes = [
-			models.Index(fields=["match"], name="royal_player_match_idx"),
-			models.Index(fields=["member"], name="royal_player_member_idx")
-		]
-		# This ensures that members and positions are unique in the associated match
-		unique_together = [("match", "member"), ("match", "position")]
-		# Ensures position-based ordering when retrieved
-		ordering = ['position']
-
-	def __str__(self):
-		name = "Deleted user"
-		if self.member:
-			name = self.member.username
-		return f"{name} in royal match {self.match.id}"
