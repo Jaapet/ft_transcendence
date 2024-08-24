@@ -110,8 +110,8 @@ Match objects contain:
 			return (
 				<div className={`card ${styles.customCard}`}>
 					<div className="card-body">
-						<h2 className="card-title mb-0">You have no friends 🤭🫵</h2>
-						<img src="/images/sadboy.png" alt="Royal Icon" style={{ width: '50%', height: 'auto' }}></img>
+						<h2 className="card-title mb-0">You have no friends 🤭</h2>
+						<img src="/images/sadboy.png" alt="" style={{ width: '50%', height: 'auto' }}></img>
 					</div>
 				</div>
 			);
