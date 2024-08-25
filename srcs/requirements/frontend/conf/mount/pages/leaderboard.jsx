@@ -25,7 +25,7 @@ const LeaderboardTableRow = ({ player, index }) => {
 
 const LeaderboardTable = ({ title, leaders }) => {
 	return (
-		<Card className={styles.customCard}>
+		<Card className={styles.customCard} styles={{minWidth: '800px'}}>
 			<Card.Body>
 				<Card.Title className={styles.cardInfo}>{title}</Card.Title>
 
