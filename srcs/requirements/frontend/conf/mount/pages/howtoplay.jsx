@@ -60,22 +60,6 @@ export default function HowToPlay({ status, detail }) {
 			);
 		}
 
-		/* royal pong */
-/* 		else if (selectedGame === 'game2') {
-			return (
-				<Card className={styles.customCard}>
-					<Card.Body>
-						<Card.Title className={styles.cardInfo}>Royal Pong Rules</Card.Title>
-						<Card.Text>
-							Royal Pong is a battle royale game inspired by Pong where every player controls a ball.
-							The balls bounce off each other, allowing players to push the others around.
-							The objective is to be the last ball remaining on the platform. If you get pushed off the platform, your game ends there.
-						</Card.Text>
-					</Card.Body>
-				</Card>
-			);
-		}
-		*/	
 	};
 
 	return (
@@ -93,13 +77,6 @@ export default function HowToPlay({ status, detail }) {
 							>
 								Classic Pong
 							</Button>
-	{/* 						<Button
-								className={`${styles.button} ${selectedGame === 'game2' ? '' : styles.selected}`}
-								style={{ fontSize: '38px' }}
-								onClick={() => setSelectedGame('game2')}
-							>
-								Royal Pong
-							</Button> */}
 					</Col>
 				</Row>
 				<Row className="mt-4">

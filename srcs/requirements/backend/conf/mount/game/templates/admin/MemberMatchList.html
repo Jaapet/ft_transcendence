@@ -56,30 +56,4 @@
 		{% endfor %}
 	</tbody>
 </table>
-
-<h2>Royal Matches</h2>
-<table>
-	<thead>
-		<tr>
-			<th>Players</th>
-			<th>Start Date</th>
-			<th>End Date</th>
-		</tr>
-	</thead>
-	<tbody>
-		{% for match in royal_matches %}
-			<tr>
-				<td>
-					<ol>
-						{% for player in match.players.all %}
-							<li>{{ player.member }}</li>
-						{% endfor %}
-					</ol>
-				</td>
-				<td>{{ match.start_datetime }}</td>
-				<td>{{ match.end_datetime }}</td>
-			</tr>
-		{% endfor %}
-	</tbody>
-</table>
 {% endblock %}

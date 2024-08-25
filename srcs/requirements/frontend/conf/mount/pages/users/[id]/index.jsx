@@ -25,29 +25,6 @@ const ProfileMemberCardPicture = ({ user }) => {
 	);
 }
 
-/*
-    <Card style={{ width: '18rem' }}>
-      <Card.Img variant="top" src="holder.js/100px180" />
-      <Card.Body>
-        <Card.Title>Card Title</Card.Title>
-        <Card.Text>
-          Some quick example text to build on the card title and make up the
-          bulk of the card's content.
-        </Card.Text>
-        <Button variant="primary">Go somewhere</Button>
-      </Card.Body>
-    </Card>
-*/
-/* const ProfileMemberCardELOroyal = ({ user }) => {
-	return (
-		<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '20px',  minWidth: '200px'}}>
-			<div className="card-body" style={{backgroundColor:'rgba(255, 255, 255, 0.1)'}}>
-				<p className="card-text" >Royal:{user.elo_royal}</p>
-			</div>
-		</div>
-	);
-} */
-
 const ProfileMemberCardELO = ({ user }) => {
 	return (
 		<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '20px', minWidth: '200px'}}>
@@ -132,7 +109,7 @@ const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg
 				</div>
 			{/* elo */}
 			<ProfileMemberCardELO user={user} />
-			{/* <ProfileMemberCardELOroyal user={user} /> */}
+			{/* <ProfileMemberCardELO user={user} /> */}
 
 		</div>
 	);

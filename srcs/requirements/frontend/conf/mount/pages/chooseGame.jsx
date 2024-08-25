@@ -57,9 +57,7 @@ export default function ChooseGame({ status, detail }) {
 				<Link href="/Pong3Page" passHref className={styles.button}>
 					1 vs 2 Pong
 				</Link>
-			{ 	<Link href="/RoyalPage" passHref className={styles.button}>
-					Royal Pong
-				</Link> }
+			
 			
 		</div>
 			{isChecked && <p className={styles.backCard}>Performance Mode Activated!</p>}

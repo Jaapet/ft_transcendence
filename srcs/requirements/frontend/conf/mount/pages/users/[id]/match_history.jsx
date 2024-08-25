@@ -59,8 +59,6 @@ const UserMatchHistoryList = ({ user, activeTab, pong2_matches, pong3_matches })
 		return (<UserMatchHistoryListMatch user={user} matches={pong2_matches} />);
 	} else if (activeTab === '#pong3') {
 		return (<UserMatchHistoryListMatch user={user} matches={pong3_matches} />);
-/* 	} else if (activeTab === '#royal') {
-		return (<UserMatchHistoryListMatch user={user} matches={royal_matches} />); */
 	} else {
 		return (<Card.Text>Somethig went wrong...</Card.Text>);
 	}
@@ -116,9 +114,6 @@ export default function UserMatchHistory({ status, detail, user, pong2_matches, 
 						<Nav.Item>
 							<Nav.Link href='#pong3'>Pong 1v2 ({pong3_matches.length})</Nav.Link>
 						</Nav.Item>
-						{/* <Nav.Item>
-							<Nav.Link href='#royal'>Royal Pong ({royal_matches.length})</Nav.Link>
-						</Nav.Item> */}
 					</Nav>
 				</Card.Header>
 				<Card.Body>
