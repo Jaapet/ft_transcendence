@@ -23,11 +23,11 @@ const ProfileMemberCardPicture = ({ user }) => {
 				className="card-img-top"
 				priority={true}
 			/>
-			<div className="card-body">
-				<div className={`card-body ${styles.cardInfo}`}>
-					<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'start' }}>
+			<div className="card-body" style={{ padding: '15px' }}>
+				<div className={`card-body ${styles.cardInfo}`}  style={{ padding: '0'}}>
+					<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
 						<StatusCircle userId={user.id} />
-						<h2 className="card-title" style={{ margin: 0, marginLeft: 5 }}>{user.username}</h2>
+						<h2 className="card-title" style={{ margin: 0, marginLeft: 5, fontSize: '25px' }}>{user.username}</h2>
 					</div>
 				</div>
 			</div>
