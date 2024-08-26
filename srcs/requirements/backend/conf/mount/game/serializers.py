@@ -151,6 +151,7 @@ class UpdateMemberSerializer(serializers.HyperlinkedModelSerializer):
 	)
 
 	email = serializers.EmailField(
+		required=False,
 		validators=[
 			UniqueValidator(queryset=Member.objects.all(), message="This email is already in use.")
 		]
