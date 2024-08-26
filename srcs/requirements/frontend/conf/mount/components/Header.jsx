@@ -56,10 +56,6 @@ const ProfileNavLog = () => {
 					<NavDropdown.Item as="a">2FA settings</NavDropdown.Item>
 				</Link>
 				<NavDropdown.Item as="button" onClick={handleLogout}>Log out</NavDropdown.Item>
-				<NavDropdown.Divider />
-				<Link href="/special-thanks" passHref legacyBehavior>
-					<NavDropdown.Item as="a">Special thanks</NavDropdown.Item>
-				</Link>
 			</>
 		);
 	}
