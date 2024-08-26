@@ -55,7 +55,6 @@ const UserMatchHistoryListMatch = ({ user, matches }) => {
 }
 
 const UserMatchHistoryList = ({ user, activeTab, pong2_matches, pong3_matches }) => {
-const UserMatchHistoryList = ({ user, activeTab, pong2_matches, pong3_matches }) => {
 	if (activeTab === '#pong2') {
 		return (<UserMatchHistoryListMatch user={user} matches={pong2_matches} />);
 	} else if (activeTab === '#pong3') {
