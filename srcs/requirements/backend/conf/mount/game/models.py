@@ -1,4 +1,5 @@
 from django.db import models, transaction
+from django.db.models import Q
 from django.utils import timezone
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
@@ -174,6 +175,28 @@ class Member(AbstractBaseUser, PermissionsMixin):
 		if (self.last_activity and self.last_activity >= threshold):
 			return "online"
 		return "offline"
+
+	@property
+	def pong2_games_played(self):
+		count = Match.objects.all().filter(Q(winner=self) | Q(loser=self)).count()
+		return count
+
+	@property
+	def pong2_games_won(self):
+		count = Match.objects.all().filter(Q(winner=self)).count()
+		return count
+
+	@property
+	def pong3_games_played(self):
+		count1 = Match3.objects.all().filter(Q(ball=self)).count()
+		count2 = Match3.objects.all().filter(Q(paddle1=self) | Q(paddle2=self)).count()
+		return count1 + count2
+
+	@property
+	def pong3_games_won(self):
+		count1 = Match3.objects.all().filter(Q(ball_won=True) & Q(ball=self)).count()
+		count2 = Match3.objects.all().filter(Q(ball_won=False) & (Q(paddle1=self) | Q(paddle2=self))).count()
+		return count1 + count2
 
 	def update_last_activity(self):
 		self.last_activity = timezone.now()

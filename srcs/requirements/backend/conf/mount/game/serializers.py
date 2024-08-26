@@ -52,7 +52,11 @@ class RestrictedMemberSerializer(serializers.HyperlinkedModelSerializer):
 			'join_date',
 			'is_admin',
 			'elo_pong',
-			'is_online'
+			'is_online',
+			'pong2_games_played',
+			'pong2_games_won',
+			'pong3_games_played',
+			'pong3_games_won'
 		]
 
 # Regex patterns for register and update form validation

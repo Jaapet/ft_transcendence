@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '../../../context/AuthenticationContext';
 import { Card } from 'react-bootstrap';
 import StatusCircle from '../../../components/StatusCircle';
+import ProfileStats from '../../../components/ProfileStats';
 import MatchScoreCard from '../../../components/MatchScoreCard';
 import FriendButton from '../../../components/FriendButton';
 import ToastList from '../../../components/toasts/ToastList';
@@ -13,6 +14,7 @@ import ErrorToast from '../../../components/toasts/ErrorToast';
 import SuccessToast from '../../../components/toasts/SuccessToast';
 
 const ProfileMemberCardPicture = ({ user }) => {
+	console.log(user); // debug
 	return (
 		<Card className={`${styles.customCard}`} style={{ width: '220px', backgroundColor: '#212529' }}>
 			<Image
@@ -37,9 +39,9 @@ const ProfileMemberCardPicture = ({ user }) => {
 
 const ProfileMemberCardELO = ({ user }) => {
 	return (
-		<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '20px', minWidth: '220px'}}>
-			<div className="card-body" style={{backgroundColor:'rgba(255, 255, 255, 0.1)'}}>
-				<p className="card-text"> Pong:{user.elo_pong} </p>
+		<div className={`card ${styles.customCard}`} style={{backgroundColor:'transparent', marginTop: '15px', minWidth: '220px'}}>
+			<div className="card-body" style={{backgroundColor:'rgba(0, 0, 0, 0.5)', padding: '5px'}}>
+				<p className="card-text">ELO {user.elo_pong}</p>
 			</div>
 		</div>
 	);
@@ -84,12 +86,6 @@ const ProfileMemberCardEditButton = ({ target_user }) => {
 			</Link>
 		</div>
 	);
-
-	return (
-		<Link href={`${user.id}/edit`} className={styles.minorbutton} passHref>
-			<strong>Edit</strong>
-		</Link>
-	);
 }
 
 const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg }) => {
@@ -114,6 +110,9 @@ const ProfileMemberCard = ({ user, setShowError, setErrorMsg, setShowMsg, setMsg
 
 			{/* elo */}
 			<ProfileMemberCardELO user={user} />
+
+			{/* stats */}
+			<ProfileStats user={user} />
 
 		</div>
 	);
