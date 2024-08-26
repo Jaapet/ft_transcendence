@@ -37,16 +37,16 @@ const StatusCircle = ({ userId }) => {
 				break ;
 			case 'ingame':
 				setHoverTip('In game');
-				setColor('darkorange');
+				setColor('#7753C1'); // Purple
 				break ;
 			case 'offline':
 				setHoverTip('Offline');
-				setColor('#ff1a1a');
+				setColor('#ff1a1a'); // Red
 				break ;
 			case 'unknown':
 			default:
 				setHoverTip('Unknown');
-				setColor('#212529');
+				setColor('#212529'); // Gray
 				break ;
 		}
 	}, [status]);
