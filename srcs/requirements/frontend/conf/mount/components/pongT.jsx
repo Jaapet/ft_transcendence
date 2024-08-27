@@ -94,9 +94,9 @@ const PongT = ({
 
 		/// TEXTURE SKYBOX AND SPHERE
 		const loader = new THREE.TextureLoader();
-		const texture = loader.load('games/pong/texture/test.jpg');
+		const texture = loader.load('games/pong/texture/skybox.jpg');
 		texture.colorSpace = THREE.SRGBColorSpace;
-		const texturesphere = loader.load('games/pong/texture/eye2.jpg');
+		const texturesphere = loader.load('games/pong/texture/ball.jpg');
 		texture.colorSpace = THREE.SRGBColorSpace;
 
 		/// CAMERA
@@ -359,50 +359,62 @@ const PongT = ({
 
 		/// FLOOR DE LA PISCINE (PONG)
 		const planeSize = 42;
-		const texture2 = loader.load('games/pong/texture/dollarrachid.jpg');
+		const texture2 = loader.load('games/pong/texture/pool.jpg');
 		texture2.colorSpace = THREE.SRGBColorSpace;
+		texture2.wrapS = THREE.RepeatWrapping;
+		texture2.wrapT = THREE.RepeatWrapping;
+		texture2.repeat.set(6, 2.5);
 		const planeGeo = new THREE.PlaneGeometry(planeSize * 2 + 6, planeSize + 3);
 		const planeMat = new THREE.MeshPhongMaterial({ map: texture2, side: THREE.DoubleSide });
 		const mesh = new THREE.Mesh(planeGeo, planeMat);
 		mesh.rotation.x = Math.PI * -.5;
 		scene.add(mesh);
 
-		/// floor toit immeuble
-		const Size = 104;
-		const plane_Geo = new THREE.PlaneGeometry(Size + 20, Size -11);
-		const plane_Mat = new THREE.MeshPhongMaterial({ color: 0x331313, side: THREE.DoubleSide });
-		const planmesh = new THREE.Mesh(plane_Geo, plane_Mat);
-		planmesh.rotation.x = Math.PI * -.5;
-		planmesh.position.y = -1.1;
-		planmesh.position.z = -22;
-		scene.add(planmesh);
+		if (!performanceMode) {
+			const textureWood = loader.load('games/pong/texture/wood.jpg');
+			textureWood.colorSpace = THREE.SRGBColorSpace;
+			textureWood.wrapS = THREE.RepeatWrapping;
+			textureWood.wrapT = THREE.RepeatWrapping;
+			textureWood.repeat.set(8, 8);
 
-		/// floor toit immeuble
-		const Size2 = 104;
-		const plane_Geo2 = new THREE.PlaneGeometry(Size2 -11, Size2 +18);
-		const plane_Mat2 = new THREE.MeshPhongMaterial({ color: 0x331313, side: THREE.DoubleSide });
-		const planmesh2 = new THREE.Mesh(plane_Geo2, plane_Mat2);
-		planmesh2.rotation.x = Math.PI * -.5;
-		planmesh2.position.y = -1.1;
-		planmesh2.position.z = -22;
-		scene.add(planmesh2);
+			/// floor toit immeuble
+			const Size = 104;
+			const plane_Geo = new THREE.PlaneGeometry(Size + 20, Size -11);
+			const plane_Mat = new THREE.MeshPhongMaterial({ map: textureWood, side: THREE.DoubleSide });
+			const planmesh = new THREE.Mesh(plane_Geo, plane_Mat);
+			planmesh.rotation.x = Math.PI * -.5;
+			planmesh.position.y = -1.1;
+			planmesh.position.z = -22;
+			scene.add(planmesh);
 
-		/// floor toit immeuble
-		const Size3 = 12;
-		const plane_Geo3 = new THREE.PlaneGeometry(Size3, Size3);
-		const plane_Mat3 = new THREE.MeshPhongMaterial({ color: 0x000005, side: THREE.DoubleSide });
-		const planmesh3 = new THREE.Mesh(plane_Geo3, plane_Mat3);
-		planmesh3.rotation.x = Math.PI * -.5;
-		planmesh3.position.y = -2.2;
-		planmesh3.position.z = -70;
-		planmesh3.position.x = 49;
-		scene.add(planmesh3);
+			/// floor toit immeuble
+			const Size2 = 104;
+			const plane_Geo2 = new THREE.PlaneGeometry(Size2 -11, Size2 +18);
+			const plane_Mat2 = new THREE.MeshPhongMaterial({ map: textureWood, side: THREE.DoubleSide });
+			const planmesh2 = new THREE.Mesh(plane_Geo2, plane_Mat2);
+			planmesh2.rotation.x = Math.PI * -.5;
+			planmesh2.position.y = -1.2;
+			planmesh2.position.z = -22;
+			scene.add(planmesh2);
+
+			/// floor toit immeuble
+			const Size3 = 12;
+			const plane_Geo3 = new THREE.PlaneGeometry(Size3, Size3);
+			const plane_Mat3 = new THREE.MeshPhongMaterial({ color: 0x000005, side: THREE.DoubleSide });
+			const planmesh3 = new THREE.Mesh(plane_Geo3, plane_Mat3);
+			planmesh3.rotation.x = Math.PI * -.5;
+			planmesh3.position.y = -2.2;
+			planmesh3.position.z = -70;
+			planmesh3.position.x = 49;
+			scene.add(planmesh3);
+		}
 
 		/// ORBITAL CONTROL
 		if (cameraMode) {
 			const controls = canvas ? new OrbitControls(camera, canvas) : null;
 			if (controls) controls.unableDamping = true;
 			controls?.target.set(0, 0, 0);
+			controls.maxDistance = 300;
 			controls?.update();
 		}
 
@@ -417,10 +429,10 @@ const PongT = ({
 		/// OBJETS
 		// chargement des textures
 		const texturewater = loader.load('games/pong/texture/water.jpg');
-		const textureraquette = loader.load('games/pong/texture/bouee.png');
-		const textureraquette2 = loader.load('games/pong/texture/bouee2.png');
-		const textureraquette3 = loader.load('games/pong/texture/boueeSide.png');
-		const texturevitre = loader.load('games/pong/texture/vitre.jpg');
+		const textureraquette = loader.load('games/pong/texture/paddle.png');
+		const textureraquette2 = loader.load('games/pong/texture/paddle2.png');
+		const textureraquette3 = loader.load('games/pong/texture/paddleSide.png');
+		const texturevitre = loader.load('games/pong/texture/glass.jpg');
 		texturevitre.colorSpace = THREE.SRGBColorSpace;
 
 		const texturetoit = loader.load('games/pong/texture/rock.jpg');
@@ -481,16 +493,18 @@ const PongT = ({
 		addwall(-44.75, 3, 0, new THREE.Mesh(wall2, wallmaterials2));
 		addwall(44.75, 3, 0, new THREE.Mesh(wall2, wallmaterials2));
 		addwall(0, 2.1, 0, new THREE.Mesh(watercube, water));
-/*
+
 		/// SKYBOX
 		// creation d'une sphere pour le ciel
-		const skybox = new THREE.IcosahedronGeometry(4200,50);
-		const skyboxMaterial = new THREE.MeshBasicMaterial({map: texture, side: THREE.BackSide });
-		const skyboxMesh = new THREE.Mesh(skybox, skyboxMaterial);
-		// positionnement de l'objet ciel
-		skyboxMesh.rotation.y = -2.5;
-		skyboxMesh.position.z = 20 - 45;
-		scene.add(skyboxMesh);*/
+		if (cameraMode) {
+			const skybox = new THREE.IcosahedronGeometry(4200,50);
+			const skyboxMaterial = new THREE.MeshBasicMaterial({map: texture, side: THREE.BackSide });
+			const skyboxMesh = new THREE.Mesh(skybox, skyboxMaterial);
+			// positionnement de l'objet ciel
+			skyboxMesh.rotation.y = -2.5;
+			skyboxMesh.position.z = 20 - 45;
+			scene.add(skyboxMesh);
+		}
 
 		let gameStart = false;
 		let startTimer = false;
@@ -759,8 +773,8 @@ const PongT = ({
 						const angle = Math.atan2(ballDir[1], ballDir[0]);
 						const rotationX = Math.cos(angle) * (Math.PI / 4 / 5);
 						const rotationZ = Math.sin(angle) * (Math.PI / 4 / 5);
-						ballObj.rotateX(-rotationX);
-						ballObj.rotateZ(rotationZ);
+						ballObj.rotateX(rotationZ);
+						ballObj.rotateZ(-rotationX);
 					}
 				}
 				else if (timeRendered > 4)
