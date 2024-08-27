@@ -63,7 +63,7 @@ const LeaderboardTable = ({ leaders }) => {
 	return (
 		<div className={styles.container}>
 			{leaders.map((player, index) => (
-				<LeaderboardTablePlayer player={player} index={index + 1} />
+				<LeaderboardTablePlayer key={index + 1} player={player} index={index + 1} />
 			))}
 		</div>
 	);
