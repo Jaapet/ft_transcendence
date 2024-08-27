@@ -38,7 +38,6 @@ export default async (req, res) => {
 			throw new Error(`Could not fetch data for user ${id}`);
 		}
 		if (userRes.status === 404) {
-			//console.error('API USER FRIEND LIST:', userData.detail);
 			return res.status(404).json({ message: userData.detail });
 		}
 		if (!userRes.ok) {
@@ -62,7 +61,6 @@ export default async (req, res) => {
 			throw new Error(`Could not fetch friend list for user ${id}`);
 		}
 		if (friendRes.status === 404) {
-			//console.error('API USER FRIEND LIST:', friendData.detail);
 			return res.status(200).json({ user: userData, friends: null });
 		}
 		if (!friendRes.ok) {
@@ -71,7 +69,6 @@ export default async (req, res) => {
 
 		return res.status(200).json({ user: userData, friends: friendData });
 	} catch (error) {
-		//console.error('API USER FRIEND LIST:', error);
 		return res.status(401).json({ message: error.message });
 	}
 }

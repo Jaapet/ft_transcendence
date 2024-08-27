@@ -23,32 +23,6 @@ const io = socketIO(server, {
 	}
 });
 
-/* HOW TO USE
-
-In client-side code (pong/pong.jsx):
-```
-	useEffect((user) => {
-		const socket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`);
-		socket.emit('join', { gameType: 'pong2', userId: user.id, userAvatar: user.avatar });
-
-		socket.on('connect', () => {
-			console.log('Connected to websocket server');
-		});
-		socket.on('connect_error', (error) => {
-			console.error('Connection error for websocket server:', error);
-		});
-		socket.on('disconnect', () => {
-			console.log('Disconnected from websocket server');
-		});
-
-		function handleInput(event) {
-			socket.emit('input', { gameType: 'pong2', input: { key: event.key, type: 'keydown' } });
-		}
-
-		// ...display code
-```
-*/
-
 // Will contain all of our rooms
 const rooms = {
 	queue2: {},
@@ -105,7 +79,6 @@ const PONG3_BALL_RESPAWN_TIME = 500;				// In ms
 const PONG3_TIME_TO_WIN = 30;								// In seconds
 
 async function setInGameStatus(userId, value) {
-	//console.log(`SET_IN_GAME_STATUS: IDs:`, JSON.stringify(ids, null, 1)); // debug
 	fetch(`https://backend:8000/api/edit_ingame_status`, {
 		method: 'PUT',
 		headers: {
@@ -120,30 +93,23 @@ async function setInGameStatus(userId, value) {
 
 			return response.json();
 	})
-	.catch(error => {
-		//console.error('Error:', error);
-	});
+	.catch(error => {});
 }
 
 io.on('connection', socket => {
-	//console.log(`New client connected: ${socket.id}`);
 	connected[socket.id] = true;
 
 	// DISCONNECT HANDLER
 	socket.on('disconnect', () => {
-		//console.log(`Client disconnected: ${socket.id}`);
 
 		// TOURNEYS
 		let tourney = findTourneyByPlayerIdSlow(socket.id);
 		if (tourney) {
-			//console.log(`Found tourney ${tourney.id}`); // debug
 			if (tourney.launched) {
-				//console.log(`Tourney ${tourney.id} is launched`); // debug
 				if (!tourney.ended)
 					io.to(tourney.id).emit('gameError', { message: 'A player disconnected' });
 				removePlayerFromTourney(socket.id);
 			} else {
-				//console.log(`Tourney ${tourney.id} is not launched`); // debug
 				removePlayerFromTourney(socket.id);
 				io.to(tourney.id).emit('updateTourneyPlayers', { tourneyPlayers: tourney.players });
 			}
@@ -151,13 +117,10 @@ io.on('connection', socket => {
 			// ROOMS
 			let room = findRoomByPlayerIdSlow(socket.id);
 			if (room) {
-				//console.log(`Found room ${room.id}`); // debug
 				if (room.launched) {
-					//console.log(`Room ${room.id} is launched`); // debug
 					io.to(room.id).emit('gameError', { message: 'A player disconnected' });
 					removePlayerFromRoom(socket.id);
 				} else {
-					//console.log(`Room ${room.id} is not launched`); // debug
 					removePlayerFromRoom(socket.id);
 					io.to(room.id).emit('updatePlayers', { players: room.players });
 				}
@@ -175,22 +138,17 @@ io.on('connection', socket => {
 		ids[socket.id] = userId;
 		setInGameStatus(ids[socket.id], true);
 
-		//console.log(`JOIN_TOURNEY: New user ${userName}`); // debug
 
 		let tourney = findTourney(gameType);
 		if (tourney) // Join Existing Tourney
 		{
-			//console.log(`JOIN_TOURNEY: User ${userName} found tourney ${tourney.id}`); // debug
 			addPlayerToTourney(gameType, tourney, socket, userId, userName, userELO, userAvatar);
-			//console.log(`JOIN_TOURNEY: User ${userName} added to tourney ${tourney.id}`); // debug
 		}
 		else // Create New Tourney
 		{
-			//console.log(`JOIN_TOURNEY: User ${userName} creating new tourney`); // debug
 			tourney = createTourney(gameType);
 			console.log(`Created tourney=${tourney.id} type=${gameType} by user=${userName}`); // ELK LOG
 			addPlayerToTourney(gameType, tourney, socket, userId, userName, userELO, userAvatar);
-			//console.log(`JOIN_TOURNEY: User ${userName} added to tourney ${tourney.id}`); // debug
 		}
 
 		checkTourneyStart(tourney, gameType);
@@ -203,8 +161,6 @@ io.on('connection', socket => {
 		ids[socket.id] = userId;
 		setInGameStatus(ids[socket.id], true);
 
-		//console.log(`JOIN: New user ${userName}`); // debug
-
 		// Sets queueType depending on gameType
 		let queueType = null;
 		switch (gameType){
@@ -215,14 +171,12 @@ io.on('connection', socket => {
 				queueType = "queue2";
 		}
 
-		//console.log(`JOIN: Searching for ${queueType} for user ${userName}`); // debug
 		let queue = null;
 		queue = findRoom(queueType);
 		// Create queue if !queue and join it
 		if (!queue)
 			queue = createRoom(queueType, userELO);
 		addPlayerToRoom(queueType, queue, socket, userId, userName, userELO, userAvatar);
-		//console.log(`JOIN: User ${userName} now in waitlist`); // debug
 
 		let room = null;
 		if (playerInRoom(queueType, queue.id))
@@ -230,26 +184,19 @@ io.on('connection', socket => {
 			// Join Existing Room
 			if (findRoom(gameType))
 			{
-				//console.log(`JOIN: User ${userName} joining existing room`); // debug
 				room = findRoomElo(gameType, userELO);
 				if (room)
 				{
-					//console.log(`JOIN: User ${userName} found room ${room.id} (ELO=${room.elo})`); // debug
 					removePlayerFromQueue(queueType, queue.id, socket.id);
-					//console.log(`JOIN: User ${userName} removed from queue`); // debug
 					addPlayerToRoom(gameType, room, socket, userId, userName, userELO, userAvatar);
-					//console.log(`JOIN: User ${userName} added to room ${room.id}`); // debug
 				}
 			}
 			else // Create New Room
 			{
-				//console.log(`JOIN: User ${userName} creating new room`); // debug
 				room = createRoom(gameType, userELO);
 				console.log(`Created room=${room.id} type=${gameType} by user=${userName}`); // ELK LOG
 				removePlayerFromQueue(queueType, queue.id, socket.id);
-				//console.log(`JOIN: User ${userName} removed from queue`); // debug
 				addPlayerToRoom(gameType, room, socket, userId, userName, userELO, userAvatar);
-				//console.log(`JOIN: User ${userName} added to room ${room.id}`); // debug
 			}
 		}
 
@@ -284,16 +231,12 @@ io.on('connection', socket => {
 			room = findRoomElo(gameType, userELO);
 			if (room)
 			{
-				io.to(socket.id).emit('info', { message: `Found room ${room.id} (ELO=${room.elo})` }); // debug
 				removePlayerFromQueue(queueType, queue.id, socket.id);
 				addPlayerToRoom(gameType, room, socket, userId, userName, userELO, userAvatar);
 			}
 		}
 
 		if (room) {
-			if (isRoomFull(gameType, room.id))
-				io.to(room.id).emit('info', { message: `Room ${room.id} [${gameType}] is now full` });
-			//room.players[socket.id].ready = true;
 			checkGameStart(room, gameType);
 			return ;
 		}
@@ -415,14 +358,8 @@ io.on('connection', socket => {
 		const deltaTime = (now - room.timeStamp) * 0.03; // +30 ELO every 10 seconds
 		let range = ELO_RANGE + deltaTime;
 		range = Math.max(Math.min(range, room.elo + ELO_RANGE_MAX), Math.max(room.elo - ELO_RANGE_MAX, 0));
-		io.to(socket.id).emit('info', { message:
-			`Checking ELO for room ${room.id}: Range = ${range}`
-		}); // debug
 		const roomMax = room.elo + range;
 		const roomMin = Math.max(room.elo - range, 0);
-		io.to(socket.id).emit('info', { message:
-			`Checking ELO for room ${room.id} between ${roomMin} and ${roomMax}`
-		}); // debug
 		return (userELO <= roomMax && userELO >= roomMin);
 	}
 
@@ -431,9 +368,6 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return false;
 
-		io.to(socket.id).emit('info', { message:
-			`Checking ELO for room ${room.id} (ELO=${room.elo})`
-		}); // debug
 		if ( room.elo && isELOInRoomRange(room, userELO) )
 			return true;
 		return false;
@@ -602,7 +536,6 @@ io.on('connection', socket => {
 		const now = Date.now();
 		const newTourneyId = generateTourneyId(gameType);
 		createPong2Tourney(gameType, newTourneyId, now);
-		io.to(socket.id).emit('info', { message: `Tourney ${newTourneyId} created` }); // debug
 		return tourneys[gameType][newTourneyId];
 	}
 
@@ -624,7 +557,6 @@ io.on('connection', socket => {
 		const now = Date.now();
 		const newRoomId = tourney.id + matchType;
 		createPong2TourneyRoom(tourney, newRoomId, matchType, now);
-		//io.to(socket.id).emit('info', { message: `Room ${matchType} created for tourney` }); // debug
 		return tourney.matches[matchType];
 	}
 
@@ -639,11 +571,9 @@ io.on('connection', socket => {
 		switch (gameType) {
 			case 'queue2':
 				rooms["queue2"]["$queue2$"] = { id: "$queue2$", launched: false, maxPlayers: 1000, timeStamp: now, players: {} };
-				io.to(socket.id).emit('info', { message: `Room $queue2$ created` }); // debug
 				return rooms["queue2"]["$queue2$"];
 			case 'queue3':
 				rooms["queue3"]["$queue3$"] = { id: "$queue3$", launched: false, maxPlayers: 1000, timeStamp: now, players: {} };
-				io.to(socket.id).emit('info', { message: `Room $queue3$ created` }); // debug
 				return rooms["queue3"]["$queue3$"];
 			case 'pong3':
 				createPong3Room(gameType, newRoomId, now, userELO);
@@ -651,7 +581,6 @@ io.on('connection', socket => {
 			default:
 				createPong2Room(gameType, newRoomId, now, userELO);
 		}
-		//io.to(socket.id).emit('info', { message: `Room ${newRoomId} created, room elo ${userELO}` }); // debug
 		return rooms[gameType][newRoomId];
 	}
 
@@ -664,7 +593,7 @@ io.on('connection', socket => {
 		return newRoomId;
 	}
 
-	// Tourney states
+		// Tourney states
 	/*
 		Inside TOURNEY PLAYER:
 			group = Upper or Lower group
@@ -717,8 +646,6 @@ io.on('connection', socket => {
 
 		const role = chooseTourneyRole(tourney);
 
-		//console.log('ADD_PLAYER_TO_TOURNEY: Role is',  JSON.stringify(role, null, 2)); // debug
-
 		if (tourney && socket) {
 			socket.join(tourney.id);
 			tourney.players[socket.id] = {
@@ -729,7 +656,6 @@ io.on('connection', socket => {
 				avatar: userAvatar,
 				role: role
 			};
-			//io.to(socket.id).emit('info', { message: `You (${userName} ELO ${userELO}) joined tourney ${tourney.id}, tourney elo ${tourney.elo}` }); // debug
 			// Send new tourney and its players to new user
 			io.to(socket.id).emit('updateTourney', {
 				tourney: {
@@ -741,7 +667,6 @@ io.on('connection', socket => {
 			});
 			// Update all players of new player
 			io.to(tourney.id).emit('updateTourneyPlayers', { tourneyPlayers: tourney.players });
-			//console.log("\n\nCurrent tourney structure:", JSON.stringify(tourney, null, 2)); // debug
 		}
 	}
 
@@ -802,7 +727,6 @@ io.on('connection', socket => {
 				role: role,
 				readyTimer: false
 			};
-			//io.to(playerSocket.id).emit('info', { message: `You (${userName} ELO ${userELO}) joined tourney room ${room.id}` }); // debug
 			// Send new room and its players to new user
 			io.to(playerSocket.id).emit('updateRoom', {
 				room: {
@@ -813,7 +737,6 @@ io.on('connection', socket => {
 			});
 			// Update all players of new player
 			io.to(room.id).emit('updatePlayers', { players: room.players });
-			//console.log("\n\nCurrent tourney room structure:", JSON.stringify(room, null, 2)); // debug
 		}
 	}
 
@@ -851,7 +774,6 @@ io.on('connection', socket => {
 				role: role,
 				readyTimer: false
 			};
-			//io.to(socket.id).emit('info', { message: `You (${userName} ELO ${userELO}) joined room ${room.id}, room elo ${room.elo}` }); // debug
 			// Send new room and its players to new user
 			io.to(socket.id).emit('updateRoom', {
 				room: {
@@ -863,12 +785,10 @@ io.on('connection', socket => {
 			});
 			// Update all players of new player
 			io.to(room.id).emit('updatePlayers', { players: room.players });
-			//console.log("\n\nCurrent room structure:", JSON.stringify(room, null, 2)); // debug
 		}
 	}
 
 	function deleteTourneyRoom(tourney, room, matchType) {
-		//console.log(`DELETE_TOURNEY_ROOM: Deleting ${room.id}`); // debug
 		console.log(`Deleted room=${room.id}`); // ELK LOG
 		delete tourney.matches[matchType];
 	}
@@ -879,12 +799,10 @@ io.on('connection', socket => {
 			for (const tourneyId in tourneys[gameType]) {
 				const tourney = tourneys[gameType][tourneyId];
 				if (tourney.players[playerId]) {
-					//console.log(`REMOVE_PLAYER_FROM_TOURNEY: Deleting player ${playerId} from tourney ${tourneyId}`); // debug
 					delete tourney.players[playerId];
 					socket.leave(tourneyId);
 	
 					if (tourneyPlayerNb(gameType, tourneyId) === 0) {
-						//console.log(`REMOVE_PLAYER_FROM_TOURNEY: Deleting tourney ${tourneyId}`); // debug
 						console.log(`Deleted tourney=${tourneyId}`); // ELK LOG
 						delete tourneys[gameType][tourneyId];
 					}
@@ -897,7 +815,6 @@ io.on('connection', socket => {
 	function removePlayerFromTourneyRoom(room, playerSocket) {
 		if (!room.players[playerSocket.id])
 			return ;
-		//console.log(`REMOVE_PLAYER_FROM_TOURNEY_ROOM: Removing user ${room.players[playerSocket.id].id} from room ${room.id}`); // debug
 		delete room.players[playerSocket.id];
 		playerSocket.leave(room.id);
 	}
@@ -907,12 +824,10 @@ io.on('connection', socket => {
 		for (const gameType in rooms) {
 			for (const roomId in rooms[gameType]) {
 				if (rooms[gameType][roomId].players[playerId]) {
-					//console.log(`REMOVE_PLAYER_FROM_ROOM: Removing user ${rooms[gameType][roomId].players[playerId].id} from ${gameType} room ${roomId}`); // debug
 					delete rooms[gameType][roomId].players[playerId];
 					socket.leave(roomId);
 					// If the room becomes empty, delete it
 					if (roomPlayerNb(gameType, roomId) === 0) {
-						//console.log(`REMOVE_PLAYER_FROM_ROOM: Deleting ${gameType} room ${roomId}`); // debug
 						console.log(`Deleted room=${roomId}`); // ELK LOG
 						delete rooms[gameType][roomId];
 					}
@@ -928,7 +843,6 @@ io.on('connection', socket => {
 		{
 			delete rooms[queueType][queueId].players[playerSocket];
 			socket.leave(queueId);
-			io.to(playerSocket).emit('info', { message: `You left room ${queueId}` });
 			return ;
 		}
 	}
@@ -1048,17 +962,12 @@ io.on('connection', socket => {
 	// Returns the player's current tourney by player ID
 	// Returns null if it can't find it
 	function findTourneyByPlayerIdSlow(playerId) {
-		//console.log(`FIND_TOURNEY_BY_PLAYER_ID_SLOW: Entered`); // debug
 		if (!connected[socket.id])
 			return null;
 
-		//console.log(`FIND_TOURNEY_BY_PLAYER_ID_SLOW: Searching for ${playerId}`); // debug
-
 		for (const gameType in tourneys) {
 			for (const tourneyId in tourneys[gameType]) {
-				//console.log(`FIND_TOURNEY_BY_PLAYER_ID_SLOW: Checking ${tourneyId}`); // debug
 				if (tourneys[gameType][tourneyId].players[playerId]) {
-					//console.log(`FIND_TOURNEY_BY_PLAYER_ID_SLOW: ${playerId} is in tourney ${tourneyId}`); // debug
 					return tourneys[gameType][tourneyId];
 				}
 			}
@@ -1071,20 +980,14 @@ io.on('connection', socket => {
 	// Returns null if it can't find it
 	// Slower than findRoomByPlayerId but does not need gameType
 	function findRoomByPlayerIdSlow(playerId) {
-		//console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: Entered`); // debug
 		if (!connected[socket.id])
 			return null;
-
-		//console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: Searching for ${playerId}`); // debug
 
 		for (const gameType in rooms) {
 			if (['queue2', 'queue3'].includes(gameType))
 				continue ;
-			//console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: Checking ${gameType}`); // debug
 			for (const roomId in rooms[gameType]) {
-				//console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: Checking room ${roomId}`); // debug
 				if (rooms[gameType][roomId].players[playerId]) {
-					//console.log(`FIND_ROOM_BY_PLAYER_ID_SLOW: ${playerId} is in room ${roomId}`); // debug
 					return rooms[gameType][roomId];
 				}
 			}
@@ -1145,12 +1048,9 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return ;
 
-		//console.log(`CHECK_TOURNEY_START: Checking ${gameType} tourney ${tourney.id}`); // debug
-		if (!tourney || isTourneyLaunched(gameType, tourney.id)) {
+		if (!tourney || isTourneyLaunched(gameType, tourney.id))
 			return ;
-		}
 
-		//console.log(`CHECK_TOURNEY_START: ${gameType} tourney ${tourney.id} exists and has not been launched`); // debug
 		startPong2Tourney(tourney, gameType);
 	}
 
@@ -1161,17 +1061,12 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return ;
 
-		//console.log(`START_PONG2_TOURNEY: Checking ${gameType} tourney ${tourney.id}`); // debug
-
-		if (!tourney || isTourneyLaunched(gameType, tourney.id)) {
+		if (!tourney || isTourneyLaunched(gameType, tourney.id))
 			return ;
-		}
 
-		//console.log(`START_PONG2_TOURNEY: ${gameType} tourney ${tourney.id} exists and has not been launched`); // debug
 
 		// If the tourney is full, launch the tourney
 		if (isTourneyFull(gameType, tourney.id)) {
-			//console.log(`START_PONG2_TOURNEY: ${gameType} tourney ${tourney.id} is full, launching tourney`); // debug
 			setTimeout(() => launchTourney(gameType, tourney), 3000); // 3 seconds
 		}
 	}
@@ -1182,20 +1077,13 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return ;
 
-		//console.log(`LAUNCH_TOURNEY: Launching ${gameType} tourney ${tourney.id}`); // debug
-		//console.log('TOURNEY STRUCTURE:', JSON.stringify(tourney, null, 3)); // debug
-
-		if (!tourney || !gameType || tourney.launched) {
+		if (!tourney || !gameType || tourney.launched)
 			return ;
-		}
-
-		//console.log(`LAUNCH_TOURNEY: ${gameType} tourney ${tourney.id} exists and has not been launched`); // debug
 
 		const playersString = Object.values(tourney.players).map(player => player.username).join(',');
 		console.log(`Launched tourney=${tourney.id} players=${playersString}`); // ELK LOG
 		tourney.launched = true;
 		io.to(tourney.id).emit('tourneyStart', { players: tourney.players });
-		//console.log(`LAUNCH_TOURNEY: Emitted tourneyStart to ${gameType} tourney ${tourney.id}`); // debug
 
 		let sfup = createTourneyRoom(tourney, 'SFUP');
 		console.log(`Created room=${sfup.id} type=${gameType} for tourney=${tourney.id}`); // ELK LOG
@@ -1477,12 +1365,9 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return ;
 
-		//console.log(`CHECK_GAME_START: Checking ${gameType} room ${room.id}`); // debug
-		if (!room || isRoomLaunched(gameType, room.id)) {
+		if (!room || isRoomLaunched(gameType, room.id))
 			return ;
-		}
 
-		//console.log(`CHECK_GAME_START: ${gameType} room ${room.id} exists and has not been launched`); // debug
 		startPongGame(room, gameType);
 	}
 
@@ -1493,19 +1378,12 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return ;
 
-		//console.log(`START_PONG_GAME: Checking ${gameType} room ${room.id}`); // debug
-
-		if (!room || isRoomLaunched(gameType, room.id)) {
+		if (!room || isRoomLaunched(gameType, room.id))
 			return ;
-		}
-
-		//console.log(`START_PONG_GAME: ${gameType} room ${room.id} exists and has not been launched`); // debug
 
 		// If the room is full, launch the game
-		if (isRoomFull(gameType, room.id)) {
-			//console.log(`START_PONG_GAME: ${gameType} room ${room.id} is full, launching game`); // debug
+		if (isRoomFull(gameType, room.id))
 			launchGame(gameType, room);
-		}
 	}
 
 	// Sends a gameStart message to all players in the room and sets launched to true
@@ -1514,19 +1392,14 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return ;
 
-		//console.log(`LAUNCH_GAME: Launching ${gameType} room ${room.id}`); // debug
-
-		if (!room || room.launched) {
+		if (!room || room.launched)
 			return ;
-		}
-
-		//console.log(`LAUNCH_GAME: ${gameType} room ${room.id} exists and has not been launched`); // debug
 
 		const playersString = Object.values(room.players).map(player => player.username).join(',');
 		console.log(`Launched room=${room.id} players=${playersString}`); // ELK LOG
 		room.launched = true;
 		io.to(room.id).emit('gameStart', { players: room.players });
-		//console.log(`LAUNCH_GAME: Emitted gameStart to ${gameType} room ${room.id}`); // debug
+
 		switch (gameType) {
 			case 'pong3':
 				Pong3Loop(room);
@@ -1538,31 +1411,24 @@ io.on('connection', socket => {
 	}
 
 	function LoopError(room, errorMsg) {
-		//console.log(`LOOP_ERROR: Room ${room.id} failed (${errorMsg})`); // debug
 		io.to(room.id).emit('gameError', { message: errorMsg });
 		return null;
 	}
 
 	function RoomStillExists(gameType, room) {
-		if (!room) return false;
+		if (!room)
+			return false;
 
-		//console.log(`ROOM_STILL_EXISTS: Entered`); // debug
-
-		if (rooms[gameType][room.id]) return true;
-
-		//console.log(`ROOM_STILL_EXISTS: Room ${room.id} is not a regular room`); // debug
+		if (rooms[gameType][room.id])
+			return true;
 
 		for (const tourneyId in tourneys[gameType]) {
-			//console.log(`ROOM_STILL_EXISTS: Checking tourney ${tourneyId}`); // debug
 			for (const matchType in tourneys[gameType][tourneyId].matches) {
 				if (tourneys[gameType][tourneyId].matches[matchType].id === room.id)
 					return true;
 			}
 		}
 
-		//console.log(`ROOM_STILL_EXISTS: Room ${room.id} is not a tourney room`); // debug
-
-		//console.log(`ROOM_STILL_EXISTS: Room ${room.id} does not exist anymore`); // debug
 		return false;
 	}
 
@@ -1571,21 +1437,17 @@ io.on('connection', socket => {
 	function Pong2Loop(room) {
 		if (!room)
 			return null;
-		//console.log(`PONG2_LOOP: room ${room.id} exists`); // debug
 		if (!connected[socket.id])
 			return LoopError(room, 'A player disconnected');
 
 		// Wait for timer start
-		//console.log(`PONG2_LOOP: room ${room.id} waits for readyTimer`); // debug
 		function waitForReadyTimer() {
 			if (!RoomStillExists('pong2', room))
 				return ;
 			const test = allPlayersReadyTimer(room.players);
 			if (!test) {
-				//console.log(`PONG2_LOOP: room ${room.id} is not readyTimer`); // debug
 				setTimeout(waitForReadyTimer, 1000); // Once every second
 			} else {
-				//console.log(`PONG2_LOOP: room ${room.id} is readyTimer`); // debug
 				Pong2LoopReadyTimer(room);
 			}
 		}
@@ -1596,19 +1458,15 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return LoopError(room, 'A player disconnected');
 		io.to(room.id).emit('startTimer');
-		//console.log(`PONG2_LOOP_READY_TIMER: Emitted startTimer to room ${room.id}`); // debug
 
 		// Wait for gameplay start
-		//console.log(`PONG2_LOOP_READY_TIMER: room ${room.id} waits for ready`); // debug
 		function waitForReady() {
 			if (!RoomStillExists('pong2', room))
 				return ;
 			const test = allPlayersReady(room.players);
 			if (!test) {
-				//console.log(`PONG2_LOOP_READY_TIMER: room ${room.id} is not ready`); // debug
 				setTimeout(waitForReady, 1000); // Once every second
 			} else {
-				//console.log(`PONG2_LOOP_READY_TIMER: room ${room.id} is ready`); // debug
 				Pong2LoopReady(room);
 			}
 		}
@@ -1623,7 +1481,6 @@ io.on('connection', socket => {
 		room.runtime.ballZeroTime = room.runtime.startTime;
 		room.runtime.ballRespawnTime = room.runtime.startTime - PONG2_BALL_RESPAWN_TIME;
 		io.to(room.id).emit('startGameplay');
-		//console.log(`PONG2_LOOP_READY: Emitted startGameplay to room ${room.id}`); // debug
 
 		// Checks intersection between two non-rotated rectangles
 		// rectangles should be represented as [left, top, right, bottom]
@@ -1675,9 +1532,7 @@ io.on('connection', socket => {
 
 					return response.json();
 			})
-			.catch(error => {
-				//console.error('Error:', error);
-			});
+			.catch(error => {});
 
 			io.to(room.id).emit('gameEnd', { winner: winner, score: data.winner_score });
 		}
@@ -1855,21 +1710,17 @@ io.on('connection', socket => {
 	function Pong3Loop(room) {
 		if (!room)
 			return null;
-		//console.log(`PONG3_LOOP: room ${room.id} exists`); // debug
 		if (!connected[socket.id])
 			return LoopError(room, 'A player disconnected');
 
 		// Wait for timer start
-		//console.log(`PONG3_LOOP: room ${room.id} waits for readyTimer`); // debug
 		function waitForReadyTimer() {
 			if (!RoomStillExists('pong3', room))
 				return ;
 			const test = allPlayersReadyTimer(room.players);
 			if (!test) {
-				//console.log(`PONG3_LOOP: room ${room.id} is not readyTimer`); // debug
 				setTimeout(waitForReadyTimer, 1000); // Once every second
 			} else {
-				//console.log(`PONG3_LOOP: room ${room.id} is readyTimer`); // debug
 				Pong3LoopReadyTimer(room);
 			}
 		}
@@ -1880,19 +1731,15 @@ io.on('connection', socket => {
 		if (!connected[socket.id])
 			return LoopError(room, 'A player disconnected');
 		io.to(room.id).emit('startTimer');
-		//console.log(`PONG3_LOOP_READY_TIMER: Emitted startTimer to room ${room.id}`); // debug
 
 		// Wait for gameplay start
-		//console.log(`PONG3_LOOP_READY_TIMER: room ${room.id} waits for ready`); // debug
 		function waitForReady() {
 			if (!RoomStillExists('pong3', room))
 				return ;
 			const test = allPlayersReady(room.players);
 			if (!test) {
-				//console.log(`PONG3_LOOP_READY_TIMER: room ${room.id} is not ready`); // debug
 				setTimeout(waitForReady, 1000); // Once every second
 			} else {
-				//console.log(`PONG3_LOOP_READY_TIMER: room ${room.id} is ready`); // debug
 				Pong3LoopReady(room);
 			}
 		}
@@ -1907,7 +1754,6 @@ io.on('connection', socket => {
 		room.runtime.ballZeroTime = room.runtime.startTime;
 		room.runtime.ballRespawnTime = room.runtime.startTime - PONG3_BALL_RESPAWN_TIME;
 		io.to(room.id).emit('startGameplay');
-		//console.log(`PONG3_LOOP_READY: Emitted startGameplay to room ${room.id}`); // debug
 
 		// Checks intersection between two non-rotated rectangles
 		// rectangles should be represented as [left, top, right, bottom]
@@ -1945,7 +1791,6 @@ io.on('connection', socket => {
 				start_datetime: new Date(room.runtime.startTime).toISOString(),
 				end_datetime: new Date(Date.now()).toISOString()
 			};
-			//console.log("MATCH RESULTS:", data); // debug
 
 			fetch('https://backend:8000/api/game/pong3/save', {
 				method: 'POST',
@@ -1961,9 +1806,7 @@ io.on('connection', socket => {
 
 					return response.json();
 			})
-			.catch(error => {
-				//console.error('Error:', error);
-			});
+			.catch(error => {});
 
 			io.to(room.id).emit('gameEnd', {
 				ball_won: ballWon
@@ -2170,9 +2013,7 @@ io.on('connection', socket => {
 			room = findTourneyRoomByPlayerId(tourney, socket.id);
 			if (!room)
 				return ;
-			//console.log(`READY_TIMER: Received readyTimer from ${socket.id} for tourney room ${room.id}`); // debug
 		} else {
-			//console.log(`READY_TIMER: Received readyTimer from ${socket.id} for room ${room.id}`); // debug
 		}
 		room.players[socket.id].readyTimer = true;
 	});

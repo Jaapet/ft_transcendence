@@ -33,7 +33,6 @@ export default async (req, res) => {
 
 		return res.status(200).json({ message: '2FA is disabled' });
 	} catch (error) {
-		//console.error('API DISABLE 2FA:', error);
 		return res.status(500).json({ message: error.message });
 	}
 };

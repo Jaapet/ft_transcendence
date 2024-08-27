@@ -45,7 +45,6 @@ export default async (req, res) => {
 
 		return res.status(200).json({ message: reqData.detail });
 	} catch (error) {
-		//console.error('API CHECK FRIENDSHIP:', error);
 		return res.status(401).json({ message: error.message });
 	}
 }

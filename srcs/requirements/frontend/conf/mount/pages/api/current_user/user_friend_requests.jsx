@@ -38,7 +38,6 @@ export default async (req, res) => {
 			throw new Error(`Could not fetch data for user ${id}`);
 		}
 		if (userRes.status === 404) {
-			//console.error('API USER FRIEND REQUESTS:', userData.detail);
 			return res.status(404).json({ message: userData.detail });
 		}
 		if (!userRes.ok) {
@@ -62,7 +61,6 @@ export default async (req, res) => {
 			throw new Error(`Could not fetch list of sent friend requests for user ${id}`);
 		}
 		if (sentRes.status === 404) {
-			//console.error('API USER FRIEND REQUESTS:', sentData.detail);
 			return res.status(404).json({ message: sentData.detail });
 		}
 		if (!sentRes.ok) {
@@ -86,7 +84,6 @@ export default async (req, res) => {
 			throw new Error(`Could not fetch list of received friend requests for user ${id}`);
 		}
 		if (recvRes.status === 404) {
-			//console.error('API USER FRIEND REQUESTS:', recvData.detail);
 			return res.status(404).json({ message: recvData.detail });
 		}
 		if (!recvRes.ok) {
@@ -95,7 +92,6 @@ export default async (req, res) => {
 
 		return res.status(200).json({ user: userData, requests_sent: sentData, requests_received: recvData });
 	} catch (error) {
-		//console.error('API USER FRIEND REQUESTS:', error);
 		return res.status(401).json({ message: error.message });
 	}
 }

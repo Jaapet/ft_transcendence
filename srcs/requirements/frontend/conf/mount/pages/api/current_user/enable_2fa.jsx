@@ -36,7 +36,6 @@ export default async (req, res) => {
 		else
 			return res.status(200).json({ message: '2FA is already enabled', secret_key: enableData.secret_key, qr_code_url: enableData.qr_code_url });
 	} catch (error) {
-		//console.error('API ENABLE 2FA:', error);
 		return res.status(500).json({ message: error.message });
 	}
 };

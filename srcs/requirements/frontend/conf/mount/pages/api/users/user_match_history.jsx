@@ -83,7 +83,6 @@ export default async (req, res) => {
 
 		return res.status(200).json({ user: userData, pong2_matches: pong2Data, pong3_matches: pong3Data });
 	} catch (error) {
-		//console.error('API USER MATCH HISTORY:', error);
 		return res.status(401).json({ message: error.message });
 	}
 }

@@ -33,7 +33,6 @@ export default async (req, res) => {
 			throw new Error(`Could not fetch leaderboards`);
 		}
 		if (userRes.status === 404) {
-			//console.error('API LEADERBOARDS:', userData.detail);
 			return res.status(404).json({ message: userData.detail });
 		}
 		if (!userRes.ok) {
@@ -42,7 +41,6 @@ export default async (req, res) => {
 
 		return res.status(200).json({ pong: userData.pong });
 	} catch (error) {
-		//console.error('API LEADERBOARDS:', error);
 		return res.status(401).json({ message: error.message });
 	}
 }

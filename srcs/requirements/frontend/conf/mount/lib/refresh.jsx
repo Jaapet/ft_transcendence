@@ -42,7 +42,6 @@ const refreshToken = async (req, removeRefreshCookie) => {
 		}
 		return accessData.access;
 	} catch (error) {
-		//console.error('LIB REFRESH:', error);
 		removeRefreshCookie();
 		return null;
 	}

@@ -53,18 +53,11 @@ const Pong3 = ({
 
 		socket.emit('join', { gameType: 'pong3', userId: user.id, userName: user.username, userELO: user.elo_pong, userAvatar: user.avatar });
 
-		socket.on('connect_error', (error) => {
-			//console.error('Connection error for websocket server:', error);
-		});
-
 		socket.on('updateRoom', ({ room, players }) => {
-			//console.log('Room updated to', room); // debug
-			//console.log('With players:', players); // debug
 			updateRoom(room, players);
 		});
 
 		socket.on('updatePlayers', ({ players }) => {
-			//console.log('Room updated with these new players:', players); // debug
 			updatePlayers(players);
 		});
 
@@ -504,7 +497,6 @@ const Pong3 = ({
 		function handleKeyDown(event) {
 			if (event.repeat)
 				return ;
-			//console.log(event.key); // debug
 			switch (event.key) {
 				case "ArrowUp":
 					if (!inputUp) {
@@ -525,7 +517,6 @@ const Pong3 = ({
 		function handleKeyUp(event) {
 			if (event.repeat)
 				return ;
-			//console.log(event.key); // debug
 			switch (event.key) {
 				case "ArrowUp":
 					if (inputUp) {
@@ -584,8 +575,6 @@ const Pong3 = ({
 		let startRender = Date.now();
 
 		socket.on('gameStart', ({ players }) => {
-			//console.log(`PONG_CMPT: Received gameStart`); // debug
-			//console.log(`PONG_CMPT: Received player list:`, players); // debug
 			for (const playerKey in players) {
 				if (players[playerKey].id === user.id) {
 					role = players[playerKey].role;
@@ -598,13 +587,11 @@ const Pong3 = ({
 		socket.on('startTimer', () => {
 			startTimer = true;
 			startRender = Date.now();
-			//console.log(`PONG_CMPT: Received startTimer`); // debug
 		});
 
 		socket.on('startGameplay', () => {
 			startGameplay = true;
 			startTime = Date.now();
-			//console.log(`PONG_CMPT: Received startGameplay`); // debug
 		});
 
 		socket.on('gameEnd', ({ ball_won }) => {
@@ -614,13 +601,11 @@ const Pong3 = ({
 		});
 
 		socket.on('gameError', ({ message }) => {
-			//console.log('RECEIVED GAME_ERROR'); // debug
 			setGameErrored(true);
 			setGameError(true);
 			setErrorMessage(message);
 		});
 
-		//let last = Date.now(); // debug
 		socket.on('gameStatus', ({
 			timeLeft,
 			ballX, ballZ, newBallSpeed,
@@ -633,10 +618,6 @@ const Pong3 = ({
 			// Ball
 			/// Speed
 			ballSpeed = newBallSpeed;
-			//if (Date.now() - last > 500) {
-			//	console.log(`BALL SPEED = ${ballSpeed}`); // debug
-			//	last = Date.now(); // debug
-			//}
 			/// X Pos
 			ballObj.position.x = ballX;
 			/// Z Pos
@@ -832,7 +813,6 @@ const Pong3 = ({
 				requestAnimationFrame(render);
 			}
 		}
-		//console.log(`PONG_CMPT: Waiting for gameStart`); // debug
 		function waitForGameStart() {
 			if (gameStart && !gameEnd && !gameError) {
 				lastLoopTime = Date.now();
@@ -846,7 +826,6 @@ const Pong3 = ({
 		return () =>
 		{
 			setGameEnd(true);
-			//console.log("Entered useEffect's return function"); // debug
 			gameStart = false;
 			socket.disconnect();
 			document.removeEventListener('keydown', handleKeyDown);

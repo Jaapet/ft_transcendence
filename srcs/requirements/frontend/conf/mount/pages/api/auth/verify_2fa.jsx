@@ -47,7 +47,6 @@ export default async (req, res) => {
 
 		return res.status(200).json({ user: userData, access: accessToken });
 	} catch (error) {
-		//console.error('API VERIFY 2FA:', error);
 		return res.status(401).json({ message: error.message });
 	}
 };

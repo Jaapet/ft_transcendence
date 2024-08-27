@@ -14,7 +14,6 @@ import ErrorToast from '../../../components/toasts/ErrorToast';
 import SuccessToast from '../../../components/toasts/SuccessToast';
 
 const ProfileMemberCardPicture = ({ user }) => {
-	console.log(user); // debug
 	return (
 		<Card className={`${styles.customCard}`} style={{ width: '220px', backgroundColor: '#212529' }}>
 			<Image
@@ -310,7 +309,6 @@ export async function getServerSideProps(context) {
 			}
 		}
 	} catch (error) {
-		//console.error('USER PROFILE:', error);
 		return {
 			props: {
 				status: 401,

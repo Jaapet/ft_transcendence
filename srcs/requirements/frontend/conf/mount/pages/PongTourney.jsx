@@ -58,18 +58,11 @@ export default function PongTourney({ status, detail, user }) {
 
 		mySocket.emit('joinTourney', { gameType: 'pong2', userId: user.id, userName: user.username, userELO: user.elo_pong, userAvatar: user.avatar });
 
-		mySocket.on('connect_error', (error) => {
-			//console.error('Connection error for websocket server:', error);
-		});
-
 		mySocket.on('updateRoom', ({ room, players }) => {
-			//console.log('Room updated to', room); // debug
-			//console.log('With players:', players); // debug
 			updateRoom(room, players);
 		});
 
 		mySocket.on('updatePlayers', ({ players }) => {
-			//console.log('Room updated with these new players:', players); // debug
 			updatePlayers(players);
 		});
 
@@ -82,13 +75,10 @@ export default function PongTourney({ status, detail, user }) {
 		});
 
 		mySocket.on('tourneyStart', ({ players }) => {
-			//console.log(`PONG_CMPT: Received tourneyStart`); // debug
-			//console.log(`PONG_CMPT: Received player list:`, players); // debug
 			setTourneyStarted(true);
 		});
 
 		mySocket.on('tourneyEnd', () => {
-			//console.log(`PONG_CMPT: Received tourneyEnd`); // debug
 			setTourneyEnded(true);
 		});
 
@@ -99,7 +89,7 @@ export default function PongTourney({ status, detail, user }) {
 		}
 	}, []);
 
-/*
+	/*
 	player = {
 		id,
 		username,
@@ -111,10 +101,8 @@ export default function PongTourney({ status, detail, user }) {
 	}
 */
 	useEffect(() => {
-		//console.log('PONG PAGE PLAYERS:', players); // debug
 		if (room && players) {
 			Object.entries(players).map(([key, player]) => {
-				//console.log('PONG PAGE PLAYER ROLE:', player.role); // debug
 				if (player.role === 'leftPaddle')
 					setPlayerL(player);
 				else if (player.role === 'rightPaddle')

@@ -33,7 +33,6 @@ export default async (req, res) => {
 			throw new Error(`Could not fetch user list`);
 		}
 		if (userRes.status === 404) {
-			//console.error('API USER LIST:', userData.detail);
 			return res.status(404).json({ message: userData.detail });
 		}
 		if (!userRes.ok) {
@@ -42,7 +41,6 @@ export default async (req, res) => {
 
 		return res.status(200).json({ users: userData });
 	} catch (error) {
-		//console.error('API USER LIST:', error);
 		return res.status(401).json({ message: error.message });
 	}
 }

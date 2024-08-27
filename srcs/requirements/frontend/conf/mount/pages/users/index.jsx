@@ -200,7 +200,6 @@ export async function getServerSideProps(context) {
 			}
 		}
 	} catch (error) {
-		//console.error('USER LIST:', error);
 		return {
 			props: {
 				status: 401,

@@ -40,7 +40,6 @@ const PongT = ({
 	const [watchLogout, setWatchLogout] = useState(false);
 
 	useEffect(() => {
-		//console.log('user', user); // debug
 		if (!user && watchLogout) {
 			setGameError(true);
 			setGameErrored(true);
@@ -56,7 +55,6 @@ const PongT = ({
 	}, [user]);
 
 	useEffect(() => {
-		//console.log(socket, myUser, matchNb, tourneyEnded); // debug
 		if (!socket || !myUser || matchNb > 2)
 			return ;
 		if (!setGameStarted || !updateRoom || !updatePlayers || tourneyEnded)
@@ -73,7 +71,6 @@ const PongT = ({
 
 		socket.on('endMatch', () => {
 			setMatchNb(matchNb + 1);
-			//console.log(`NEW_MATCH_NB: ${matchNb}`); // debug
 		});
 
 		/// SCENE
@@ -512,7 +509,6 @@ const PongT = ({
 		function handleKeyDown(event) {
 			if (event.repeat)
 				return ;
-			//console.log(event.key); // debug
 			switch (event.key) {
 				case "ArrowUp":
 					if (!paddleUp) {
@@ -533,7 +529,6 @@ const PongT = ({
 		function handleKeyUp(event) {
 			if (event.repeat)
 				return ;
-			//console.log(event.key); // debug
 			switch (event.key) {
 				case "ArrowUp":
 					if (paddleUp) {
@@ -592,8 +587,6 @@ const PongT = ({
 		let startRender = Date.now();
 
 		socket.on('gameStart', ({ players }) => {
-			//console.log(`PONG_CMPT: Received gameStart`); // debug
-			//console.log(`PONG_CMPT: Received player list:`, players); // debug
 			for (const playerKey in players) {
 				if (players[playerKey].id === myUser.id) {
 					role = players[playerKey].role;
@@ -606,13 +599,11 @@ const PongT = ({
 		socket.on('startTimer', () => {
 			startTimer = true;
 			startRender = Date.now();
-			//console.log(`PONG_CMPT: Received startTimer`); // debug
 		});
 
 		socket.on('startGameplay', () => {
 			startGameplay = true;
 			startTime = Date.now();
-			//console.log(`PONG_CMPT: Received startGameplay`); // debug
 		});
 
 		socket.on('gameEnd', ({ winner, score }) => {
@@ -621,13 +612,11 @@ const PongT = ({
 		});
 
 		socket.on('gameError', ({ message }) => {
-			//console.log('RECEIVED GAME_ERROR'); // debug
 			setGameErrored(true);
 			setGameError(true);
 			setErrorMessage(message);
 		});
 
-		//let last = Date.now(); // debug
 		socket.on('gameStatus', ({
 			leftScore, rightScore,
 			newPaddleSpeed,
@@ -644,10 +633,6 @@ const PongT = ({
 			// Ball
 			/// Speed
 			ballSpeed = newBallSpeed;
-			//if (Date.now() - last > 500) {
-			//	console.log(`BALL SPEED = ${ballSpeed}`); // debug
-			//	last = Date.now(); // debug
-			//}
 			/// X Pos
 			ballObj.position.x = ballX;
 			/// Z Pos
@@ -829,7 +814,6 @@ const PongT = ({
 				requestAnimationFrame(render);
 			}
 		}
-		//console.log(`PONG_CMPT: Waiting for gameStart`); // debug
 		function waitForGameStart() {
 			if (gameStart && !gameEnd && !gameError) {
 				lastLoopTime = Date.now();
@@ -842,8 +826,6 @@ const PongT = ({
 
 		return () =>
 		{
-			//console.log("Entered useEffect's return function"); // debug
-			//console.log(`USE_EFFECT_RETURN_DEBUG: myUser=`, myUser); // debug
 			setGameEnd(true);
 			gameStart = false;
 			document.removeEventListener('keydown', handleKeyDown);

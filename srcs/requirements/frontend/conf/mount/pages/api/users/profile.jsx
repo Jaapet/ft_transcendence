@@ -38,7 +38,6 @@ export default async (req, res) => {
 			throw new Error(`Could not fetch data for user ${id}`);
 		}
 		if (userRes.status === 404) {
-			//console.error('API PROFILE:', userData.detail);
 			return res.status(404).json({ message: userData.detail });
 		}
 		if (!userRes.ok) {
@@ -62,7 +61,6 @@ export default async (req, res) => {
 			throw new Error(`Could not fetch last matches for user ${id}`);
 		}
 		if (matchRes.status === 404) {
-			//console.error('API PROFILE:', matchData.detail);
 			return res.status(200).json({ user: userData, last_matches: null });
 		}
 		if (!matchRes.ok) {
@@ -71,7 +69,6 @@ export default async (req, res) => {
 
 		return res.status(200).json({ user: userData, last_matches: matchData });
 	} catch (error) {
-		//console.error('API PROFILE:', error);
 		return res.status(401).json({ message: error.message });
 	}
 }

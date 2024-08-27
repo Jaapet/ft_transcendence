@@ -59,10 +59,8 @@ export default function PongPage({ status, detail }) {
 	}
 */
 	useEffect(() => {
-		//console.log('PONG PAGE PLAYERS:', players); // debug
 		if (players) {
 			Object.entries(players).map(([key, player]) => {
-				//console.log('PONG PAGE PLAYER ROLE:', player.role); // debug
 				if (player.role === 'leftPaddle')
 					setPlayerL(player);
 				else if (player.role === 'rightPaddle')

@@ -6,7 +6,6 @@ from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.db.models import Q
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
 from django.core.files.storage import default_storage
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
