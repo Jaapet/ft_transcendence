@@ -6,6 +6,8 @@ const GameContext = createContext();
 export const GameProvider = ({ children }) => {
 	const { isLoggedIn } = useAuth();
 	const [performanceMode, setPerformanceMode] = useState(true);
+	const [cameraMode, setCameraMode] = useState(false);
+
 	const [inQueue, setInQueue] = useState(false);
 	const [inGame, setInGame] = useState(false);
 	const [gameStarted, setGameStarted] = useState(false);
@@ -127,7 +129,8 @@ export const GameProvider = ({ children }) => {
 			setTourneyStarted, setTourneyEnded,
 			updateTourney, updateTourneyPlayers,
 			resetAll, resetAllTourney,
-			performanceMode, setPerformanceMode
+			performanceMode, setPerformanceMode,
+			cameraMode, setCameraMode
 		}}>
 			{children}
 		</GameContext.Provider>

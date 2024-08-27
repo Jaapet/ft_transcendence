@@ -31,7 +31,9 @@ const Pong3 = ({
 		setGameErrored,
 		updateRoom,
 		updatePlayers,
-		resetAll
+		resetAll,
+		performanceMode,
+		cameraMode
 	} = useGame();
 	const canvasRef = useRef(null);
 
@@ -88,211 +90,202 @@ const Pong3 = ({
 		/// CAMERA
 		let camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 		camera.position.set(0, 100, 10);
-		camera.position.z = 10;
+		camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-		let modelsLoaded = true;
-/*
-		/// MODEL 3D
-		const totalmodel = 11;
-		let actualmodel = 0;
 		let modelsLoaded = false;
+		if (performanceMode) {
+			modelsLoaded = true;
+		} else {
+			/// MODEL 3D
+			const totalmodel = 11;
+			let actualmodel = 0;
+			modelsLoaded = false;
+			
+			// Fonction pour vérifier si tous les modèles sont chargés
+			function checkModelsLoaded() {
+				if (actualmodel === totalmodel)
+					modelsLoaded = true;
+			}
+			checkModelsLoaded();
 
-		// Fonction pour vérifier si tous les modèles sont chargés
-		function checkModelsLoaded()
-		{
-			if (actualmodel === totalmodel)
-				modelsLoaded = true;
+			const loadermodel = new GLTFLoader();
+
+			loadermodel.load(
+				'games/pong/models/Building.glb',
+				function (gltf) {
+					gltf.scene.position.z = -45;
+					gltf.scene.position.x = -2;
+					gltf.scene.position.y = 0.5;
+					gltf.scene.scale.set(0.339, 0.25, 0.25);
+					scene.add( gltf.scene );
+					actualmodel += 1;
+					checkModelsLoaded();
+				},
+				undefined,
+				function (error) {}
+			);
+
+			loadermodel.load(
+				'games/pong/models/city.glb',
+				function (gltf) {
+					gltf.scene.position.z = 490;
+					gltf.scene.position.x = 1330;
+					gltf.scene.position.y = -1063;
+					gltf.scene.rotation.y = 2.17;
+					gltf.scene.scale.set(100, 100, 100);
+					scene.add( gltf.scene );
+					actualmodel++;
+					checkModelsLoaded();
+				},
+				undefined,
+				function (error) {}
+			);
+
+			loadermodel.load(
+				'games/pong/models/Parrot.glb',
+				function (gltf) {
+					gltf.scene.position.z = -52;
+					gltf.scene.position.x = -20;
+					gltf.scene.position.y = 3;
+					gltf.scene.rotation.y = 1.5;
+					gltf.scene.scale.set(0.1, 0.1, 0.1);
+					scene.add( gltf.scene );
+					actualmodel++;
+					checkModelsLoaded();
+				},
+				undefined,
+				function (error) {}
+			);
+
+			loadermodel.load(
+				'games/pong/models/palm/palmtree.gltf',
+				function (gltf) {
+					gltf.scene.position.z = 26.5;
+					gltf.scene.position.x = 48.5;
+					gltf.scene.position.y = 1;
+					gltf.scene.rotation.y = 1;
+					gltf.scene.scale.set(5, 5, 5);
+					scene.add(gltf.scene);
+					actualmodel++;
+					checkModelsLoaded();
+				},
+				undefined,
+				function (error) {}
+			);
+
+			loadermodel.load(
+				'games/pong/models/palm/palmtree.gltf',
+				function (gltf) {
+					gltf.scene.position.z = 26.5;
+					gltf.scene.position.x = -48.5;
+					gltf.scene.position.y = 1;
+					gltf.scene.rotation.y = -1;
+					gltf.scene.scale.set(5, 5, 5);
+					scene.add(gltf.scene);
+					actualmodel++;
+					checkModelsLoaded();
+				},
+				undefined,
+				function (error) {}
+			);
+
+			loadermodel.load(
+				'games/pong/models/bush/scene.gltf',
+				function (gltf) {
+					gltf.scene.position.z = 27;
+					gltf.scene.position.x = -49;
+					gltf.scene.position.y = -2;
+					gltf.scene.rotation.y = -1;
+					gltf.scene.scale.set(0.05, 0.05, 0.05);
+					scene.add(gltf.scene);
+					actualmodel++;
+					checkModelsLoaded();
+				},
+				undefined,
+				function (error) {}
+			);
+
+			loadermodel.load(
+				'games/pong/models/bush/scene.gltf',
+				function (gltf) {
+					gltf.scene.position.z = 27;
+					gltf.scene.position.x = 49;
+					gltf.scene.position.y = -2;
+					gltf.scene.rotation.y = -1;
+					gltf.scene.scale.set(0.05, 0.05, 0.05);
+					scene.add(gltf.scene);
+					actualmodel++;
+					checkModelsLoaded();
+				},
+				undefined,
+				function (error) {}
+			);
+
+			loadermodel.load(
+				'games/pong/models/palm2/scene.gltf',
+				function (gltf) {
+					gltf.scene.position.z = -71;
+					gltf.scene.position.x = -50;
+					gltf.scene.position.y = 1;
+					gltf.scene.rotation.y = -1.4;
+					gltf.scene.scale.set(9, 9, 9);
+					scene.add(gltf.scene);
+					actualmodel++;
+					checkModelsLoaded();
+				},
+				undefined,
+				function (error) {}
+			);
+
+			loadermodel.load(
+				'games/pong/models/bush/scene.gltf',
+				function (gltf) {
+					gltf.scene.position.z = -71;
+					gltf.scene.position.x = -50;
+					gltf.scene.position.y = -2;
+					gltf.scene.rotation.y = -1;
+					gltf.scene.scale.set(0.05, 0.05, 0.05);
+					scene.add(gltf.scene);
+					actualmodel++;
+					checkModelsLoaded();
+				},
+				undefined,
+				function (error) {}
+			);
+
+			loadermodel.load(
+				'games/pong/models/palm2/scene.gltf',
+				function (gltf) {
+					gltf.scene.position.z = -71;
+					gltf.scene.position.x = 50;
+					gltf.scene.position.y = 1;
+					gltf.scene.rotation.y = -1.5;
+					gltf.scene.scale.set(9, 9, 9);
+					scene.add(gltf.scene);
+					actualmodel++;
+					checkModelsLoaded();
+				},
+				undefined,
+				function (error) {}
+			);
+
+			loadermodel.load(
+				'games/pong/models/bush/scene.gltf',
+				function (gltf) {
+					gltf.scene.position.z = -71;
+					gltf.scene.position.x = 50;
+					gltf.scene.position.y = -2;
+					gltf.scene.rotation.y = -1;
+					gltf.scene.scale.set(0.05, 0.05, 0.05);
+					scene.add(gltf.scene);
+					actualmodel++;
+					checkModelsLoaded();
+				},
+				undefined,
+				function (error) {}
+			);
 		}
-		checkModelsLoaded();
 
-		const loadermodel = new GLTFLoader();
-
-		loadermodel.load(
-			'games/pong/models/Building.glb',
-			function (gltf)
-			{ 
-				gltf.scene.position.z = -45;
-				gltf.scene.position.x = -2;
-				gltf.scene.position.y = 0.5;
-				gltf.scene.scale.set(0.339, 0.25, 0.25);
-				scene.add( gltf.scene );
-				actualmodel += 1;
-				checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
-			},
-			undefined,
-			function (error) { console.error(error); } 
-		);
-
-		loadermodel.load(
-			'games/pong/models/city.glb',
-			function (gltf)
-			{ 
-				gltf.scene.position.z = 490;
-				gltf.scene.position.x = 1330;
-				gltf.scene.position.y = -1063;
-				gltf.scene.rotation.y = 2.17;
-				gltf.scene.scale.set(100, 100, 100);
-				scene.add( gltf.scene );
-				actualmodel++;
-				checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
-			},
-			undefined,
-			function (error) { console.error(error); } 
-		);
-
-		loadermodel.load(
-			'games/pong/models/Parrot.glb',
-			function (gltf)
-			{ 
-				gltf.scene.position.z = -52;
-				gltf.scene.position.x = -20;
-				gltf.scene.position.y = 3;
-				gltf.scene.rotation.y = 1.5;
-				gltf.scene.scale.set(0.1, 0.1, 0.1);
-				scene.add( gltf.scene );
-				actualmodel++;
-				checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
-			},
-			undefined,
-			function (error) { console.error(error); } 
-		);
-
-		loadermodel.load(
-			'games/pong/models/palm/palmtree.gltf',
-			function (gltf)
-			{ 
-				gltf.scene.position.z = 26.5;
-				gltf.scene.position.x = 48.5;
-				gltf.scene.position.y = 1;
-				gltf.scene.rotation.y = 1;
-				gltf.scene.scale.set(5, 5, 5);
-				scene.add(gltf.scene);
-				actualmodel++;
-				checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
-			},
-			undefined,
-			function (error) { console.error(error); } 
-		);
-
-		loadermodel.load(
-			'games/pong/models/palm/palmtree.gltf',
-			function (gltf)
-			{ 
-				gltf.scene.position.z = 26.5;
-				gltf.scene.position.x = -48.5;
-				gltf.scene.position.y = 1;
-				gltf.scene.rotation.y = -1;
-				gltf.scene.scale.set(5, 5, 5);
-				scene.add(gltf.scene);
-				actualmodel++;
-				checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
-			},
-			undefined,
-			function (error) { console.error(error); } 
-		);
-
-		loadermodel.load(
-			'games/pong/models/bush/scene.gltf',
-			function (gltf)
-			{ 
-				gltf.scene.position.z = 27;
-				gltf.scene.position.x = -49;
-				gltf.scene.position.y = -2;
-				gltf.scene.rotation.y = -1;
-				gltf.scene.scale.set(0.05, 0.05, 0.05);
-				scene.add(gltf.scene);
-				actualmodel++;
-				checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
-			},
-			undefined,
-			function (error) { console.error(error); } 
-		);
-
-		loadermodel.load(
-			'games/pong/models/bush/scene.gltf',
-			function (gltf)
-			{ 
-				gltf.scene.position.z = 27;
-				gltf.scene.position.x = 49;
-				gltf.scene.position.y = -2;
-				gltf.scene.rotation.y = -1;
-				gltf.scene.scale.set(0.05, 0.05, 0.05);
-				scene.add(gltf.scene);
-				actualmodel++;
-				checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
-			},
-			undefined,
-			function (error) { console.error(error); } 
-		);
-
-		loadermodel.load(
-			'games/pong/models/palm2/scene.gltf',
-			function (gltf)
-			{ 
-				gltf.scene.position.z = -71;
-				gltf.scene.position.x = -50;
-				gltf.scene.position.y = 1;
-				gltf.scene.rotation.y = -1.4;
-				gltf.scene.scale.set(9, 9, 9);
-				scene.add(gltf.scene);
-				actualmodel++;
-				checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
-			},
-			undefined,
-			function (error) { console.error(error); } 
-		);
-
-		loadermodel.load(
-			'games/pong/models/bush/scene.gltf',
-			function (gltf)
-			{ 
-				gltf.scene.position.z = -71;
-				gltf.scene.position.x = -50;
-				gltf.scene.position.y = -2;
-				gltf.scene.rotation.y = -1;
-				gltf.scene.scale.set(0.05, 0.05, 0.05);
-				scene.add(gltf.scene);
-				actualmodel++;
-				checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
-			},
-			undefined,
-			function (error) { console.error(error); } 
-		);
-
-		loadermodel.load(
-			'games/pong/models/palm2/scene.gltf',
-			function (gltf)
-			{ 
-				gltf.scene.position.z = -71;
-				gltf.scene.position.x = 50;
-				gltf.scene.position.y = 1;
-				gltf.scene.rotation.y = -1.5;
-				gltf.scene.scale.set(9, 9, 9);
-				scene.add(gltf.scene);
-				actualmodel++;
-				checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
-			},
-			undefined,
-			function (error) { console.error(error); } 
-		);
-
-		loadermodel.load(
-			'games/pong/models/bush/scene.gltf',
-			function (gltf)
-			{ 
-				gltf.scene.position.z = -71;
-				gltf.scene.position.x = 50;
-				gltf.scene.position.y = -2;
-				gltf.scene.rotation.y = -1;
-				gltf.scene.scale.set(0.05, 0.05, 0.05);
-				scene.add(gltf.scene);
-				actualmodel++;
-				checkModelsLoaded(); // Vérifier si tous les modèles sont chargés
-			},
-			undefined,
-			function (error) { console.error(error); } 
-		);
-*/
 		/// TEXT
 		let text3, text3r, text2, text2r, text1, text1r, text0, text0r;
 		let textMesh1, font;
@@ -394,11 +387,12 @@ const Pong3 = ({
 		scene.add(planmesh3);
 
 		/// ORBITAL CONTROL
-		const controls = new OrbitControls(camera, canvas);
-		controls.unableDamping = true;
-		controls.target.set(0, 0, 0);
-		//controls.maxDistance = 300;
-		controls.update();
+		if (cameraMode) {
+			const controls = new OrbitControls(camera, canvas);
+			controls.unableDamping = true;
+			controls.target.set(0, 0, 0);
+			controls.update();
+		}
 
 		/// LUMIERES
 		// lumiere ambiante

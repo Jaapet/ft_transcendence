@@ -3,19 +3,19 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { useGame } from '../context/GameContext';
 
-function PerformanceSwitch() {
-	const { performanceMode, setPerformanceMode, setCameraMode } = useGame();
+function CameraSwitch() {
+	const { cameraMode, setCameraMode, setPerformanceMode } = useGame();
 
 	const tooltip = (
 		<Tooltip
-			id='performance-switch-tooltip'
+			id='camera-switch-tooltip'
 			style={{
 				position: 'fixed',
 				zIndex: 1000,
 				pointerEvents: 'none'
 			}}
 		>
-			Activating Performance Mode might help if you are experiencing slowdowns.
+			Activating the Free Camera might slow the game down.<br/>It can also distract you from playing.
 		</Tooltip>
 	);
 
@@ -34,13 +34,13 @@ function PerformanceSwitch() {
 			}}>
 				<Form.Check
 					type="switch"
-					id="performance-switch"
-					label="Performance mode"
-					checked={performanceMode}
+					id="camera-switch"
+					label="Free Camera"
+					checked={cameraMode}
 					onChange={(e) => {
-						setPerformanceMode(e.target.checked);
+						setCameraMode(e.target.checked);
 						if (e.target.checked)
-							setCameraMode(false);
+							setPerformanceMode(false);
 					}}
 				/>
 			</Form>
@@ -48,4 +48,4 @@ function PerformanceSwitch() {
 	);
 }
 
-export default PerformanceSwitch;
+export default CameraSwitch;

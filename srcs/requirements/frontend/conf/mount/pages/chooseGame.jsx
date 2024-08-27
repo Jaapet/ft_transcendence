@@ -4,6 +4,7 @@ import Head from "next/head";
 import styles from '../styles/base.module.css';
 import { useAuth } from '../context/AuthenticationContext';
 import PerformanceSwitch from '../components/PerformanceSwitch';
+import CameraSwitch from '../components/CameraSwitch';
 
 export default function ChooseGame({ status, detail }) {
 	const { logout } = useAuth();
@@ -50,7 +51,8 @@ export default function ChooseGame({ status, detail }) {
 						Pong Tourney
 					</Link>
 				</div>
-				<PerformanceSwitch />
+				<PerformanceSwitch style={{ marginTop: '5px' }} />
+				<CameraSwitch style={{ marginTop: '5px' }} />
 			</div>
 		</div>
 	);
