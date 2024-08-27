@@ -5,6 +5,7 @@ const GameContext = createContext();
 
 export const GameProvider = ({ children }) => {
 	const { isLoggedIn } = useAuth();
+	const [performanceMode, setPerformanceMode] = useState(true);
 	const [inQueue, setInQueue] = useState(false);
 	const [inGame, setInGame] = useState(false);
 	const [gameStarted, setGameStarted] = useState(false);
@@ -125,7 +126,8 @@ export const GameProvider = ({ children }) => {
 			updateRoom, updatePlayers,
 			setTourneyStarted, setTourneyEnded,
 			updateTourney, updateTourneyPlayers,
-			resetAll, resetAllTourney
+			resetAll, resetAllTourney,
+			performanceMode, setPerformanceMode
 		}}>
 			{children}
 		</GameContext.Provider>

@@ -59,7 +59,7 @@ const StatusCircle = ({ userId }) => {
 				zIndex: 1000,
 				pointerEvents: 'none'
 			}}
-			>
+		>
 			{hoverTip}
 		</Tooltip>
 	);

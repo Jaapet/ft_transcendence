@@ -3,6 +3,7 @@ import Link from "next/link";
 import Head from "next/head";
 import styles from '../styles/base.module.css';
 import { useAuth } from '../context/AuthenticationContext';
+import PerformanceSwitch from '../components/PerformanceSwitch';
 
 export default function ChooseGame({ status, detail }) {
 	const { logout } = useAuth();
@@ -30,16 +31,26 @@ export default function ChooseGame({ status, detail }) {
 				<title>Choose Game</title>
 			</Head>
 			<h1 className={`mt-5 ${styles.background_title}`}>Choose Your Game</h1>
-			<div className={styles.buttonContainer}>
-				<Link href="/PongPage" passHref className={styles.button}>
-					Classic Pong
-				</Link>
-				<Link href="/Pong3Page" passHref className={styles.button}>
-					1v2 Pong
-				</Link>
-				<Link href="/PongTourney" passHref className={styles.button}>
-					Pong Tourney
-				</Link>
+			<div style={{
+				display: 'flex',
+				flexDirection: 'column',
+				justifyContent: 'center',
+				alignItems: 'center'
+			}}>
+				<div className={styles.buttonContainerGame}>
+					<Link href="/PongPage" passHref className={styles.button}>
+						Classic Pong
+					</Link>
+					<Link href="/Pong3Page" passHref className={styles.button}>
+						1v2 Pong
+					</Link>
+				</div>
+				<div className={styles.buttonContainerGame}>
+					<Link href="/PongTourney" passHref className={`${styles.button} ${styles.buttonTourney}`}>
+						Pong Tourney
+					</Link>
+				</div>
+				<PerformanceSwitch />
 			</div>
 		</div>
 	);

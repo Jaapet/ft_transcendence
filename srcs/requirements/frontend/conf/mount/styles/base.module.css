@@ -108,12 +108,18 @@
 	align-items: flex-start; /* text starting aligned */
 }
 
-
 .buttonContainer {	/* same but horizontal */
 	display: flex;
 	justify-content: center;
 	gap: 30px;
 	margin-top: 4cm;
+}
+
+.buttonContainerGame {	/* same but horizontal */
+	display: flex;
+	justify-content: center;
+	gap: 30px;
+	margin-top: 5vh;
 }
 
 /* important buttons */
@@ -130,16 +136,27 @@
 	text-decoration: none;
 
 	animation: gradientAnimation 5s ease infinite;
-	background: linear-gradient(45deg, #ff6b6b, #f06595, #cc5de8, #845ef7, #5c7cfa, #339af0, #22b8cf, #20c997, #51cf66, #94d82d, #fcc419, #ff922b);
+	background: linear-gradient(40deg, #ff6b6b, #f06595, #cc5de8, #845ef7, #5c7cfa, #339af0, #22b8cf, #20c997, #51cf66, #94d82d, #fcc419, #ff922b);
 	transition: background-color 0.3s ease, box-shadow 0.3s ease;
 	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 
 	z-index: 3;
 }
 
+.buttonTourney {
+	background: rgb(196,0,0);
+	background: linear-gradient(90deg, rgba(196,0,0,1) 0%, rgba(82,0,0,1) 8%, rgba(0,0,0,1) 24%, rgba(199,57,193,1) 24.1%, rgba(199,57,193,1) 25.9%, rgba(57,145,187,1) 26%, rgba(85,198,217,1) 49.7%, rgba(198,198,198,1) 49.8%, rgba(198,198,198,1) 50.2%, rgba(85,198,217,1) 50.3%, rgba(55,139,180,1) 74%, rgba(199,57,193,1) 74.1%, rgba(199,57,193,1) 75.9%, rgba(24,0,0,1) 76%, rgba(82,0,0,1) 92%, rgba(196,0,0,1) 100%);
+}
+
 .button:hover {
 	transform: scale(1.05);
 	box-shadow: 0 20px 20px rgba(217, 248, 38, 0.4);
+}
+
+.buttonTourney:hover {
+	transform: scale(1.05);
+	box-shadow: 0 20px 20px rgba(209, 15, 15, 0.4);
+	background: linear-gradient(90deg, rgba(196,0,0,1) 0%, rgba(82,0,0,1) 14%, rgba(30,0,0,1) 24%, rgba(255,57,193,1) 24.1%, rgba(255,57,193,1) 25.9%, rgba(100,118,153,1) 26%, rgba(100,166,181,1) 49.7%, rgba(255,198,198,1) 49.8%, rgba(255,198,198,1) 50.2%, rgba(100,166,181,1) 50.3%, rgba(118,143,190,1) 74%, rgba(255,57,193,1) 74.1%, rgba(255,57,193,1) 75.9%, rgba(30,0,0,1) 76%, rgba(82,0,0,1) 86%, rgba(196,0,0,1) 100%);
 }
 
 .button.selected {
