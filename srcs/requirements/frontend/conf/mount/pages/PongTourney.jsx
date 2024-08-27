@@ -20,9 +20,12 @@ export default function PongTourney({ status, detail, user }) {
 		updateTourney, updateTourneyPlayers,
 		tourneyEnded,
 		setTourneyStarted,
-		setTourneyEnded
+		setTourneyEnded,
+		performanceMode,
+		setPerformanceMode
 	} = useGame();
 
+	
 	// Game states
 	const [playerL, setPlayerL] = useState(null);
 	const [playerR, setPlayerR] = useState(null);
@@ -52,6 +55,10 @@ export default function PongTourney({ status, detail, user }) {
 	}
 
 	useEffect(() => {
+		if (!performanceMode) {
+			setPerformanceMode(true);
+		}
+
 		joinPong2Tourney();
 		const mySocket = io(`https://${process.env.NEXT_PUBLIC_FQDN}:${process.env.NEXT_PUBLIC_WEBSOCKET_PORT}`);
 		setSocket(mySocket);

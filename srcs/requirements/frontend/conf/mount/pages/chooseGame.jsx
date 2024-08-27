@@ -3,8 +3,47 @@ import Link from "next/link";
 import Head from "next/head";
 import styles from '../styles/base.module.css';
 import { useAuth } from '../context/AuthenticationContext';
+import { useGame } from '../context/GameContext';
 import PerformanceSwitch from '../components/PerformanceSwitch';
 import CameraSwitch from '../components/CameraSwitch';
+import Tooltip from 'react-bootstrap/Tooltip';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+
+const PongTourneyButton = () => {
+	const { performanceMode } = useGame();
+
+	const tooltip = (
+		<Tooltip
+			id='performance-switch-tooltip'
+			style={{
+				position: 'fixed',
+				zIndex: 1000,
+				pointerEvents: 'none'
+			}}
+		>
+			Tourneys are only playable in Performance Mode!
+		</Tooltip>
+	);
+
+	if (!performanceMode) {
+		return (
+			<OverlayTrigger
+				placement="top"
+				overlay={tooltip}
+			>
+				<div className={`${styles.button} ${styles.buttonTourneyRestricted}`}>
+					Pong Tourney
+				</div>
+			</OverlayTrigger>
+		);
+	}
+
+	return (
+		<Link href="/PongTourney" passHref className={`${styles.button} ${styles.buttonTourney}`}>
+			Pong Tourney
+		</Link>
+	);
+}
 
 export default function ChooseGame({ status, detail }) {
 	const { logout } = useAuth();
@@ -47,9 +86,7 @@ export default function ChooseGame({ status, detail }) {
 					</Link>
 				</div>
 				<div className={styles.buttonContainerGame}>
-					<Link href="/PongTourney" passHref className={`${styles.button} ${styles.buttonTourney}`}>
-						Pong Tourney
-					</Link>
+					<PongTourneyButton />
 				</div>
 				<PerformanceSwitch style={{ marginTop: '5px' }} />
 				<CameraSwitch style={{ marginTop: '5px' }} />
