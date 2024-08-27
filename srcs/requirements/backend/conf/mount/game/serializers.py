@@ -1,7 +1,6 @@
 from .models import Member, FriendRequest, Match, Match3
 from django.core.validators import RegexValidator
 from rest_framework.validators import UniqueValidator
-from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -14,6 +13,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 	def validate(self, attrs):
 		data = super().validate(attrs)
 		user = self.user
+		if user.is_staff:
+			return {'admin': True}
 
 		device = TOTPDevice.objects.filter(user=user, confirmed=True).first()
 

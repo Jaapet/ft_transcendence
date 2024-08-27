@@ -33,6 +33,11 @@ export default async (req, res) => {
 			throw new Error(tokData.detail || 'Could not fetch tokens');
 		}
 
+		if (tokData.admin) {
+			console.log(`Login refused for admin=${username}`); // ELK LOG
+			return res.status(403).json({ message: 'Admins cannot log in here' });
+		}
+
 		if (tokData.requires_2fa && tokData.user_id) {
 			console.log(`Prompting user=${username} for 2fa`); // ELK LOG
 			return res.status(200).json({ requires_2fa: tokData.requires_2fa, user_id: tokData.user_id });
@@ -68,7 +73,6 @@ export default async (req, res) => {
 
 		return res.status(200).json({ user: userData, access: accessToken });
 	} catch (error) {
-		//console.error('API LOGIN:', error);
 		return res.status(401).json({ message: error.message });
 	}
 }
