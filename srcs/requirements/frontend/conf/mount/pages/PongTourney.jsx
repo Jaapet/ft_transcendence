@@ -21,8 +21,8 @@ export default function PongTourney({ status, detail, user }) {
 		tourneyEnded,
 		setTourneyStarted,
 		setTourneyEnded,
-		performanceMode,
-		setPerformanceMode
+		cameraMode,
+		setCameraMode
 	} = useGame();
 
 	
@@ -55,8 +55,8 @@ export default function PongTourney({ status, detail, user }) {
 	}
 
 	useEffect(() => {
-		if (!performanceMode) {
-			setPerformanceMode(true);
+		if (cameraMode) {
+			setCameraMode(false);
 		}
 
 		joinPong2Tourney();
@@ -179,7 +179,7 @@ export default function PongTourney({ status, detail, user }) {
 					<></>
 				}
 
-				{<DrawingCanvas />}
+				<DrawingCanvas />
 				<PongT
 					tourney={tourney} tourneyPlayers={tourneyPlayers}
 					scoreL={scoreL} setScoreL={setScoreL}

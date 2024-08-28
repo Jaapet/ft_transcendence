@@ -10,7 +10,7 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
 const PongTourneyButton = () => {
-	const { performanceMode } = useGame();
+	const { cameraMode } = useGame();
 
 	const tooltip = (
 		<Tooltip
@@ -21,11 +21,11 @@ const PongTourneyButton = () => {
 				pointerEvents: 'none'
 			}}
 		>
-			Tourneys are only playable in Performance Mode!
+			You can't activate Free Camera Mode for Tourneys!
 		</Tooltip>
 	);
 
-	if (!performanceMode) {
+	if (cameraMode) {
 		return (
 			<OverlayTrigger
 				placement="top"
