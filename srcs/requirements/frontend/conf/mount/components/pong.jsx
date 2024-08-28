@@ -11,6 +11,8 @@ import { useAuth } from '../context/AuthenticationContext';
 import { useGame } from '../context/GameContext';
 import React from 'react';
 
+// TODO: APPLY LAST CHANGES TO PONG3 AND PONGT!!!
+
 const Pong = ({
 	scoreL, setScoreL,
 	scoreR, setScoreR,
@@ -604,7 +606,9 @@ const Pong = ({
 			startTime = Date.now();
 		});
 
+		let stopGameError = false;
 		socket.on('gameEnd', ({ winner, score }) => {
+			console.log('gameEnd'); // debug
 			setGameEnded(true);
 			setWinner(winner);
 			setWinnerScore(score);
@@ -612,6 +616,9 @@ const Pong = ({
 		});
 
 		socket.on('gameError', ({ message }) => {
+			console.log('gameError'); // debug
+			if (stopGameError)
+				return ;
 			setGameErrored(true);
 			setGameError(true);
 			setErrorMessage(message);
