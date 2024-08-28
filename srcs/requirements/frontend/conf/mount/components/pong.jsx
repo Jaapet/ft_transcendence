@@ -886,6 +886,7 @@ const Pong = ({
 					object.material = [];
 			});
 		};
+
 	}, [user, gameType]);
 
 	useEffect(() => {
