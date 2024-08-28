@@ -124,7 +124,7 @@ export default function PongPage({ status, detail }) {
 			<div
 				style={{
 					display: 'flex',
-					justifyContent: 'space-between',
+					justifyContent: room && !inQueue ? 'space-between' : 'center',
 					alignItems: 'center',
 					width: '100vw',
 					height: '78vh',
