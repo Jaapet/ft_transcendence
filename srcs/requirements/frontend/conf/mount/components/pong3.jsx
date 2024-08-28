@@ -602,13 +602,17 @@ const Pong3 = ({
 			startTime = Date.now();
 		});
 
+		let stopGameError = false;
 		socket.on('gameEnd', ({ ball_won }) => {
+			stopGameError = true;
 			setGameEnded(true);
 			setBallWon(ball_won);
 			setGameEnd(true);
 		});
 
 		socket.on('gameError', ({ message }) => {
+			if (stopGameError)
+				return ;
 			setGameErrored(true);
 			setGameError(true);
 			setErrorMessage(message);
@@ -661,11 +665,12 @@ const Pong3 = ({
 		let ballSpeed = BASE_BALL_SPEED;
 
 		let first = 0;
+		let frameReqId = null;
 		function render(time)
 		{
 			if (!modelsLoaded)
 			{
-				requestAnimationFrame(render);
+				frameReqId = requestAnimationFrame(render);
 				return;
 			}
 
@@ -676,7 +681,7 @@ const Pong3 = ({
 
 			if (!startTimer)
 			{
-				requestAnimationFrame(render);
+				frameReqId = requestAnimationFrame(render);
 				return;
 			}
 
@@ -818,13 +823,13 @@ const Pong3 = ({
 			lastLoopTime = Date.now();
 			if (!gameEnd && !gameError) {
 				renderer.render(scene, camera);
-				requestAnimationFrame(render);
+				frameReqId = requestAnimationFrame(render);
 			}
 		}
 		function waitForGameStart() {
 			if (gameStart && !gameEnd && !gameError) {
 				lastLoopTime = Date.now();
-				requestAnimationFrame(render);
+				frameReqId = requestAnimationFrame(render);
 			} else if (!gameEnd && !gameError) {
 				setTimeout(waitForGameStart, 250); // Every 0.25 seconds
 			}
@@ -834,6 +839,7 @@ const Pong3 = ({
 		return () =>
 		{
 			setGameEnd(true);
+			cancelAnimationFrame(frameReqId);
 			gameStart = false;
 			socket.disconnect();
 			document.removeEventListener('keydown', handleKeyDown);
@@ -870,9 +876,22 @@ const Pong3 = ({
 					}
 				}
 			}
+
 			renderer && renderer.renderLists.dispose();
 			renderer.dispose();
-			cancelAnimationFrame(render);
+
+			scene.traverse((object) =>
+			{
+				if (!object.isMesh)
+					return;
+
+				object.geometry = null;
+
+				if (object.material.isMaterial)
+					object.material = null;
+				else
+					object.material = [];
+			});
 		};
 	}, [user, gameType]);
 

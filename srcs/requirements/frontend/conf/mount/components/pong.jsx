@@ -604,7 +604,9 @@ const Pong = ({
 			startTime = Date.now();
 		});
 
+		let stopGameError = false;
 		socket.on('gameEnd', ({ winner, score }) => {
+			stopGameError = true;
 			setGameEnded(true);
 			setWinner(winner);
 			setWinnerScore(score);
@@ -612,6 +614,8 @@ const Pong = ({
 		});
 
 		socket.on('gameError', ({ message }) => {
+			if (stopGameError)
+				return ;
 			setGameErrored(true);
 			setGameError(true);
 			setErrorMessage(message);
@@ -669,11 +673,12 @@ const Pong = ({
 		let ballSpeed = BASE_BALL_SPEED;
 
 		let first = 0;
+		let frameReqId = null;
 		function render(time)
 		{
 			if (!modelsLoaded)
 			{
-				requestAnimationFrame(render);
+				frameReqId = requestAnimationFrame(render);
 				return;
 			}
 
@@ -684,7 +689,7 @@ const Pong = ({
 
 			if (!startTimer)
 			{
-				requestAnimationFrame(render);
+				frameReqId = requestAnimationFrame(render);
 				return;
 			}
 
@@ -811,13 +816,13 @@ const Pong = ({
 			lastLoopTime = Date.now();
 			if (!gameEnd && !gameError) {
 				renderer.render(scene, camera);
-				requestAnimationFrame(render);
+				frameReqId = requestAnimationFrame(render);
 			}
 		}
 		function waitForGameStart() {
 			if (gameStart && !gameEnd && !gameError) {
 				lastLoopTime = Date.now();
-				requestAnimationFrame(render);
+				frameReqId = requestAnimationFrame(render);
 			} else if (!gameEnd && !gameError) {
 				setTimeout(waitForGameStart, 250); // Every 0.25 seconds
 			}
@@ -827,6 +832,7 @@ const Pong = ({
 		return () =>
 		{
 			setGameEnd(true);
+			cancelAnimationFrame(frameReqId);
 			gameStart = false;
 			socket.disconnect();
 			document.removeEventListener('keydown', handleKeyDown);
@@ -863,9 +869,22 @@ const Pong = ({
 					}
 				}
 			}
+
 			renderer && renderer.renderLists.dispose();
 			renderer.dispose();
-			cancelAnimationFrame(render);
+
+			scene.traverse((object) =>
+			{
+				if (!object.isMesh)
+					return;
+
+				object.geometry = null;
+
+				if (object.material.isMaterial)
+					object.material = null;
+				else
+					object.material = [];
+			});
 		};
 	}, [user, gameType]);
 

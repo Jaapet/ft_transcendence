@@ -614,12 +614,16 @@ const PongT = ({
 			startTime = Date.now();
 		});
 
+		let stopGameError = false;
 		socket.on('gameEnd', ({ winner, score }) => {
+			stopGameError = true;
 			setGameEnded(true);
 			setGameEnd(true);
 		});
 
 		socket.on('gameError', ({ message }) => {
+			if (stopGameError)
+				return ;
 			setGameErrored(true);
 			setGameError(true);
 			setErrorMessage(message);
@@ -677,11 +681,12 @@ const PongT = ({
 		let ballSpeed = BASE_BALL_SPEED;
 
 		let first = 0;
+		let frameReqId = null;
 		function render(time)
 		{
 			if (!modelsLoaded)
 			{
-				requestAnimationFrame(render);
+				frameReqId = requestAnimationFrame(render);
 				return;
 			}
 
@@ -692,7 +697,7 @@ const PongT = ({
 
 			if (!startTimer)
 			{
-				requestAnimationFrame(render);
+				frameReqId = requestAnimationFrame(render);
 				return;
 			}
 
@@ -819,13 +824,13 @@ const PongT = ({
 			lastLoopTime = Date.now();
 			if (!gameEnd && !gameError) {
 				renderer?.render(scene, camera);
-				requestAnimationFrame(render);
+				frameReqId = requestAnimationFrame(render);
 			}
 		}
 		function waitForGameStart() {
 			if (gameStart && !gameEnd && !gameError) {
 				lastLoopTime = Date.now();
-				requestAnimationFrame(render);
+				frameReqId = requestAnimationFrame(render);
 			} else if (!gameEnd && !gameError) {
 				setTimeout(waitForGameStart, 250); // Every 0.25 seconds
 			}
@@ -835,6 +840,7 @@ const PongT = ({
 		return () =>
 		{
 			setGameEnd(true);
+			cancelAnimationFrame(frameReqId);
 			gameStart = false;
 			document.removeEventListener('keydown', handleKeyDown);
 			document.removeEventListener('keyup', handleKeyUp);
@@ -870,9 +876,22 @@ const PongT = ({
 					}
 				}
 			}
+
 			renderer?.renderLists.dispose();
 			renderer?.dispose();
-			cancelAnimationFrame(render);
+
+			scene.traverse((object) =>
+			{
+				if (!object.isMesh)
+					return;
+
+				object.geometry = null;
+
+				if (object.material.isMaterial)
+					object.material = null;
+				else
+					object.material = [];
+			});
 		};
 	}, [myUser, socket, matchNb]);
 
