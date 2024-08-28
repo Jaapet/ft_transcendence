@@ -102,7 +102,8 @@ export default function Users({ status, detail, users }) {
 				const order = {
 					online: 1,
 					ingame: 2,
-					offline: 3
+					offline: 3,
+					unknown: 4
 				};
 
 				const aVal = order[a[column]];
