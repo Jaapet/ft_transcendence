@@ -118,7 +118,8 @@ io.on('connection', socket => {
 			let room = findRoomByPlayerIdSlow(socket.id);
 			if (room) {
 				if (room.launched) {
-					io.to(room.id).emit('gameError', { message: 'A player disconnected' });
+					if (room.runtime && !room.runtime.end)
+						io.to(room.id).emit('gameError', { message: 'A player disconnected' });
 					removePlayerFromRoom(socket.id);
 				} else {
 					removePlayerFromRoom(socket.id);
