@@ -96,7 +96,7 @@ const PongT = ({
 		const loader = new THREE.TextureLoader();
 		const texture = loader.load('games/pong/texture/skybox.jpg');
 		texture.colorSpace = THREE.SRGBColorSpace;
-		const texturesphere = loader.load('games/pong/texture/ball.jpg');
+		const texturesphere = loader.load('games/pong/texture/ball.png');
 		texture.colorSpace = THREE.SRGBColorSpace;
 
 		/// CAMERA
@@ -359,7 +359,7 @@ const PongT = ({
 
 		/// FLOOR DE LA PISCINE (PONG)
 		const planeSize = 42;
-		const texture2 = loader.load('games/pong/texture/pool.jpg');
+		const texture2 = loader.load('games/pong/texture/pool.png');
 		texture2.colorSpace = THREE.SRGBColorSpace;
 		texture2.wrapS = THREE.RepeatWrapping;
 		texture2.wrapT = THREE.RepeatWrapping;

@@ -84,7 +84,7 @@ const Pong3 = ({
 		const loader = new THREE.TextureLoader();
 		const texture = loader.load('games/pong/texture/skybox.jpg');
 		texture.colorSpace = THREE.SRGBColorSpace;
-		const texturesphere = loader.load('games/pong/texture/ball.jpg');
+		const texturesphere = loader.load('games/pong/texture/ball.png');
 		texture.colorSpace = THREE.SRGBColorSpace;
 
 		/// CAMERA
