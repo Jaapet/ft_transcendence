@@ -1,3 +1,8 @@
+@font-face {
+	font-family: "info";
+	src: url("../public/fonts/Info.otf") format("truetype");
+}
+
 .container {
 	display: flex;
 	flex-direction: column;
@@ -25,11 +30,11 @@
 }
 
 .playerName {
-	font-family: verdana;
+	font-family: info;
 }
 
 .playerElo {
-	font-family: verdana;
+	font-family: info;
 	font-size: 3vmin;
 	margin-right: 1.5vmin;
 }
