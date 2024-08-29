@@ -5,6 +5,7 @@ import Link from 'next/link';
 import LoginResult from '../../components/LoginResult';
 import ToastList from '../../components/toasts/ToastList';
 import ErrorToast from '../../components/toasts/ErrorToast';
+import Head from 'next/head';
 
 const LoginFormUsernameField = ({ username, setUsername }) => {
 	return (
@@ -229,6 +230,9 @@ const LoginForm = () => {
 export default function LoginPage () {
 	return (
 		<div>
+			<Head>
+				<title>Login</title>
+			</Head>
 			<LoginForm/>
 		</div>
 	);

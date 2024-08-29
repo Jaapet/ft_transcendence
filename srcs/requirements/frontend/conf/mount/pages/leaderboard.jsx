@@ -2,6 +2,7 @@ import React from 'react';
 import styles from '../styles/base.module.css';
 import { useAuth } from '../context/AuthenticationContext';
 import LeaderboardTable from '../components/LeaderboardTable';
+import Head from 'next/head';
 
 export default function Leaderboard({ status, detail, pong }) {
 	const { logout } = useAuth();
@@ -25,6 +26,9 @@ export default function Leaderboard({ status, detail, pong }) {
 
 	return (
 		<div className={styles.container}>
+			<Head>
+				<title>Leaderboard</title>
+			</Head>
 			<h1 className={styles.background_title} style={{margin: '20px'}}>Leaderboard</h1>
 			<LeaderboardTable leaders={pong} />
 		</div>

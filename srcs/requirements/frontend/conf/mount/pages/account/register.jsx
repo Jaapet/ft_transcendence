@@ -5,6 +5,7 @@ import Link from 'next/link';
 import LoginResult from '../../components/LoginResult';
 import ToastList from '../../components/toasts/ToastList';
 import ErrorToast from '../../components/toasts/ErrorToast';
+import Head from 'next/head';
 
 const SignupFormUsernameField = ({ username, setUsername }) => {
 	return (
@@ -272,6 +273,9 @@ const SignupForm = () => {
 export default function SignupPage () {
 	return (
 		<div>
+			<Head>
+				<title>Register</title>
+			</Head>
 			<SignupForm/>
 		</div>
 	);

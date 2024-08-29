@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {Row, Col, Button, Card, Dropdown } from 'react-bootstrap';
 import styles from '../styles/base.module.css';
 import { useAuth } from '../context/AuthenticationContext';
+import Head from 'next/head';
 
 export default function HowToPlay({ status, detail }) {
 	const [selectedGame, setSelectedGame] = useState('game1');
@@ -62,6 +63,9 @@ export default function HowToPlay({ status, detail }) {
 
 	return (
 		<div className={styles.container}>
+			<Head>
+				<title>How To Play</title>
+			</Head>
 			<h1 className={styles.background_title } style={{marginTop: '0.5cm'}}>? How to Play ?</h1>
 
 			<Card className={styles.backCard} style={{marginTop: '0.5cm'}}>

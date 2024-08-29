@@ -5,6 +5,7 @@ import Link from 'next/link';
 import styles from '../../styles/base.module.css';
 import { useAuth } from '../../context/AuthenticationContext';
 import StatusCircle from '../../components/StatusCircle';
+import Head from 'next/head';
 
 const UserTableHead = ({ onSort, sortConfig }) => {
 	const getSortDirection = (column) => {
@@ -143,10 +144,13 @@ export default function Users({ status, detail, users }) {
 
 	return (
 		<div>
+			<Head>
+				<title>User List</title>
+			</Head>
 			<div className={styles.container}>
-			<h1 className={styles.background_title}> User List </h1>
-			<UserTable users={sortedUsers} onSort={handleSort} sortConfig={sortConfig} />
-		</div>
+				<h1 className={styles.background_title}> User List </h1>
+				<UserTable users={sortedUsers} onSort={handleSort} sortConfig={sortConfig} />
+			</div>
 		</div>
 	)
 }

@@ -9,6 +9,7 @@ import Pong3Results from '../components/pong3Results';
 import { useAuth } from '../context/AuthenticationContext';
 import DrawingCanvas from '../components/Drawing';
 import { useGame } from '../context/GameContext';
+import Head from 'next/head';
 
 export default function PongPage({ status, detail }) {
 	const { logout } = useAuth();
@@ -77,6 +78,9 @@ export default function PongPage({ status, detail }) {
 	if (gameError) {
 		return (
 			<div className={`${styles.container} pt-5`}>
+				<Head>
+					<title>1v2 Pong Error</title>
+				</Head>
 				<div className={`card ${styles.customCard} mt-5`}>
 					<div className={`card-body ${styles.cardInfo}`}>
 						{ errorMessage ?
@@ -101,6 +105,9 @@ export default function PongPage({ status, detail }) {
 	if (gameEnd) {
 		return (
 			<div className={`${styles.container} pt-5`}>
+				<Head>
+					<title>1v2 Pong Results</title>
+				</Head>
 				<Pong3Results
 					playerL={playerL}
 					playerR={playerR}
@@ -121,6 +128,9 @@ export default function PongPage({ status, detail }) {
 
 	return (
 		<div className={styles.container}>
+			<Head>
+				<title>1v2 Pong</title>
+			</Head>
 			<div
 				style={{
 					display: 'flex',

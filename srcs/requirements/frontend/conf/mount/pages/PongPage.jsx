@@ -8,6 +8,7 @@ import PongResults from '../components/pongResults';
 import { useAuth } from '../context/AuthenticationContext';
 import DrawingCanvas from '../components/Drawing';
 import { useGame } from '../context/GameContext';
+import Head from 'next/head';
 
 export default function PongPage({ status, detail }) {
 	const { logout } = useAuth();
@@ -72,6 +73,9 @@ export default function PongPage({ status, detail }) {
 	if (gameError) {
 		return (
 			<div className={`${styles.container} pt-5`}>
+				<Head>
+					<title>Classic Pong Error</title>
+				</Head>
 				<div className={`card ${styles.customCard} mt-5`}>
 					<div className={`card-body ${styles.cardInfo}`}>
 						{ errorMessage ?
@@ -96,6 +100,9 @@ export default function PongPage({ status, detail }) {
 	if (gameEnd && winner) {
 		return (
 			<div className={`${styles.container} pt-5`}>
+				<Head>
+					<title>Classic Pong Results</title>
+				</Head>
 				<PongResults winner={winner} winnerScore={winnerScore} />
 				<div className={styles.retrybuttonContainer}>
 					<Link href="/chooseGame" passHref className={styles.retrybutton}>
@@ -111,6 +118,9 @@ export default function PongPage({ status, detail }) {
 
 	return (
 		<div className={styles.container}>
+			<Head>
+				<title>Classic Pong</title>
+			</Head>
 			<div
 				style={{
 					display: 'flex',
@@ -120,6 +130,7 @@ export default function PongPage({ status, detail }) {
 					height: '78vh',
 				}}
 			>
+
 
 				{ room && !inQueue ?
 					<>

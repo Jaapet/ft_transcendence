@@ -382,7 +382,7 @@ export default function UserFriendRequests({ status, detail, current_user, reque
 			/>
 
 			<Head>
-				<title>Profile Page</title>
+				<title>Friend Requests</title>
 			</Head>
 
 			<UserFriendRequestsTable

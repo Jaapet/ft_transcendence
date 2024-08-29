@@ -1,9 +1,13 @@
 import React from 'react';
 import styles from '../styles/base.module.css';
+import Head from 'next/head';
 
 const ErrorPage = () => {
 	return (
 		<div className={styles.container}>
+			<Head>
+				<title>Not Found</title>
+			</Head>
 			<h5 className={styles.background_title}>Oops!</h5>
 			<div className={styles.cardInfo}>
 				<p>Something went wrong.</p>

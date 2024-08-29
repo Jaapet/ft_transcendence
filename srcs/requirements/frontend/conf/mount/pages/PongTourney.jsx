@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthenticationContext';
 import DrawingCanvas from '../components/Drawing';
 import { useGame } from '../context/GameContext';
 import io from 'socket.io-client';
+import Head from 'next/head';
 
 export default function PongTourney({ status, detail, user }) {
 	const { logout } = useAuth();
@@ -121,6 +122,9 @@ export default function PongTourney({ status, detail, user }) {
 	if (gameError) {
 		return (
 			<div className={`${styles.container} pt-5`}>
+				<Head>
+					<title>Pong Tourney Error</title>
+				</Head>
 				<div className={`card ${styles.customCard} mt-5`}>
 					<div className={`card-body ${styles.cardInfo}`}>
 						{ errorMessage ?
@@ -145,6 +149,9 @@ export default function PongTourney({ status, detail, user }) {
 	if (tourneyEnded) {
 		return (
 			<div className={`${styles.container} pt-5`}>
+				<Head>
+					<title>Pong Tourney Results</title>
+				</Head>
 				<TourneyDisplay matches={tourney?.matches || null} />
 				<div className={styles.retrybuttonContainer}>
 					<Link href="/chooseGame" passHref className={styles.retrybutton}>
@@ -160,6 +167,9 @@ export default function PongTourney({ status, detail, user }) {
 
 	return (
 		<div className={styles.container}>
+			<Head>
+				<title>Pong Tourney</title>
+			</Head>
 			<div
 				style={{
 					display: 'flex',
