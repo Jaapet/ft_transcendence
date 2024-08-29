@@ -123,6 +123,14 @@ export async function getServerSideProps(context) {
 		if (!response.ok) {
 			throw new Error(data.message, 'Dummy fetch failed');
 		}
+		if (data.detail) {
+			return {
+				props: {
+					status: 401,
+					detail: data.detail
+				}
+			}
+		}
 
 		return {
 			props: {
