@@ -1065,7 +1065,6 @@ io.on('connection', socket => {
 		if (!tourney || isTourneyLaunched(gameType, tourney.id))
 			return ;
 
-
 		// If the tourney is full, launch the tourney
 		if (isTourneyFull(gameType, tourney.id)) {
 			setTimeout(() => launchTourney(gameType, tourney), 3000); // 3 seconds
@@ -1597,7 +1596,6 @@ io.on('connection', socket => {
 
 			/// Check Bounces
 			function bounce() {
-				// TODO: Check data consistency with client-side
 				//// - Ball has radius of 2
 				const ballRad = 2;
 				const ballX = room.runtime.ballPosition.x;
@@ -1884,7 +1882,6 @@ io.on('connection', socket => {
 
 			/// Check Bounces
 			function bounce() {
-				// TODO: Check data consistency with client-side
 				//// - Ball has radius of 2
 				const ballRad = 2;
 				const ballX = room.runtime.ballPosition.x;

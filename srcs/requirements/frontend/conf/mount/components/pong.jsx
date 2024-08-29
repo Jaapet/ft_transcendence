@@ -69,12 +69,12 @@ const Pong = ({
 		let scene = new THREE.Scene();
 		scene.background = new THREE.Color(0x111111);
 
+		/// CANVAS
 		const canvas = canvasRef.current;
 
 		/// RENDERER
 		const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
 
-		/// CANVAS
 
 		/// CAMERA SETTINGS
 		const fov = 42;
