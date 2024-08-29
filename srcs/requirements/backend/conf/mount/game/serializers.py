@@ -29,7 +29,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 		return value
 
 	def validate_password(self, value):
-		#print(value) # debug
 		regex_validator = RegexValidator(
 			regex=PASSWORD_PATTERN,
 			message='Password must be 8 to 20 characters long, have at least 1 lowercase, 1 uppercase, 1 digit, 1 special character from this list: \"!@#$*?-+~_=\" and ONLY contain these types of characters'

@@ -36,6 +36,12 @@ As we are not required to complete all modules, here is our definitive selection
 - `./init.sh reset`: fclean + all
 - `./init.sh freset`: fclean + f
 
+### For Firefox
+
+You will have to go to `Settings > Privacy & Security > View Certificates... > Add Exception > Location:https://transcendence.gmcg.fr:50280`.  
+  
+If you don't do this, you will not be able to play the games.  
+
 ## Useful links
 
 - [Django + PostgreSQL back-end tutorial](https://www.w3schools.com/django/)
