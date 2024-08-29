@@ -71,10 +71,6 @@ export default function Users({ status, detail, users }) {
 	const [sortedUsers, setSortedUsers] = useState(users);
 	const [sortConfig, setSortConfig] = useState({ key: 'username', direction: 'descending' });
 
-	useEffect(() => {
-		handleSort('username');
-	}, [users]);
-
 	const handleLogout = async () => {
 		await logout();
 	}
@@ -91,6 +87,10 @@ export default function Users({ status, detail, users }) {
 			</div>
 		);
 	}
+
+	useEffect(() => {
+		handleSort('username');
+	}, [users]);
 
 	const handleSort = (column) => {
 		let direction = 'ascending';
