@@ -28,6 +28,10 @@ const UserTableHead = ({ onSort, sortConfig }) => {
 }
 
 const UserTableRow = ({ user }) => {
+	function updateStatus({ newStatus }) {
+		user.is_online = newStatus;
+	}
+
 	return (
 		<tr key={user.id}>
 			<td>
@@ -48,7 +52,7 @@ const UserTableRow = ({ user }) => {
 
 			{/* status colored dot */}
 			<td>
-				<StatusCircle userId={user.id} />
+				<StatusCircle userId={user.id} updateStatus={updateStatus} />
 			</td>
 
 			<td>{user.elo_pong}</td>

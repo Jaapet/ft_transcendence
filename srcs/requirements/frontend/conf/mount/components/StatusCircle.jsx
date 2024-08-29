@@ -3,7 +3,7 @@ import { useUser } from '../context/UserContext';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
-const StatusCircle = ({ userId }) => {
+const StatusCircle = ({ userId, updateStatus }) => {
 	const { getUserStatus } = useUser();
 	const	[status, setStatus] = useState('unknown');
 	const	[color, setColor] = useState('#212529');
@@ -13,12 +13,20 @@ const StatusCircle = ({ userId }) => {
 		if (!userId)
 			return ;
 
+		const updateStatusWrapper = ({ newStatus }) => {
+			if (!updateStatus)
+				return ;
+			updateStatus({ newStatus: newStatus });
+		}
+
 		const checkStatus = async () => {
 			const status = await getUserStatus({ target_id: userId });
 			if (status === null) {
 				setStatus('unknown');
+				updateStatusWrapper({ newStatus: 'unknown' });
 			} else {
 				setStatus(status.message);
+				updateStatusWrapper({ newStatus: status.message });
 			}
 		}
 

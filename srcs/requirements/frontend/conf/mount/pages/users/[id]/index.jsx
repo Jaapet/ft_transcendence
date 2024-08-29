@@ -27,7 +27,7 @@ const ProfileMemberCardPicture = ({ user }) => {
 			<div className="card-body" style={{ padding: '15px' }}>
 				<div className={`card-body ${styles.cardInfo}`}  style={{ padding: '0'}}>
 					<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
-						<StatusCircle userId={user.id} />
+						<StatusCircle userId={user.id} updateStatus={null} />
 						<h2 className="card-title" style={{ margin: 0, marginLeft: 5, fontSize: '25px' }}>{user.username}</h2>
 					</div>
 				</div>
