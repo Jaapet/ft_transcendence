@@ -1,4 +1,5 @@
 import os
+import re # Regex
 from .models import Member, FriendRequest, Match, Match3
 from django.db import transaction
 from django.conf import settings
@@ -118,6 +119,8 @@ class Disable2FAView(APIView):
 
 		return Response({'detail': '2FA has been disabled for this user'}, status=status.HTTP_200_OK)
 
+OTP_PATTERN = re.compile(r'^[0-9]{6}$')
+
 # Verifies 2FA token for user login and returns JWT
 class Verify2FAView(APIView):
 	permission_classes = [permissions.AllowAny]
@@ -127,6 +130,9 @@ class Verify2FAView(APIView):
 		otp = request.data.get('otp')
 		if not user_id or not otp:
 			return Response({'detail': 'Both user_id and otp are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+		if not OTP_PATTERN.match(otp):
+			return Response({'detail': 'Invalid one-time password'}, status=status.HTTP_400_BAD_REQUEST)
 
 		try:
 			user = get_user_model().objects.get(id=user_id)

@@ -30,7 +30,7 @@ export default async (req, res) => {
 		}
 		if (!tokRes.ok) {
 			console.log(`Login failed for username=${username}`); // ELK LOG
-			throw new Error(tokData.detail || 'Could not fetch tokens');
+			throw new Error(tokData.username || tokData.password || tokData.detail || 'Could not fetch tokens');
 		}
 
 		if (tokData.admin) {

@@ -1,15 +1,44 @@
 from .models import Member, FriendRequest, Match, Match3
 from django.core.validators import RegexValidator
 from rest_framework.validators import UniqueValidator
+from rest_framework.exceptions import ValidationError
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django_otp.plugins.otp_totp.models import TOTPDevice
 import re # Regex
 
+# Regex patterns for register and update form validation
+USERNAME_PATTERN = re.compile(r'^[a-zA-Z0-9]{4,8}$')
+PASSWORD_PATTERN = re.compile(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$*?\-+~_=])[a-zA-Z0-9!@#$*?\-+~_=]{8,20}$')
+
 # Checks username and password validity for login
 # Logs in directly if 2FA is disabled
 # Notifies that 2FA is required otherwise
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+	username = serializers.CharField()
+	password = serializers.CharField(write_only=True)
+
+	def validate_username(self, value):
+		regex_validator = RegexValidator(
+			regex=USERNAME_PATTERN,
+			message='Username must be 4 to 8 characters long and only contain alphanumeric characters'
+		)
+
+		regex_validator(value)
+
+		return value
+
+	def validate_password(self, value):
+		#print(value) # debug
+		regex_validator = RegexValidator(
+			regex=PASSWORD_PATTERN,
+			message='Password must be 8 to 20 characters long, have at least 1 lowercase, 1 uppercase, 1 digit, 1 special character from this list: \"!@#$*?-+~_=\" and ONLY contain these types of characters'
+		)
+
+		regex_validator(value)
+
+		return value
+
 	def validate(self, attrs):
 		data = super().validate(attrs)
 		user = self.user
@@ -60,10 +89,6 @@ class RestrictedMemberSerializer(serializers.HyperlinkedModelSerializer):
 			'pong3_games_won'
 		]
 
-# Regex patterns for register and update form validation
-USERNAME_PATTERN = re.compile(r'^[a-zA-Z0-9]{4,8}$')
-PASSWORD_PATTERN = re.compile(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$*?\-+~_=]).{8,20}$')
-
 # Serializes sent data for Member registration
 # Checks if avatar is under size limit defined in validate_file_size
 # Checks if avatar is a correct image file
@@ -101,7 +126,7 @@ class RegisterMemberSerializer(serializers.HyperlinkedModelSerializer):
 		validators=[
 			RegexValidator(
 				regex=PASSWORD_PATTERN,
-				message='Password must be 8 to 20 characters long, have at least 1 lowercase, 1 uppercase, 1 digit, and 1 special character from this list: \"!@#$*?-+~_=\"'
+				message='Password must be 8 to 20 characters long, have at least 1 lowercase, 1 uppercase, 1 digit, 1 special character from this list: \"!@#$*?-+~_=\" and ONLY contain these types of characters'
 			)
 		]
 	)
@@ -168,7 +193,7 @@ class UpdateMemberSerializer(serializers.HyperlinkedModelSerializer):
 		validators=[
 			RegexValidator(
 				regex=PASSWORD_PATTERN,
-				message='Password must be 8 to 20 characters long, have at least 1 lowercase, 1 uppercase, 1 digit, and 1 special character from this list: \"!@#$*?-+~_=\"'
+				message='Password must be 8 to 20 characters long, have at least 1 lowercase, 1 uppercase, 1 digit, 1 special character from this list: \"!@#$*?-+~_=\" and ONLY contain these types of characters'
 			)
 		]
 	)

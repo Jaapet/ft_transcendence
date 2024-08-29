@@ -193,6 +193,7 @@ const SignupForm = () => {
 		const passwordLengthPattern = /^.{8,20}$/;
 		const passwordAlnumPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,20}$/;
 		const passwordSymbolPattern = /^(?=.*[!@#$*?\-+~_=]).{8,20}$/;
+		const passwordForbiddenPattern = /^[a-zA-Z0-9!@#$*?\-+~_=]{8,20}$/;
 
 		if (!usernamePattern.test(username)) {
 			setError(`Username must be 4 to 8 characters long and only contain alphanumeric characters`);
@@ -209,6 +210,10 @@ const SignupForm = () => {
 		}
 		if (!passwordSymbolPattern.test(password)) {
 			setError(`Password must have at least 1 special character from this list: \"!@#$*?-+~_=\"`);
+			return ;
+		}
+		if (!passwordForbiddenPattern.test(password)) {
+			setError(`Password must only contain lowercase and uppercase letters, digits, and special characters from this list: \"!@#$*?-+~_=\"`);
 			return ;
 		}
 

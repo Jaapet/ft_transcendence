@@ -124,7 +124,7 @@ const LoginForm2FAOrNot = ({}) => {
 	const [show2FA, setShow2FA] = useState(false);
 	const [userId, setUserId] = useState(null);
 
-	const { login, login2FA, error } = useAuth();
+	const { login, login2FA, error, setError } = useAuth();
 
 	useEffect(() => {
 		if (error) {
@@ -136,9 +136,45 @@ const LoginForm2FAOrNot = ({}) => {
 
 	const submitHandler = async (event) => {
 		event.preventDefault();
+
 		if (show2FA) {
+			const otpPattern = /^[0-9]{6}$/;
+
+			if (!otpPattern.test(otp)) {
+				setError(`Invalid one-time password`);
+				return ;
+			}
+
 			login2FA({ user_id: userId, otp });
 		} else {
+			const usernamePattern = /^[a-zA-Z0-9]{4,8}$/;
+			const passwordLengthPattern = /^.{8,20}$/;
+			const passwordAlnumPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,20}$/;
+			const passwordSymbolPattern = /^(?=.*[!@#$*?\-+~_=]).{8,20}$/;
+			const passwordForbiddenPattern = /^[a-zA-Z0-9!@#$*?\-+~_=]{8,20}$/;
+
+			if (!usernamePattern.test(username)) {
+				setError(`Username must be 4 to 8 characters long and only contain alphanumeric characters`);
+				return ;
+			}
+	
+			if (!passwordLengthPattern.test(password)) {
+				setError(`Password must be 8 to 20 characters long`);
+				return ;
+			}
+			if (!passwordAlnumPattern.test(password)) {
+				setError(`Password must have at least 1 lowercase, 1 uppercase, 1 digit, and 1 special character`);
+				return ;
+			}
+			if (!passwordSymbolPattern.test(password)) {
+				setError(`Password must have at least 1 special character from this list: \"!@#$*?-+~_=\"`);
+				return ;
+			}
+			if (!passwordForbiddenPattern.test(password)) {
+				setError(`Password must only contain lowercase and uppercase letters, digits, and special characters from this list: \"!@#$*?-+~_=\"`);
+				return ;
+			}
+
 			const response = await login({ username, password });
 			if (response && response.requires_2fa) {
 				setShow2FA(true);

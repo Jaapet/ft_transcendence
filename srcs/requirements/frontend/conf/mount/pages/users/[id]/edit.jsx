@@ -258,6 +258,7 @@ export default function EditPage({ status, detail, current_user }) {
 		const passwordLengthPattern = /^.{8,20}$/;
 		const passwordAlnumPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,20}$/;
 		const passwordSymbolPattern = /^(?=.*[!@#$*?\-+~_=]).{8,20}$/;
+		const passwordForbiddenPattern = /^[a-zA-Z0-9!@#$*?\-+~_=]{8,20}$/;
 
 		if (username !== '' && !usernamePattern.test(username)) {
 			setUserError(`Username must be 4 to 8 characters long and only contain alphanumeric characters`);
@@ -274,6 +275,10 @@ export default function EditPage({ status, detail, current_user }) {
 		}
 		if (password !== '' && !passwordSymbolPattern.test(password)) {
 			setUserError(`Password must have at least 1 special character from this list: \"!@#$*?-+~_=\"`);
+			return ;
+		}
+		if (password !== '' && !passwordForbiddenPattern.test(password)) {
+			setUserError(`Password must only contain lowercase and uppercase letters, digits, and special characters from this list: \"!@#$*?-+~_=\"`);
 			return ;
 		}
 
