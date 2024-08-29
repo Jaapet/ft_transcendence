@@ -48,7 +48,6 @@ const FIND_ROOM_TIMEOUT = 10;				// Create your own room after trying to find on
 const FIND_ROOM_RATE = 0.5;					// Try to find a room every 0.5 seconds
 
 // Gameplay constants
-// TODO: Check if these are synced with client-side code
 /// PONG 2
 const PONG2_FPS = 60;
 const PONG2_PADDLE_SPEED = 37;							// units per second

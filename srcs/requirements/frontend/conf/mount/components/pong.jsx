@@ -661,7 +661,6 @@ const Pong = ({
 		});
 
 		// Gameplay constants
-		// TODO: Check if these are synced with server-side code
 		const FPS = 60;
 		const PADDLE_SPEED = 37;							// units per second
 		const BASE_BALL_SPEED = 60;						// units per second
