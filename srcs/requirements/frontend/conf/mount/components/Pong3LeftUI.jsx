@@ -5,7 +5,7 @@ const Pong3LeftUI = ({ playerL, playerB }) => {
 	return (
 		<div
 			className={`card ${styles.customCard}`}
-			style={{ width: '200px' }}
+			style={{ width: '200px', minWidth: '130px' }}
 		>
 			<div className={`card-body ${styles.cardInfo}`}>
 				{ playerL ?
