@@ -7,15 +7,17 @@ import styles from '../styles/header.module.css';
 
 const ProfileNavPicture = () => {
 	const { user } = useAuth();
-	let avatar = "/images/default.png";
+	const loggedIn = user && user.avatar;
 
-	if (user && user.avatar) {
-		avatar = user.avatar;
+	if (!loggedIn) {
+		return (
+			"Login"
+		);
 	}
 
 	return (
 		<Image
-			src={avatar}
+			src={user.avatar}
 			alt={"Your avatar"}
 			width={40}
 			height={40}
