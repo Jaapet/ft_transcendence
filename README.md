@@ -1,6 +1,7 @@
 # 42_ft_transcendence
 Our ft_transcendence project for 42 Nice, started on May 2nd 2024.  
-Our group is called ***"Comment devenir millionaire" par Rachid*** and is comprised of **thepaqui**, **bbourret**, **mmidon**, **ggualerz** and **ndesprez**.
+Our group is called ***"Comment devenir millionaire" par Rachid*** and is comprised of **thepaqui**, **bbourret**, **mmidon**, **ggualerz** and **ndesprez**.  
+Our project was validated on August 30th 2024, with a grade of 120.
 
 ## Modules
 
